@@ -37,8 +37,8 @@ export function EventProvider({ children }: { children: ReactNode }) {
       return;
     }
     const { data } = await supabase
-      .from('registrations')
-      .select('*, event:events(*), distance:event_distances(*)')
+      .from('st_registrations')
+      .select('*, event:st_events(*), distance:st_event_distances(*)')
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
     const regs = ((data ?? []) as Registration[]).filter((r) => r.event);

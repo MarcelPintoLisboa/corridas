@@ -16,29 +16,29 @@ import type {
 export const api = {
   async publishedEvents() {
     return unwrap(
-      await supabase.from('events').select('*').eq('status', 'published').order('event_date', { ascending: true }),
+      await supabase.from('st_events').select('*').eq('status', 'published').order('event_date', { ascending: true }),
     ) as RaceEvent[];
   },
 
   async event(id: string) {
-    return unwrap(await supabase.from('events').select('*').eq('id', id).single()) as RaceEvent;
+    return unwrap(await supabase.from('st_events').select('*').eq('id', id).single()) as RaceEvent;
   },
 
   async distances(eventId: string) {
     return unwrap(
-      await supabase.from('event_distances').select('*').eq('event_id', eventId).order('sort_order'),
+      await supabase.from('st_event_distances').select('*').eq('event_id', eventId).order('sort_order'),
     ) as EventDistance[];
   },
 
   async pickups(eventId: string) {
     return unwrap(
-      await supabase.from('kit_pickups').select('*').eq('event_id', eventId).order('starts_at'),
+      await supabase.from('st_kit_pickups').select('*').eq('event_id', eventId).order('starts_at'),
     ) as KitPickup[];
   },
 
   async sponsors(eventId: string) {
     const rows = unwrap(
-      await supabase.from('sponsors').select('*').eq('event_id', eventId).eq('active', true).order('sort_order'),
+      await supabase.from('st_sponsors').select('*').eq('event_id', eventId).eq('active', true).order('sort_order'),
     ) as Sponsor[];
     const order = { master: 0, gold: 1, silver: 2, support: 3 };
     return rows.sort((a, b) => order[a.tier] - order[b.tier] || a.sort_order - b.sort_order);
@@ -47,7 +47,7 @@ export const api = {
   async posts(eventId: string) {
     return unwrap(
       await supabase
-        .from('posts')
+        .from('st_posts')
         .select('*')
         .eq('event_id', eventId)
         .eq('published', true)
@@ -58,7 +58,7 @@ export const api = {
 
   async tips(eventId: string, raceDate?: string) {
     const rows = unwrap(
-      await supabase.from('tips').select('*').eq('event_id', eventId).eq('published', true).order('created_at'),
+      await supabase.from('st_tips').select('*').eq('event_id', eventId).eq('published', true).order('created_at'),
     ) as Tip[];
     if (!raceDate) return rows;
     const days = Math.ceil((new Date(raceDate).getTime() - Date.now()) / 86_400_000);
@@ -68,25 +68,25 @@ export const api = {
 
   /** Plano do participante: mesma distância + nível; cai para qualquer plano da distância */
   async planFor(reg: Pick<Registration, 'event_id' | 'distance_id' | 'level'>) {
-    let q = supabase.from('training_plans').select('*').eq('event_id', reg.event_id);
+    let q = supabase.from('st_training_plans').select('*').eq('event_id', reg.event_id);
     if (reg.distance_id) q = q.eq('distance_id', reg.distance_id);
     const plans = unwrap(await q) as TrainingPlan[];
     const plan = plans.find((p) => p.level === reg.level) ?? plans[0];
     if (!plan) return null;
     const sessions = unwrap(
-      await supabase.from('training_sessions').select('*').eq('plan_id', plan.id).order('week').order('day_of_week'),
+      await supabase.from('st_training_sessions').select('*').eq('plan_id', plan.id).order('week').order('day_of_week'),
     ) as TrainingSession[];
     return { plan, sessions };
   },
 
   async workouts(userId: string, eventId?: string | null) {
-    let q = supabase.from('workouts').select('*').eq('user_id', userId).order('performed_at', { ascending: true });
+    let q = supabase.from('st_workouts').select('*').eq('user_id', userId).order('performed_at', { ascending: true });
     if (eventId) q = q.eq('event_id', eventId);
     return unwrap(await q) as Workout[];
   },
 
   async workout(id: string) {
-    return unwrap(await supabase.from('workouts').select('*').eq('id', id).single()) as Workout;
+    return unwrap(await supabase.from('st_workouts').select('*').eq('id', id).single()) as Workout;
   },
 
   async register(params: {
@@ -99,7 +99,7 @@ export const api = {
     orderCode: string | null;
   }) {
     return unwrap(
-      await supabase.rpc('register_for_event', {
+      await supabase.rpc('st_register_for_event', {
         p_event_id: params.eventId,
         p_distance_id: params.distanceId,
         p_level: params.level,
@@ -113,7 +113,7 @@ export const api = {
 
   async captureLead(params: { eventId: string; name: string; email: string; phone?: string; interest?: string }) {
     return unwrap(
-      await supabase.rpc('capture_lead', {
+      await supabase.rpc('st_capture_lead', {
         p_event_id: params.eventId,
         p_name: params.name,
         p_email: params.email,

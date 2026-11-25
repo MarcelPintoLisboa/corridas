@@ -42,7 +42,7 @@ export default function NewWorkout() {
     try {
       const photoUrl = photo ? await uploadImage(photo.uri, 'workouts', photo.mime) : null;
       const { data, error } = await supabase
-        .from('workouts')
+        .from('st_workouts')
         .insert({
           user_id: session!.user.id,
           event_id: event?.id ?? null,

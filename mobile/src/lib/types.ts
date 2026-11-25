@@ -1,4 +1,5 @@
-export type UserRole = 'athlete' | 'organizer' | 'admin';
+/** athlete = corredor | admin = organiza as corridas e gerencia tudo */
+export type UserRole = 'athlete' | 'admin';
 export type RunnerLevel = 'beginner' | 'intermediate' | 'advanced';
 export type SessionType = 'easy' | 'long' | 'tempo' | 'interval' | 'fartlek' | 'recovery' | 'strength' | 'rest' | 'race';
 export type TipCategory = 'training' | 'nutrition' | 'hydration' | 'recovery' | 'mindset' | 'race_day';
@@ -7,8 +8,11 @@ export type PostType = 'news' | 'alert' | 'promo' | 'schedule';
 export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost';
 export type LeadSource = 'app' | 'instagram' | 'sponsor' | 'landing' | 'referral' | 'event' | 'import';
 
+/** Linha de st_usuarios (controle de acesso) */
 export interface Profile {
   id: string;
+  user_id: string | null;
+  ativo: boolean;
   full_name: string | null;
   email: string | null;
   phone: string | null;

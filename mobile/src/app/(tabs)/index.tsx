@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { FlatList, Pressable, Text, View } from 'react-native';
 
 import { ProgressRing } from '@/components/charts';
-import { FirstAdminBanner } from '@/components/FirstAdminBanner';
 import { RaceOnboarding } from '@/components/RaceOnboarding';
 import { SessionCard } from '@/components/SessionCard';
 import { SponsorCarousel } from '@/components/sponsors';
@@ -20,7 +19,7 @@ import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
 
 export default function HomeScreen() {
-  const { profile, isOrganizer } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const { event, active, registrations, accent, accent2, loading, reload: reloadEvents } = useActiveEvent();
   const training = useTraining();
 
@@ -39,7 +38,7 @@ export default function HomeScreen() {
         <Muted>Olá,</Muted>
         <Text style={[font.h1, { color: colors.text }]}>{firstName} 👋</Text>
       </View>
-      {isOrganizer ? <IconButton icon="construct" color={colors.lime} onPress={() => router.push('/admin')} /> : null}
+      {isAdmin ? <IconButton icon="construct" color={colors.lime} onPress={() => router.push('/admin')} /> : null}
       <Pressable onPress={() => router.push('/profile')} style={{ marginLeft: 10 }}>
         <Avatar uri={profile?.avatar_url} name={profile?.full_name} />
       </Pressable>
@@ -50,7 +49,6 @@ export default function HomeScreen() {
     return (
       <Screen>
         {header}
-        <FirstAdminBanner />
         <RaceOnboarding />
       </Screen>
     );
@@ -70,7 +68,6 @@ export default function HomeScreen() {
         reloadEvents();
       }}>
       {header}
-      <FirstAdminBanner />
 
       {/* HERO da corrida — customizado pelo organizador */}
       <FadeIn>

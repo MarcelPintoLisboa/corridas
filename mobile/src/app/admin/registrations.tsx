@@ -25,17 +25,24 @@ export default function RegistrationsScreen() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'pending' | 'done'>('all');
 
-  const q = useAsync(
-    async () =>
-      unwrap(
-        await supabase
-          .from('registrations')
-          .select('id,bib_number,shirt_size,level,kit_picked_up,profile:profiles(full_name,email,phone),distance:event_distances(label)')
-          .eq('event_id', eventId)
-          .order('created_at', { ascending: false }),
-      ) as unknown as Row[],
-    [eventId],
-  );
+  const q = useAsync(async () => {
+    const regs = unwrap(
+      await supabase
+        .from('st_registrations')
+        .select('id,user_id,bib_number,shirt_size,level,kit_picked_up,distance:st_event_distances(label)')
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: false }),
+    ) as unknown as (Omit<Row, 'profile'> & { user_id: string })[];
+    // nomes vêm do controle de acesso (st_usuarios)
+    const ids = regs.map((r) => r.user_id);
+    const users = ids.length
+      ? (unwrap(await supabase.from('st_usuarios').select('user_id,full_name,email,phone').in('user_id', ids)) as {
+          user_id: string; full_name: string | null; email: string | null; phone: string | null;
+        }[])
+      : [];
+    const byId = new Map(users.map((u) => [u.user_id, u]));
+    return regs.map((r) => ({ ...r, profile: byId.get(r.user_id) ?? null })) as Row[];
+  }, [eventId]);
 
   if (q.loading) return <Loading />;
   const rows = (q.data ?? []).filter((r) => {
@@ -45,7 +52,7 @@ export default function RegistrationsScreen() {
   });
 
   async function update(id: string, patch: Partial<Row> & { kit_picked_up_at?: string | null }) {
-    const { error } = await supabase.from('registrations').update(patch).eq('id', id);
+    const { error } = await supabase.from('st_registrations').update(patch).eq('id', id);
     if (error) Alert.alert('Erro', error.message);
     q.setData((q.data ?? []).map((r) => (r.id === id ? { ...r, ...patch } : r)));
   }

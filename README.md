@@ -2,54 +2,52 @@
 
 App para organizadores de corrida e participantes, feito com **Expo (React Native)** e **Supabase**.
 
-| Participante | Organizador / Admin |
+| Corredor | Administrador (organiza as corridas) |
 |---|---|
-| Login e cadastro, vínculo com a corrida (com código do kit) | Painel com KPIs: inscritos, kits, leads, conversão, posts, cliques em patrocinadores |
-| Home com a identidade da corrida (capa, cores, logo) e contagem regressiva | Personalização de cada corrida: nome, capa, logo, cores, local, links, status |
-| Plano de treino conforme distância e nível, com datas contadas até a prova | Publicações: notícias, avisos, promoções, programação (fixar e agendar) |
-| Dicas dos treinadores e de nutrição, liberadas X dias antes da prova | Patrocinadores (cotas, banners, cupons) e métricas por patrocinador |
-| Registro de treinos com foto, distância, tempo e pace | Locais e horários de retirada de kit, distâncias, dicas |
-| Gráficos de evolução (pace, km acumulado, km por semana) | Planos de treino e sessões |
-| **Arte para Instagram** (formato Stories) com foto, distância, tempo, pace e gráfico do histórico | **CRM de leads**: funil, score, WhatsApp, ligação e e-mail, notas, tags, exportação em CSV |
-| Retirada de kits: locais, horários, documentos, "como chegar" | Inscritos: nº de peito e check-in da retirada do kit |
-| Área de patrocinadores: carrossel, ofertas e cupons | Importação de compras de kit (CSV da plataforma de vendas) |
+| Cria conta, inscreve-se na corrida (com código do kit, opcional) | **Controle de acesso** (`st_usuarios`): cadastra administradores pelo e-mail, ativa e desativa acessos |
+| Home com a identidade da corrida (capa, cores, logo) e contagem regressiva | **Corridas de rua**: adicionar, editar (nome, logo, capa, cores, local, data) e excluir |
+| Plano de treino da sua distância e nível, com datas até a prova | **Gerar treinos**: planos por distância × nível até o dia da prova, editáveis |
+| Registra treinos diários com foto, km, tempo e pace | **Retirada de kits**: locais, datas e horários |
+| Gráficos de evolução (pace, km acumulado, km por semana) | **Patrocinadores**: banners, cotas, cupons, material (link) e métricas |
+| **Post para o Instagram** com foto, km, tempo, pace e gráfico da evolução | Publicações (avisos, notícias, promoções), dicas e nutrição |
+| **Comunidade**: mural interno da corrida (texto, foto, treino, curtidas) | Inscritos e check-in de kit · CRM de leads · importação de compras |
 
 ## Estrutura
 
 ```
 supabase/
-  migrations/20261125000001_schema.sql   ← tabelas, enums, RLS, funções (RPC) e bucket de storage
-  seed.sql                               ← corrida de demonstração completa
-mobile/                                  ← app Expo (SDK 58, expo-router)
+  migrations/20261126000001_st_schema.sql ← TODAS as tabelas (prefixo st_), funções, RLS e storage
+  st_seed.sql                              ← dados de teste (corrida demo completa)
+mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
-  src/app/(tabs)      Início · Treino · Evolução · Corrida · Parceiros
-  src/app/admin       painel do organizador
-  src/features/admin  formulários genéricos e recursos de CRUD
-.github/workflows/build-apps.yml         ← gera os instaladores (EAS Build)
+  src/app/(tabs)      Início · Treino · Evolução · Comunidade · Corrida
+  src/app/admin       área do administrador
+.github/workflows/build-apps.yml           ← gera APK e IPA e publica a Release
 ```
 
 ## 1. Banco de dados (Supabase)
 
-1. No painel do projeto, abra **SQL Editor**.
-2. Cole e rode `supabase/migrations/20261125000001_schema.sql`.
-3. Cole e rode `supabase/migrations/20261125000002_generate_plans.sql`. Ela cria a função que gera os treinos preparatórios, usada pelo botão **Gerar treinos** do painel do organizador.
-4. Cole e rode `supabase/migrations/20261125000003_admins_comunidade.sql`. Ela cria a gestão de administradores, o material dos patrocinadores e o mural dos corredores.
-5. Cole e rode `supabase/seed.sql` (dados de teste: corrida *Night Run Sunset 2027*, planos, dicas, patrocinadores, leads).
-6. Para testar a autenticação sem confirmar e-mail: **Authentication → Providers → Email**, desligue *Confirm email*.
-7. Crie sua conta pelo app. No primeiro acesso, toque em **Tornar-me administrador**. Os próximos admins são promovidos em **Administradores e acessos**. Também dá para fazer por SQL:
-   ```sql
-   update public.profiles set role = 'admin' where email = 'seu@email.com';
-   ```
-   Use `role = 'organizer'` para um organizador, que só gerencia as corridas que criou ou em que está na equipe (`event_staff`).
+Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o mesmo projeto Supabase do assistencia-ml, e nada `assistencia_*` é alterado.
 
-**Tabelas:** `profiles`, `events`, `event_staff`, `event_distances`, `kit_purchases`, `kit_pickups`, `registrations`, `training_plans`, `training_sessions`, `workouts`, `tips`, `sponsors`, `sponsor_interactions`, `posts`, `leads`, `lead_interactions`.
+1. No painel do projeto, abra **SQL Editor → New query**.
+2. Cole **todo** o conteúdo de `supabase/migrations/20261126000001_st_schema.sql` e clique em **Run**. O script pode ser rodado mais de uma vez e também remove as tabelas antigas sem prefixo do app.
+3. Cole `supabase/st_seed.sql` e clique em **Run**. São os dados de teste: a corrida *Night Run Sunset 2027* com planos, dicas, patrocinadores, kits e leads.
 
-**Regras de acesso (RLS):**
-- Conteúdo público da corrida (distâncias, kits, patrocinadores, publicações) é visível a todos.
-- Treinos e dicas são visíveis só para inscritos.
-- Leads e compras de kit são visíveis só para quem gerencia a corrida.
-- O usuário não consegue alterar o próprio papel (`role`).
-- A inscrição passa pela RPC `register_for_event`, que valida o código do kit e já converte o participante em lead.
+> ⚠️ No SQL Editor, cole apenas arquivos **.sql**. Os scripts `.cjs`/`.mjs` são ferramentas do computador e não rodam no Supabase.
+
+### Controle de acesso (`st_usuarios`)
+| Coluna | Significado |
+|---|---|
+| `email` | e-mail de login, único |
+| `full_name` | nome |
+| `role` | `athlete` = corredor · `admin` = administrador, que organiza as corridas e vê tudo |
+| `ativo` | `false` bloqueia o acesso |
+| `user_id` | ligado automaticamente no primeiro login |
+
+- **Administrador geral fixo:** `mapl11@hotmail.com`, que é sempre admin e não pode ser desativado.
+- O admin cadastra outros acessos em **Controle de acesso**. A pessoa cria a conta com aquele e-mail e já entra com o papel definido.
+- Quem cria conta sozinho pelo app entra como **corredor**.
+- Só administradores organizam corridas. Corredores veem apenas a área do corredor e o mural da corrida em que estão inscritos.
 
 Para testar o vínculo por código, use os pedidos do seed: `NRS-1001` a `NRS-1004`.
 

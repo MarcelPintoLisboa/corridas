@@ -14,7 +14,7 @@ const tierLabel: Record<string, string> = { master: 'MASTER', gold: 'OURO', silv
 /** Registra impressão/clique para o relatório do organizador */
 export async function trackSponsor(sponsorId: string, kind: 'impression' | 'click' | 'coupon_copy') {
   const { data } = await supabase.auth.getUser();
-  await supabase.from('sponsor_interactions').insert({ sponsor_id: sponsorId, user_id: data.user?.id ?? null, kind });
+  await supabase.from('st_sponsor_interactions').insert({ sponsor_id: sponsorId, user_id: data.user?.id ?? null, kind });
 }
 
 export async function openSponsor(s: Sponsor) {

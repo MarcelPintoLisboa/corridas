@@ -24,15 +24,12 @@ const statusMeta = {
 };
 
 export default function AdminHome() {
-  const { session, isAdmin } = useAuth();
-  const q = useAsync(async () => {
-    // RLS: admin vÃª tudo; organizador vÃª os que gerencia (+ publicados)
-    const rows = unwrap(await supabase.from('events').select('*').order('event_date', { ascending: false })) as RaceEvent[];
-    if (isAdmin) return rows;
-    const { data: staff } = await supabase.from('event_staff').select('event_id').eq('user_id', session!.user.id);
-    const ids = new Set((staff ?? []).map((s) => s.event_id));
-    return rows.filter((e) => e.organizer_id === session!.user.id || ids.has(e.id));
-  }, [isAdmin]);
+  const { isAdmin } = useAuth();
+  // Admin organiza e vê todas as corridas (rascunhos inclusive)
+  const q = useAsync(
+    async () => unwrap(await supabase.from('st_events').select('*').order('event_date', { ascending: false })) as RaceEvent[],
+    [isAdmin],
+  );
 
   const { reload } = q;
   useFocusEffect(
@@ -45,13 +42,13 @@ export default function AdminHome() {
   if (q.loading) return <Loading />;
 
   function confirmDelete(e: RaceEvent) {
-    Alert.alert(`Excluir "${e.name}"?`, 'InscriÃ§Ãµes, treinos, patrocinadores, publicaÃ§Ãµes e leads desta corrida serÃ£o removidos. NÃ£o dÃ¡ para desfazer.', [
+    Alert.alert(`Excluir "${e.name}"?`, 'Inscrições, treinos, patrocinadores, publicações e leads desta corrida serão removidos. Não dá para desfazer.', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          const { error } = await supabase.from('events').delete().eq('id', e.id);
+          const { error } = await supabase.from('st_events').delete().eq('id', e.id);
           if (error) return Alert.alert('Erro', error.message);
           q.reload();
         },
@@ -62,15 +59,15 @@ export default function AdminHome() {
   return (
     <Screen refreshing={q.refreshing} onRefresh={q.refresh} bottomInset={false}>
       <BackHeader title="Corridas de rua" />
-      <Muted style={{ marginBottom: 16 }}>Gerencie suas corridas, publicaÃ§Ãµes, patrocinadores e leads.</Muted>
+      <Muted style={{ marginBottom: 16 }}>Gerencie suas corridas, publicações, patrocinadores e leads.</Muted>
       <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} style={{ marginBottom: 10 }} />
       {isAdmin ? (
-        <GradientButton title="Administradores e acessos" icon="people" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/users')} style={{ marginBottom: 20 }} />
+        <GradientButton title="Controle de acesso" icon="people" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/users')} style={{ marginBottom: 20 }} />
       ) : (
         <View style={{ height: 10 }} />
       )}
 
-      {!q.data?.length ? <EmptyState icon="flag" title="Nenhuma corrida ainda" message="Crie sua primeira corrida e personalize com imagem, cores e informaÃ§Ãµes." /> : null}
+      {!q.data?.length ? <EmptyState icon="flag" title="Nenhuma corrida ainda" message="Crie sua primeira corrida e personalize com imagem, cores e informações." /> : null}
 
       {q.data?.map((e, i) => (
         <FadeIn key={e.id} delay={i * 60}>
@@ -80,7 +77,7 @@ export default function AdminHome() {
               <Badge label={statusMeta[e.status].label} color={statusMeta[e.status].color} />
               <View>
                 <Text style={[font.h2, { color: '#fff' }]}>{e.name}</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.85)' }}>{formatDate(e.event_date, true)} Â· {e.city ?? ''}</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.85)' }}>{formatDate(e.event_date, true)} · {e.city ?? ''}</Text>
               </View>
             </LinearGradient>
           </Pressable>

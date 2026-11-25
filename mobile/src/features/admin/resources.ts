@@ -23,7 +23,7 @@ export interface Resource {
 }
 
 const distanceOptions = async (eventId: string) => {
-  const { data } = await supabase.from('event_distances').select('id,label').eq('event_id', eventId).order('sort_order');
+  const { data } = await supabase.from('st_event_distances').select('id,label').eq('event_id', eventId).order('sort_order');
   return { distance_id: (data ?? []).map((d) => ({ label: d.label as string, value: d.id as string })) };
 };
 
@@ -36,7 +36,7 @@ const levelOptions: Option[] = [
 export const resources: Record<string, Resource> = {
   posts: {
     key: 'posts',
-    table: 'posts',
+    table: 'st_posts',
     title: 'Publicações',
     icon: 'megaphone',
     description: 'Notícias, avisos, promoções e programação',
@@ -60,7 +60,7 @@ export const resources: Record<string, Resource> = {
 
   sponsors: {
     key: 'sponsors',
-    table: 'sponsors',
+    table: 'st_sponsors',
     title: 'Patrocinadores',
     icon: 'diamond',
     description: 'Banners, cotas, cupons e links',
@@ -89,7 +89,7 @@ export const resources: Record<string, Resource> = {
 
   pickups: {
     key: 'pickups',
-    table: 'kit_pickups',
+    table: 'st_kit_pickups',
     title: 'Retirada de kits',
     icon: 'cube',
     description: 'Locais, datas e horários',
@@ -109,7 +109,7 @@ export const resources: Record<string, Resource> = {
 
   distances: {
     key: 'distances',
-    table: 'event_distances',
+    table: 'st_event_distances',
     title: 'Distâncias',
     icon: 'trail-sign',
     description: 'Percursos da prova',
@@ -127,7 +127,7 @@ export const resources: Record<string, Resource> = {
 
   tips: {
     key: 'tips',
-    table: 'tips',
+    table: 'st_tips',
     title: 'Dicas',
     icon: 'bulb',
     description: 'Treinadores, alimentação, hidratação',
@@ -148,7 +148,7 @@ export const resources: Record<string, Resource> = {
 
   plans: {
     key: 'plans',
-    table: 'training_plans',
+    table: 'st_training_plans',
     title: 'Planos de treino',
     icon: 'barbell',
     description: 'Planos por distância e nível',
@@ -170,7 +170,7 @@ export const resources: Record<string, Resource> = {
 
   sessions: {
     key: 'sessions',
-    table: 'training_sessions',
+    table: 'st_training_sessions',
     title: 'Sessões do plano',
     icon: 'list',
     description: '',
@@ -195,7 +195,7 @@ export const resources: Record<string, Resource> = {
 
   kits: {
     key: 'kits',
-    table: 'kit_purchases',
+    table: 'st_kit_purchases',
     title: 'Compras de kit',
     icon: 'ticket',
     description: 'Códigos de pedido para vincular inscrições',

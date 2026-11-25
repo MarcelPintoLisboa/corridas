@@ -1,4 +1,4 @@
-import { DarkTheme, Stack, ThemeProvider } from 'expo-router';
+import { DarkTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -19,11 +19,22 @@ const theme = {
 };
 
 function RootNavigator() {
-  const { session, loading, isOrganizer } = useAuth();
+  const { session, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   useEffect(() => {
     if (!loading) SplashScreen.hideAsync().catch(() => {});
   }, [loading]);
+
+  // Controle de acesso por redirecionamento: "/" sempre existe como rota
+  // (evita a tela "Unmatched Route" no primeiro acesso sem login).
+  useEffect(() => {
+    if (loading) return;
+    const inAuth = segments[0] === '(auth)';
+    if (!session && !inAuth) router.replace('/login');
+    else if (session && inAuth) router.replace('/');
+  }, [session, loading, segments, router]);
 
   if (!isSupabaseConfigured) {
     return (
@@ -42,24 +53,16 @@ function RootNavigator() {
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
-      </Stack.Protected>
-
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-        <Stack.Screen name="events/index" />
-        <Stack.Screen name="events/[id]" />
-        <Stack.Screen name="workout/new" options={modal} />
-        <Stack.Screen name="workout/[id]" />
-        <Stack.Screen name="tips" />
-        <Stack.Screen name="sponsors" />
-        <Stack.Screen name="profile" />
-
-        <Stack.Protected guard={isOrganizer}>
-          <Stack.Screen name="admin" />
-        </Stack.Protected>
-      </Stack.Protected>
+      <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
+      <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
+      <Stack.Screen name="events/index" />
+      <Stack.Screen name="events/[id]" />
+      <Stack.Screen name="workout/new" options={modal} />
+      <Stack.Screen name="workout/[id]" />
+      <Stack.Screen name="tips" />
+      <Stack.Screen name="sponsors" />
+      <Stack.Screen name="profile" />
+      <Stack.Screen name="admin" />
     </Stack>
   );
 }

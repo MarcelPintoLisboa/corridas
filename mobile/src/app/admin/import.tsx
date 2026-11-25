@@ -55,7 +55,7 @@ export default function ImportKits() {
         };
       }).filter((r) => r.order_code);
 
-      const { error } = await supabase.from('kit_purchases').upsert(rows, { onConflict: 'event_id,order_code' });
+      const { error } = await supabase.from('st_kit_purchases').upsert(rows, { onConflict: 'event_id,order_code' });
       if (error) throw error;
 
       // Compradores viram leads qualificados (para campanhas de upsell / patrocinadores)
@@ -69,7 +69,7 @@ export default function ImportKits() {
         interest: distances.find((d) => d.id === r.distance_id)?.label ?? null,
         consent_marketing: true,
       }));
-      for (const l of leads) await supabase.from('leads').insert(l); // ignora duplicados (índice único)
+      for (const l of leads) await supabase.from('st_leads').insert(l); // ignora duplicados (índice único)
 
       Alert.alert('Importação concluída ✓', `${rows.length} compras importadas. Os participantes já podem vincular pelo código.`);
       router.back();

@@ -23,16 +23,16 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
 
   const stats = useAsync(async () => {
     const [{ count: plans }, { count: distances }, { count: regs }] = await Promise.all([
-      supabase.from('training_plans').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
-      supabase.from('event_distances').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
-      supabase.from('registrations').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+      supabase.from('st_training_plans').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+      supabase.from('st_event_distances').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
+      supabase.from('st_registrations').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
     ]);
     return { plans: plans ?? 0, distances: distances ?? 0, regs: regs ?? 0 };
   }, [eventId]);
 
   async function generate() {
     setBusy(true);
-    const { data, error } = await supabase.rpc('generate_training_plans', {
+    const { data, error } = await supabase.rpc('st_generate_training_plans', {
       p_event_id: eventId,
       p_weeks: weeks,
       p_coach_name: coach.trim() || null,

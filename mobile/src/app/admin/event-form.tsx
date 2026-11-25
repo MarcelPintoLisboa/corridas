@@ -21,7 +21,7 @@ export default function EventForm() {
   useEffect(() => {
     if (!id) return;
     supabase
-      .from('events')
+      .from('st_events')
       .select('*')
       .eq('id', id)
       .single()
@@ -35,17 +35,16 @@ export default function EventForm() {
       const payload = serialize(eventFields, values!);
       setSaving(true);
       if (id) {
-        const { error } = await supabase.from('events').update(payload).eq('id', id);
+        const { error } = await supabase.from('st_events').update(payload).eq('id', id);
         if (error) throw error;
       } else {
         const slug = String(payload.name).toLowerCase().normalize('NFD').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') + '-' + Date.now().toString(36);
         const { data, error } = await supabase
-          .from('events')
+          .from('st_events')
           .insert({ ...payload, slug, organizer_id: session!.user.id })
           .select('id')
           .single();
         if (error) throw error;
-        await supabase.from('event_staff').insert({ event_id: data.id, user_id: session!.user.id, role: 'owner' });
         router.replace(`/admin/event/${data.id}`);
         return;
       }
@@ -65,7 +64,7 @@ export default function EventForm() {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          const { error } = await supabase.from('events').delete().eq('id', id!);
+          const { error } = await supabase.from('st_events').delete().eq('id', id!);
           if (error) return Alert.alert('Erro', error.message);
           router.dismissTo('/admin');
         },

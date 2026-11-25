@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 
-import { FirstAdminBanner } from '@/components/FirstAdminBanner';
 import { BackHeader } from '@/components/Header';
 import { Avatar, Badge, Card, GradientButton, Input, ListRow, Muted, Screen, SectionHeader } from '@/components/ui';
 import { formatDate } from '@/lib/format';
@@ -13,7 +12,7 @@ import { useActiveEvent } from '@/providers/EventProvider';
 import { colors } from '@/theme';
 
 export default function ProfileScreen() {
-  const { profile, refreshProfile, signOut, isOrganizer } = useAuth();
+  const { profile, refreshProfile, signOut, isAdmin, isAdminGeral } = useAuth();
   const { registrations, setActiveEventId, active } = useActiveEvent();
   const [name, setName] = useState(profile?.full_name ?? '');
   const [phone, setPhone] = useState(profile?.phone ?? '');
@@ -25,9 +24,9 @@ export default function ProfileScreen() {
     if (!profile) return;
     setSaving(true);
     const { error } = await supabase
-      .from('profiles')
+      .from('st_usuarios')
       .update({ full_name: name, phone, city, instagram: instagram ? `@${instagram.replace('@', '')}` : null, ...extra })
-      .eq('id', profile.id);
+      .eq('id', profile.id); // linha de st_usuarios
     setSaving(false);
     if (error) return Alert.alert('Erro', error.message);
     await refreshProfile();
@@ -37,7 +36,6 @@ export default function ProfileScreen() {
   return (
     <Screen bottomInset={false}>
       <BackHeader title="Meu perfil" />
-      <FirstAdminBanner />
       <View style={{ alignItems: 'center', marginBottom: 20 }}>
         <Pressable
           onPress={async () => {
@@ -53,7 +51,7 @@ export default function ProfileScreen() {
         </Pressable>
         <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800', marginTop: 8 }}>{profile?.full_name}</Text>
         <Muted>{profile?.email}</Muted>
-        {isOrganizer ? <View style={{ marginTop: 8 }}><Badge label={profile?.role === 'admin' ? 'Admin' : 'Organizador'} color={colors.lime} /></View> : null}
+        {isAdmin ? <View style={{ marginTop: 8 }}><Badge label={isAdminGeral ? 'Administrador geral' : 'Administrador'} color={colors.lime} /></View> : null}
       </View>
 
       <Input label="Nome" value={name} onChangeText={setName} icon="person-outline" />
@@ -78,7 +76,7 @@ export default function ProfileScreen() {
         ))}
       </Card>
 
-      {isOrganizer ? <GradientButton title="Painel do organizador" icon="construct" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin')} style={{ marginTop: 12 }} /> : null}
+      {isAdmin ? <GradientButton title="Painel do administrador" icon="construct" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin')} style={{ marginTop: 12 }} /> : null}
       <GradientButton title="Sair" icon="log-out-outline" variant="ghost" colorsPair={[colors.danger, colors.danger]} onPress={signOut} style={{ marginTop: 12, marginBottom: 30 }} />
     </Screen>
   );

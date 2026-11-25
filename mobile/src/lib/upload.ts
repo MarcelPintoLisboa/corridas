@@ -24,9 +24,9 @@ export async function uploadImage(localUri: string, folder: string, mimeType = '
   const path = `${auth.user.id}/${folder}/${Date.now()}.${ext}`;
   const buffer = await new File(localUri).arrayBuffer();
 
-  const { error } = await supabase.storage.from('media').upload(path, buffer, { contentType: mimeType, upsert: false });
+  const { error } = await supabase.storage.from('st_media').upload(path, buffer, { contentType: mimeType, upsert: false });
   if (error) throw new Error(error.message);
-  return supabase.storage.from('media').getPublicUrl(path).data.publicUrl;
+  return supabase.storage.from('st_media').getPublicUrl(path).data.publicUrl;
 }
 
 /** Fluxo completo: escolher + enviar */

@@ -12,9 +12,9 @@ export default function SponsorMetrics() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const q = useAsync(async () => {
     const [{ data: sponsor }, ...counts] = await Promise.all([
-      supabase.from('sponsors').select('name').eq('id', id).single(),
+      supabase.from('st_sponsors').select('name').eq('id', id).single(),
       ...(['impression', 'click', 'coupon_copy'] as const).map((k) =>
-        supabase.from('sponsor_interactions').select('id', { count: 'exact', head: true }).eq('sponsor_id', id).eq('kind', k),
+        supabase.from('st_sponsor_interactions').select('id', { count: 'exact', head: true }).eq('sponsor_id', id).eq('kind', k),
       ),
     ]);
     return { name: sponsor?.name as string, impressions: counts[0].count ?? 0, clicks: counts[1].count ?? 0, coupons: counts[2].count ?? 0 };

@@ -19,7 +19,7 @@ export default function AdminEvent() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { width } = useWindowDimensions();
   const q = useAsync(async () => {
-    const [event, metrics] = await Promise.all([api.event(id), supabase.rpc('event_metrics', { p_event_id: id }).then(unwrap)]);
+    const [event, metrics] = await Promise.all([api.event(id), supabase.rpc('st_event_metrics', { p_event_id: id }).then(unwrap)]);
     return { event, metrics: metrics as EventMetrics };
   }, [id]);
   const { reload } = q;

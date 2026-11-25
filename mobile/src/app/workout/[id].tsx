@@ -63,7 +63,7 @@ export default function WorkoutShare() {
       await Clipboard.setStringAsync(caption);
       if (!(await Sharing.isAvailableAsync())) throw new Error('Compartilhamento indisponível neste dispositivo');
       await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: 'Postar no Instagram' });
-      await supabase.from('workouts').update({ shared_instagram: true }).eq('id', workout.id);
+      await supabase.from('st_workouts').update({ shared_instagram: true }).eq('id', workout.id);
       q.setData({ ...q.data!, workout: { ...workout, shared_instagram: true } });
     } catch (e) {
       Alert.alert('Ops', (e as Error).message);
@@ -92,7 +92,7 @@ export default function WorkoutShare() {
   }
 
   async function onPostToFeed() {
-    const { error } = await supabase.from('community_posts').insert({
+    const { error } = await supabase.from('st_community_posts').insert({
       event_id: workout.event_id,
       body: `${workout.is_race ? '🏆' : '🏃'} ${workout.title ?? 'Treino'}${workout.notes ? ` — ${workout.notes}` : ''}`,
       image_url: workout.photo_url,
@@ -110,7 +110,7 @@ export default function WorkoutShare() {
         text: 'Excluir',
         style: 'destructive',
         onPress: async () => {
-          await supabase.from('workouts').delete().eq('id', workout.id);
+          await supabase.from('st_workouts').delete().eq('id', workout.id);
           router.back();
         },
       },

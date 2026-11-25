@@ -23,8 +23,8 @@ export default function LeadDetail() {
 
   const q = useAsync(async () => {
     const [lead, interactions] = await Promise.all([
-      supabase.from('leads').select('*, event:events(name)').eq('id', id).single().then(unwrap),
-      supabase.from('lead_interactions').select('*').eq('lead_id', id).order('created_at', { ascending: false }).then(unwrap),
+      supabase.from('st_leads').select('*, event:st_events(name)').eq('id', id).single().then(unwrap),
+      supabase.from('st_lead_interactions').select('*').eq('lead_id', id).order('created_at', { ascending: false }).then(unwrap),
     ]);
     return { lead: lead as Lead & { event: { name: string } | null }, interactions: interactions as LeadInteraction[] };
   }, [id]);
@@ -33,13 +33,13 @@ export default function LeadDetail() {
   const { lead, interactions } = q.data;
 
   async function log(type: LeadInteraction['type'], content: string) {
-    await supabase.from('lead_interactions').insert({ lead_id: id, type, content, created_by: session!.user.id });
+    await supabase.from('st_lead_interactions').insert({ lead_id: id, type, content, created_by: session!.user.id });
   }
 
   async function setStatus(s: LeadStatus) {
     if (s === lead.status) return;
     const score = { new: 30, contacted: 50, qualified: 75, converted: 100, lost: 0 }[s];
-    const { error } = await supabase.from('leads').update({ status: s, score }).eq('id', id);
+    const { error } = await supabase.from('st_leads').update({ status: s, score }).eq('id', id);
     if (error) return Alert.alert('Erro', error.message);
     await log('status_change', `${leadStatusLabel[lead.status]} → ${leadStatusLabel[s]}`);
     q.reload();
@@ -71,7 +71,7 @@ export default function LeadDetail() {
 
   async function saveTags() {
     const arr = (tags ?? '').split(',').map((t) => t.trim()).filter(Boolean);
-    await supabase.from('leads').update({ tags: arr }).eq('id', id);
+    await supabase.from('st_leads').update({ tags: arr }).eq('id', id);
     setTags(null);
     q.reload();
   }

@@ -24,7 +24,7 @@ export default function LeadsScreen() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', interest: '' });
 
   const q = useAsync(
-    async () => unwrap(await supabase.from('leads').select('*').eq('event_id', eventId).order('created_at', { ascending: false })) as Lead[],
+    async () => unwrap(await supabase.from('st_leads').select('*').eq('event_id', eventId).order('created_at', { ascending: false })) as Lead[],
     [eventId],
   );
   const { reload } = q;
@@ -62,7 +62,7 @@ export default function LeadsScreen() {
 
   async function addLead() {
     if (!form.name) return Alert.alert('Informe o nome');
-    const { error } = await supabase.from('leads').insert({ event_id: eventId, ...form, email: form.email.toLowerCase() || null, source: 'event', consent_marketing: true });
+    const { error } = await supabase.from('st_leads').insert({ event_id: eventId, ...form, email: form.email.toLowerCase() || null, source: 'event', consent_marketing: true });
     if (error) return Alert.alert('Erro', error.message);
     setAdding(false);
     setForm({ name: '', email: '', phone: '', interest: '' });

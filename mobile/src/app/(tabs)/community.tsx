@@ -23,9 +23,9 @@ export default function CommunityScreen() {
   const q = useAsync(async () => {
     if (!event) return null;
     const [posts, likes, lastWorkout] = await Promise.all([
-      supabase.from('community_posts').select('*').eq('event_id', event.id).order('created_at', { ascending: false }).limit(100).then(unwrap),
-      supabase.from('community_likes').select('post_id,user_id').then(unwrap),
-      supabase.from('workouts').select('*').eq('user_id', uid!).eq('event_id', event.id).order('performed_at', { ascending: false }).limit(1).then(unwrap),
+      supabase.from('st_community_posts').select('*').eq('event_id', event.id).order('created_at', { ascending: false }).limit(100).then(unwrap),
+      supabase.from('st_community_likes').select('post_id,user_id').then(unwrap),
+      supabase.from('st_workouts').select('*').eq('user_id', uid!).eq('event_id', event.id).order('performed_at', { ascending: false }).limit(1).then(unwrap),
     ]);
     return { posts: posts as CommunityPost[], likes: likes as { post_id: string; user_id: string }[], lastWorkout: (lastWorkout as Workout[])[0] ?? null };
   }, [event?.id]);
@@ -51,15 +51,15 @@ export default function CommunityScreen() {
 
   async function toggleLike(p: CommunityPost) {
     const liked = likes.some((l) => l.post_id === p.id && l.user_id === uid);
-    if (liked) await supabase.from('community_likes').delete().eq('post_id', p.id).eq('user_id', uid!);
-    else await supabase.from('community_likes').insert({ post_id: p.id, user_id: uid });
+    if (liked) await supabase.from('st_community_likes').delete().eq('post_id', p.id).eq('user_id', uid!);
+    else await supabase.from('st_community_likes').insert({ post_id: p.id, user_id: uid });
     q.reload();
   }
 
   function remove(p: CommunityPost) {
     Alert.alert('Apagar publicação?', undefined, [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Apagar', style: 'destructive', onPress: async () => { await supabase.from('community_posts').delete().eq('id', p.id); q.reload(); } },
+      { text: 'Apagar', style: 'destructive', onPress: async () => { await supabase.from('st_community_posts').delete().eq('id', p.id); q.reload(); } },
     ]);
   }
 
@@ -129,7 +129,7 @@ function Composer({ eventId, accent, lastWorkout, onPosted }: { eventId: string;
     setBusy(true);
     try {
       const image_url = photo ? await uploadImage(photo.uri, 'community', photo.mime) : null;
-      const { error } = await supabase.from('community_posts').insert({
+      const { error } = await supabase.from('st_community_posts').insert({
         event_id: eventId,
         body: text.trim() || null,
         image_url,
