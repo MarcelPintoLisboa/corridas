@@ -1,40 +1,44 @@
-name: Gerar instaladores (Android / iOS)
+name: Gerar instaladores (APK e IPA)
 
-# ANDROID → compilado aqui mesmo no GitHub (Gradle). Não precisa de conta Expo nem token.
-#   development → APK "development build": conecta ao `npx expo start` do seu computador (hot reload)
-#   preview     → APK completo, roda sozinho (JS embutido) — precisa do secret SUPABASE_ANON_KEY
-#   O APK sai em "Artifacts" no fim da execução (e na Release, quando disparado por tag).
+# Compila tudo no próprio GitHub — sem EAS, sem conta Expo.
+#   Android → runner Ubuntu (Gradle)   → APK
+#   iOS     → runner macOS (xcodebuild) → IPA
 #
-# iOS → via EAS Build (nuvem da Expo). A Apple exige conta Apple Developer paga para instalar
-#   em iPhone. Só roda se o secret EXPO_TOKEN existir; caso contrário é pulado (não falha).
+# Tipos:
+#   development → development build (expo-dev-client): conecta ao `npx expo start` do seu PC
+#   preview     → app completo com o JS embutido (usa o secret SUPABASE_ANON_KEY)
+#
+# iOS sem certificados nos Secrets → IPA SEM assinatura: instale com Sideloadly/AltStore
+#   usando um Apple ID gratuito. Com os secrets IOS_* → IPA assinado (ad-hoc/development).
 on:
   workflow_dispatch:
     inputs:
       platform:
         description: Plataforma
         type: choice
-        options: [android, ios, all]
-        default: android
+        options: [all, android, ios]
+        default: all
       profile:
         description: Tipo de instalador
         type: choice
         options: [development, preview]
         default: development
+      ios_export_method:
+        description: 'IPA assinado (só se houver secrets IOS_*): método de exportação'
+        type: choice
+        options: [ad-hoc, development, app-store]
+        default: ad-hoc
   push:
-    tags:
-      - 'v*' # git tag v1.0.0 && git push --tags → APK preview + iOS (se configurado) na Release
+    tags: ['v*'] # git tag v1.0.0 && git push --tags → instaladores preview na Release
 
 concurrency:
   group: build-${{ github.ref }}-${{ inputs.profile || 'tag' }}
   cancel-in-progress: true
 
-permissions:
-  contents: write # anexar instaladores na GitHub Release
-
 env:
   PROFILE: ${{ inputs.profile || 'preview' }}
-  PLATFORM: ${{ inputs.platform || 'all' }}
   SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://eoowbybfrbmjxcjfniuu.supabase.co' }}
+  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
 
 jobs:
   checks:
@@ -54,7 +58,7 @@ jobs:
       - run: npx tsc --noEmit
       - run: npx expo lint
 
-  # ------------------------------------------------------------------ ANDROID
+  # ================================================================== ANDROID
   android:
     name: Android APK (${{ inputs.profile || 'preview' }})
     needs: checks
@@ -78,150 +82,240 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
-
       - uses: gradle/actions/setup-gradle@v4
 
       - run: npm ci
 
-      - name: Variáveis do app (.env)
-        env:
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      - name: Versão e .env
+        id: versao
         run: |
           if [ "$PROFILE" = "preview" ] && [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Para o APK preview, crie o secret SUPABASE_ANON_KEY (Supabase → Settings → API → anon public) em Settings → Secrets and variables → Actions."
+            echo "::error::Para o tipo preview, crie o secret SUPABASE_ANON_KEY (Supabase → Settings → API → anon public)."
             exit 1
           fi
-          {
-            echo "EXPO_PUBLIC_SUPABASE_URL=$SUPABASE_URL"
-            echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
-          } > .env
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
+          echo "v=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
 
       - name: Gerar projeto nativo (expo prebuild)
         run: npx expo prebuild --platform android --no-install
         env:
-          CI: '1'
-
-      - name: Ajustar memória do Gradle
-        run: |
-          sed -i '/^org.gradle.jvmargs/d' android/gradle.properties
-          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8' >> android/gradle.properties
+          CI: 1
 
       - name: Compilar APK
         working-directory: mobile/android
         run: |
+          sed -i '/^org.gradle.jvmargs/d' gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8' >> gradle.properties
+          chmod +x gradlew
           TASK=$([ "$PROFILE" = "development" ] && echo assembleDebug || echo assembleRelease)
-          ./gradlew "$TASK" --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+          ./gradlew "$TASK" --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a,x86_64
 
       - name: Renomear APK
-        id: apk
         run: |
           VARIANT=$([ "$PROFILE" = "development" ] && echo debug || echo release)
-          SRC=$(ls android/app/build/outputs/apk/$VARIANT/*.apk | head -n1)
-          NAME="runup-$PROFILE-${GITHUB_REF_NAME//\//-}-${GITHUB_SHA::7}.apk"
-          mkdir -p ../dist && cp "$SRC" "../dist/$NAME"
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          mkdir -p ../dist
+          cp android/app/build/outputs/apk/$VARIANT/app-$VARIANT.apk "../dist/runup-${{ steps.versao.outputs.v }}-$PROFILE.apk"
+          {
+            echo "### 🤖 Android · $PROFILE"
+            echo "Baixe **android-apk** em *Artifacts*, passe o .apk para o celular e instale (permita *apps desconhecidos*)."
+            [ "$PROFILE" = "development" ] && echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.apk.outputs.name }}
-          path: dist/${{ steps.apk.outputs.name }}
-          retention-days: 30
+          name: android-apk
+          path: dist/*.apk
+          if-no-files-found: error
 
-      - name: Anexar à Release
-        if: github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/${{ steps.apk.outputs.name }}
-
-      - name: Resumo
-        run: |
-          {
-            echo "### 🤖 Android · $PROFILE"
-            echo ""
-            echo "1. Baixe **${{ steps.apk.outputs.name }}** em *Artifacts* (no fim desta página) — vem dentro de um .zip."
-            echo "2. Envie o .apk para o celular e abra (permita *instalar apps desconhecidos*)."
-            if [ "$PROFILE" = "development" ]; then
-              echo "3. No computador: \`cd mobile && npx expo start\` (mesma rede Wi-Fi; ou \`npx expo start --tunnel\`)."
-              echo "4. Abra o app RunUp no celular e leia o QR code / escolha o servidor."
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  # ---------------------------------------------------------------------- iOS
+  # ====================================================================== iOS
   ios:
-    name: iOS (${{ inputs.profile || 'preview' }})
+    name: iOS IPA (${{ inputs.profile || 'preview' }})
     needs: checks
     if: (inputs.platform || 'all') != 'android'
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
+    timeout-minutes: 90
     defaults:
       run:
         working-directory: mobile
     env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      P12_B64: ${{ secrets.IOS_P12_BASE64 }}
+      P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+      PROFILE_B64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+      TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+      EXPORT_METHOD: ${{ inputs.ios_export_method || 'ad-hoc' }}
     steps:
-      - name: Verificar configuração
-        id: cfg
-        working-directory: .
-        run: |
-          if [ -z "$EXPO_TOKEN" ]; then
-            echo "::notice::iOS pulado: crie o secret EXPO_TOKEN (expo.dev → Access tokens) e tenha uma conta Apple Developer. Ver README."
-            echo "ok=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "ok=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - uses: actions/checkout@v4
-        if: steps.cfg.outputs.ok == 'true'
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
 
       - uses: actions/setup-node@v4
-        if: steps.cfg.outputs.ok == 'true'
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: mobile/package-lock.json
 
-      - uses: expo/expo-github-action@v8
-        if: steps.cfg.outputs.ok == 'true'
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
       - run: npm ci
-        if: steps.cfg.outputs.ok == 'true'
 
-      - name: Vincular projeto EAS e variáveis
-        if: steps.cfg.outputs.ok == 'true'
+      - name: Versão e .env
+        id: versao
         run: |
-          node -e "process.exit(require('./app.json').expo.extra?.eas?.projectId ? 0 : 1)" || eas init --non-interactive --force
-          # injeta as variáveis do Supabase no perfil do eas.json (usadas no JS embutido)
-          node -e "
-            const fs=require('fs');const j=JSON.parse(fs.readFileSync('eas.json','utf8'));
-            const p=j.build[process.env.PROFILE];
-            p.env={...(p.env||{}),EXPO_PUBLIC_SUPABASE_URL:process.env.SUPABASE_URL,EXPO_PUBLIC_SUPABASE_ANON_KEY:process.env.SUPABASE_ANON_KEY||''};
-            fs.writeFileSync('eas.json',JSON.stringify(j,null,2));"
-
-      - name: Build
-        id: build
-        if: steps.cfg.outputs.ok == 'true'
-        env:
-          EAS_NO_VCS: '1'
-        run: |
-          if ! eas build --platform ios --profile "$PROFILE" --non-interactive --json > build.json 2> build.log; then
-            cat build.log
-            if grep -qiE "credential|provisioning|certificate|apple|device" build.log; then
-              echo "::error::Credenciais iOS ausentes. A Apple exige conta Apple Developer + registro do iPhone (uma vez): cd mobile && npx eas-cli@latest device:create && npx eas-cli@latest credentials -p ios"
-            fi
+          if [ "$PROFILE" = "preview" ] && [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Para o tipo preview, crie o secret SUPABASE_ANON_KEY (Supabase → Settings → API → anon public)."
             exit 1
           fi
-          cat build.log
-          PAGE=$(node -e "const x=require('./build.json')[0];console.log('https://expo.dev/accounts/'+x.project.ownerAccount.name+'/projects/'+x.project.slug+'/builds/'+x.id)")
-          echo "page=$PAGE" >> "$GITHUB_OUTPUT"
-          echo "### 🍎 iOS · $PROFILE — abra no iPhone para instalar: $PAGE" >> "$GITHUB_STEP_SUMMARY"
+          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
+          echo "v=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
+          echo "config=$([ "$PROFILE" = "development" ] && echo Debug || echo Release)" >> "$GITHUB_OUTPUT"
 
-      - name: Anexar à Release
-        if: steps.cfg.outputs.ok == 'true' && github.event_name == 'push'
-        uses: softprops/action-gh-release@v2
+      - name: Gerar projeto nativo (expo prebuild)
+        run: npx expo prebuild --platform ios --no-install
+        env:
+          CI: 1
+
+      - name: Instalar Pods
+        working-directory: mobile/ios
+        run: pod install
+
+      - name: Localizar workspace e scheme
+        id: proj
+        working-directory: mobile/ios
+        run: |
+          WS=$(ls -d *.xcworkspace | head -1)
+          echo "workspace=$WS" >> "$GITHUB_OUTPUT"
+          echo "scheme=${WS%.xcworkspace}" >> "$GITHUB_OUTPUT"
+
+      # ---------- Caminho 1: IPA ASSINADO (quando os secrets iOS existem) ----------
+      - name: Instalar certificado e perfil de provisionamento
+        if: env.P12_B64 != '' && env.PROFILE_B64 != '' && env.TEAM_ID != ''
+        id: assinatura
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KC_PASS="$(openssl rand -base64 24)"
+          echo "$P12_B64" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          echo "$PROFILE_B64" | base64 --decode > "$RUNNER_TEMP/profile.mobileprovision"
+
+          security create-keychain -p "$KC_PASS" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KC_PASS" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KC_PASS" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" > "$RUNNER_TEMP/profile.plist"
+          UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$RUNNER_TEMP/profile.plist")
+          for d in "$HOME/Library/MobileDevice/Provisioning Profiles" "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"; do
+            mkdir -p "$d" && cp "$RUNNER_TEMP/profile.mobileprovision" "$d/$UUID.mobileprovision"
+          done
+
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | head -1 | sed -E 's/.*"(.*)".*/\1/')
+          BUNDLE_ID=$(node -p "require('./app.json').expo.ios.bundleIdentifier")
+          echo "uuid=$UUID" >> "$GITHUB_OUTPUT"
+          echo "identity=$IDENTITY" >> "$GITHUB_OUTPUT"
+          echo "bundle=$BUNDLE_ID" >> "$GITHUB_OUTPUT"
+          echo "Perfil: $UUID | Identidade: $IDENTITY"
+
+      - name: Aplicar assinatura manual só no alvo do app
+        if: steps.assinatura.outcome == 'success'
+        working-directory: mobile/ios
+        env:
+          UUID: ${{ steps.assinatura.outputs.uuid }}
+          IDENTITY: ${{ steps.assinatura.outputs.identity }}
+          BUNDLE_ID: ${{ steps.assinatura.outputs.bundle }}
+        run: |
+          PBX=$(ls -d *.xcodeproj | head -1)/project.pbxproj
+          sed -i '' -e '/CODE_SIGN_STYLE = /d' -e '/DEVELOPMENT_TEAM = /d' -e '/PROVISIONING_PROFILE_SPECIFIER = /d' -e '/"CODE_SIGN_IDENTITY\[sdk=iphoneos\*\]" = /d' "$PBX"
+          sed -i '' -E "s|PRODUCT_BUNDLE_IDENTIFIER = \"?$BUNDLE_ID\"?;|PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID; CODE_SIGN_STYLE = Manual; DEVELOPMENT_TEAM = $TEAM_ID; PROVISIONING_PROFILE_SPECIFIER = \"$UUID\"; \"CODE_SIGN_IDENTITY[sdk=iphoneos*]\" = \"$IDENTITY\";|g" "$PBX"
+          grep -c "PROVISIONING_PROFILE_SPECIFIER" "$PBX"
+
+      - name: Arquivar e exportar IPA assinado
+        if: steps.assinatura.outcome == 'success'
+        working-directory: mobile/ios
+        env:
+          UUID: ${{ steps.assinatura.outputs.uuid }}
+          BUNDLE_ID: ${{ steps.assinatura.outputs.bundle }}
+        run: |
+          set -o pipefail
+          xcodebuild -workspace "${{ steps.proj.outputs.workspace }}" \
+            -scheme "${{ steps.proj.outputs.scheme }}" \
+            -configuration "${{ steps.versao.outputs.config }}" -sdk iphoneos -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" archive | tail -n 200
+
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>${EXPORT_METHOD}</string>
+            <key>teamID</key><string>${TEAM_ID}</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key><dict><key>${BUNDLE_ID}</key><string>${UUID}</string></dict>
+            <key>compileBitcode</key><false/>
+          </dict></plist>
+          EOF
+
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export"
+          mkdir -p ../../dist
+          cp "$RUNNER_TEMP"/export/*.ipa "../../dist/runup-${{ steps.versao.outputs.v }}-$PROFILE-${EXPORT_METHOD}.ipa"
+
+      # ---------- Caminho 2: IPA SEM ASSINATURA (sem secrets iOS) ----------
+      - name: Compilar IPA sem assinatura
+        if: steps.assinatura.outcome != 'success'
+        working-directory: mobile/ios
+        run: |
+          set -o pipefail
+          xcodebuild -workspace "${{ steps.proj.outputs.workspace }}" \
+            -scheme "${{ steps.proj.outputs.scheme }}" \
+            -configuration "${{ steps.versao.outputs.config }}" -sdk iphoneos -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            archive | tail -n 200
+          APP=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app | head -1)
+          mkdir -p "$RUNNER_TEMP/ipa/Payload" "$GITHUB_WORKSPACE/dist"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/dist/runup-${{ steps.versao.outputs.v }}-$PROFILE-unsigned.ipa" Payload)
+          echo "::warning::IPA SEM assinatura. Instale no iPhone com Sideloadly (Windows/Mac) ou AltStore usando seu Apple ID — ou configure os secrets IOS_* para gerar IPA assinado."
+
+      - name: Resumo
+        run: |
+          {
+            echo "### 🍎 iOS · $PROFILE"
+            echo "Baixe **ios-ipa** em *Artifacts*."
+            if [ "${{ steps.assinatura.outcome }}" = "success" ]; then
+              echo "IPA assinado ($EXPORT_METHOD): instale pelo Apple Configurator, Diawi ou link OTA."
+            else
+              echo "IPA sem assinatura: no PC, abra o **Sideloadly**, conecte o iPhone por cabo, arraste o .ipa e entre com seu Apple ID (grátis = vale 7 dias)."
+              echo "No iPhone: *Ajustes → Geral → VPN e Gerenciamento de Dispositivos* → confie no seu Apple ID; ative o *Modo de Desenvolvedor*."
+            fi
+            [ "$PROFILE" = "development" ] && echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Limpar keychain
+        if: always() && steps.assinatura.outcome == 'success'
+        run: security delete-keychain "$RUNNER_TEMP/build.keychain-db" || true
+
+      - uses: actions/upload-artifact@v4
         with:
-          append_body: true
-          body: '**iOS**: [instalar](${{ steps.build.outputs.page }})'
+          name: ios-ipa
+          path: dist/*.ipa
+          if-no-files-found: error
+
+  # ================================================================== RELEASE
+  release:
+    name: Publicar Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

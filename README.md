@@ -82,45 +82,35 @@ Para o `preview`, crie em **Settings → Secrets and variables → Actions**:
 - o secret `SUPABASE_ANON_KEY`;
 - a variável `SUPABASE_URL`, se usar outro projeto.
 
-### iPhone
-A Apple não permite instalar um app fora da App Store num iPhone sem a conta paga **Apple Developer (US$ 99/ano)**. Nenhum workflow contorna isso. Sem a conta, o job de iOS é pulado e não falha.
+### iPhone (compilado no macOS do GitHub, sem EAS)
+No fim da execução, baixe o IPA em **Artifacts → ios-ipa**.
 
-- **Para testar no iPhone sem pagar:** use o **Expo Go** (seção 2). Rode `npx expo start` e aperte `s` para trocar para o modo Expo Go.
-- **Com a conta Apple:**
-  - crie o secret `EXPO_TOKEN` (gerado em expo.dev → Access tokens);
-  - rode uma vez `npm run setup:ios` em `mobile/`, para registrar o iPhone e criar os certificados;
-  - a partir daí, o workflow gera o iOS e mostra o link para instalar.
+**Sem certificados (padrão, grátis).** O workflow gera um IPA **sem assinatura**, que você instala com seu Apple ID comum:
+1. Instale o [Sideloadly](https://sideloadly.io) no PC (Windows ou Mac) e o iTunes ou os drivers da Apple.
+2. Conecte o iPhone por cabo, arraste o `.ipa` para o Sideloadly, entre com seu Apple ID e clique em *Start*.
+3. No iPhone:
+   - em **Ajustes → Geral → VPN e Gerenciamento de Dispositivos**, confie no seu Apple ID;
+   - ative **Ajustes → Privacidade e Segurança → Modo de Desenvolvedor** (iOS 16+).
+4. Com Apple ID gratuito, o app **expira em 7 dias** e o limite é de 3 apps por vez. Para continuar usando, reinstale pelo Sideloadly ou use o AltStore, que renova sozinho.
 
-### Configuração manual do iOS (uma vez, no seu computador)
+**Com conta Apple Developer (IPA assinado, sem expirar em 7 dias).** Crie estes secrets no GitHub. O workflow passa a assinar automaticamente, e o `ios_export_method` escolhe *ad-hoc* ou *development*.
 
-```bash
-cd mobile
-cp .env.example .env        # preencha a anon key do Supabase
-npm install
-npm run setup:ios           # e/ou: npm run setup:android
-```
+| Secret | Conteúdo |
+|---|---|
+| `IOS_P12_BASE64` | certificado de distribuição/desenvolvimento `.p12` em base64 |
+| `IOS_P12_PASSWORD` | senha do `.p12` |
+| `IOS_PROVISION_PROFILE_BASE64` | perfil `.mobileprovision` do bundle `com.runup.corridas` (com os UDIDs dos iPhones), em base64 |
+| `IOS_TEAM_ID` | Team ID da conta Apple |
 
-O assistente faz tudo em sequência:
-1. Login na Expo. Se você não tiver conta, crie uma grátis em expo.dev.
-2. Cria o projeto EAS e grava o `projectId` no `app.json`.
-3. Envia a URL e a chave do Supabase, lidas do `.env`, para as variáveis do EAS.
-4. **No iOS:** pede o login do Apple ID (Developer) e mostra um link/QR code. Abra-o **no Safari do iPhone** para registrar o aparelho.
-5. Gera o primeiro instalador. No iOS, o EAS cria o certificado e o perfil de distribuição automaticamente.
+Para gerar o base64 no PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.p12")) | Set-Clipboard`.
 
-No fim, abra o link do build **no celular** e toque em *Instalar*.
+**Sem instalar nada:** o **Expo Go** (seção 2) também roda o app no iPhone. Com `npx expo start`, aperte `s` para entrar no modo Expo Go.
 
-**No iPhone (iOS 16 ou mais novo):**
-- Ative **Ajustes → Privacidade e Segurança → Modo de Desenvolvedor** e reinicie o aparelho.
-- Na primeira vez que abrir o app, confirme o desenvolvedor em **Ajustes → Geral → VPN e Gerenciamento de Dispositivos**, se o iOS pedir.
+### Release
+Uma tag (`git tag v1.0.1 && git push --tags`) gera o APK e o IPA `preview` e publica os dois numa GitHub Release.
 
-Depois faça commit e push do `app.json`.
-
-Uma tag (`git tag v1.0.1 && git push --tags`) gera os instaladores `preview` e anexa à GitHub Release.
-
-Outros comandos:
-- **Novo iPhone:** rode `npx eas-cli device:create` e gere um novo build iOS. O perfil ad-hoc precisa incluir o aparelho.
-- **Build pelo terminal, sem o CI:** `npm run build:ios` / `npm run build:android`.
-- **Mudou a chave do Supabase no `.env`:** `npm run setup:env`.
+### Alternativa: EAS Build (nuvem da Expo)
+O script `npm run setup:ios` / `setup:android`, em `mobile/`, gera os builds pela EAS, com login na Expo e na Apple. Ele é opcional e o workflow não depende dele.
 
 ## Sobre a postagem no Instagram
 
