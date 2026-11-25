@@ -143,7 +143,7 @@ jobs:
           {
             echo "### 🤖 Android · $PROFILE"
             echo "Baixe **android-apk** em *Artifacts*, passe o .apk para o celular e instale (permita *apps desconhecidos*)."
-            [ "$PROFILE" = "development" ] && echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."
+            if [ "$PROFILE" = "development" ]; then echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."; fi
             echo ""
             echo "Travou em *Instalando…*? Extraia o .apk do .zip, desinstale versões com outra assinatura e, se o Play Protect bloquear, toque em *Mais detalhes → Instalar mesmo assim*."
           } >> "$GITHUB_STEP_SUMMARY"
@@ -320,7 +320,7 @@ jobs:
               echo "IPA sem assinatura: no PC, abra o **Sideloadly**, conecte o iPhone por cabo, arraste o .ipa e entre com seu Apple ID (grátis = vale 7 dias)."
               echo "No iPhone: *Ajustes → Geral → VPN e Gerenciamento de Dispositivos* → confie no seu Apple ID; ative o *Modo de Desenvolvedor*."
             fi
-            [ "$PROFILE" = "development" ] && echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."
+            if [ "$PROFILE" = "development" ]; then echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."; fi
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Limpar keychain
