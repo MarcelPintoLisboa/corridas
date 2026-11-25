@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -30,12 +30,12 @@ export function AuthHero({ title, subtitle }: { title: string; subtitle: string 
       <LinearGradient colors={['transparent', colors.bg]} style={StyleSheet.absoluteFill} />
       <View style={s.content}>
         <Animated.View style={[s.logo, icon]}>
-          <LinearGradient colors={[colors.primary, colors.secondary]} style={s.logoInner}>
-            <Ionicons name="flash" size={38} color="#fff" />
-          </LinearGradient>
+          <View style={s.logoInner}>
+            <Image source={require('@/assets/images/logo.png')} style={{ width: 78, height: 78 }} contentFit="contain" />
+          </View>
         </Animated.View>
         <Animated.Text entering={FadeInDown.delay(100).springify()} style={s.brand}>
-          RUN<Text style={{ color: colors.lime }}>UP</Text>
+          STREET <Text style={{ color: colors.lime }}>RUNNING</Text>
         </Animated.Text>
         <Animated.Text entering={FadeInDown.delay(200).springify()} style={s.title}>{title}</Animated.Text>
         <Animated.Text entering={FadeInDown.delay(300).springify()} style={s.subtitle}>{subtitle}</Animated.Text>
@@ -49,8 +49,8 @@ const s = StyleSheet.create({
   blob: { position: 'absolute', width: 300, height: 300, borderRadius: 150, opacity: 0.55 },
   content: { paddingHorizontal: 24, paddingBottom: 12 },
   logo: { marginBottom: 14, alignSelf: 'flex-start' },
-  logoInner: { width: 70, height: 70, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
-  brand: { color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 6 },
+  logoInner: { width: 92, height: 92, borderRadius: 24, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', overflow: 'hidden' },
+  brand: { color: '#fff', fontSize: 16, fontWeight: '900', letterSpacing: 4 },
   title: { color: '#fff', fontSize: 34, fontWeight: '900', letterSpacing: -1, marginTop: 4 },
   subtitle: { color: colors.textMuted, fontSize: 15, marginTop: 6 },
 });

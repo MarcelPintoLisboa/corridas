@@ -1,6 +1,6 @@
 name: Gerar instaladores (APK e IPA)
 
-# Gera os instaladores COMPLETOS do RunUp (app inteiro embutido, funcionam sozinhos):
+# Gera os instaladores COMPLETOS do Street Running (app inteiro embutido, funcionam sozinhos):
 #   Android → APK (runner Ubuntu)
 #   iOS     → IPA (runner macOS)
 #
@@ -100,7 +100,7 @@ jobs:
       - name: Renomear APK
         run: |
           mkdir -p ../dist
-          cp android/app/build/outputs/apk/release/app-release.apk "../dist/runup-${{ steps.versao.outputs.v }}.apk"
+          cp android/app/build/outputs/apk/release/app-release.apk "../dist/street-running-${{ steps.versao.outputs.v }}.apk"
           if [ -z "$ANDROID_KEYSTORE_PATH" ]; then
             echo "::warning::APK assinado com chave de DEBUG (instala normalmente, mas não serve para a Play Store)."
           fi
@@ -233,7 +233,7 @@ jobs:
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/app.xcarchive" \
             -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export"
           mkdir -p "$GITHUB_WORKSPACE/dist"
-          cp "$RUNNER_TEMP"/export/*.ipa "$GITHUB_WORKSPACE/dist/runup-${{ steps.versao.outputs.v }}.ipa"
+          cp "$RUNNER_TEMP"/export/*.ipa "$GITHUB_WORKSPACE/dist/street-running-${{ steps.versao.outputs.v }}.ipa"
 
       # ---------- IPA SEM ASSINATURA (sem secrets IOS_*) ----------
       - name: Compilar IPA sem assinatura
@@ -249,7 +249,7 @@ jobs:
           APP=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app | head -1)
           mkdir -p "$RUNNER_TEMP/ipa/Payload" "$GITHUB_WORKSPACE/dist"
           cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
-          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/dist/runup-${{ steps.versao.outputs.v }}-unsigned.ipa" Payload)
+          (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/dist/street-running-${{ steps.versao.outputs.v }}-unsigned.ipa" Payload)
           echo "::warning::IPA sem assinatura: instale com Sideloadly/AltStore usando seu Apple ID (ou configure os secrets IOS_*)."
 
       - name: Limpar keychain

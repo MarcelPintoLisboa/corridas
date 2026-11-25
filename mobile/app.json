@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "RunUp",
-    "slug": "runup-corridas",
+    "name": "Street Running",
+    "slug": "street-running",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "runup",
+    "scheme": "streetrunning",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0A0A12",
     "ios": {
-      "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.runup.corridas",
+      "icon": "./assets/images/icon.png",
+      "bundleIdentifier": "com.streetrunning.app",
       "supportsTablet": false,
       "infoPlist": {
         "LSApplicationQueriesSchemes": ["instagram", "instagram-stories", "whatsapp"],
@@ -18,12 +18,11 @@
       }
     },
     "android": {
-      "package": "com.runup.corridas",
+      "package": "com.streetrunning.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0A0A12",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundImage": "./assets/images/android-icon-background.png"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -36,9 +35,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0A0A12",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 240
         }
       ],
       [

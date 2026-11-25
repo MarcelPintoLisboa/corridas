@@ -1,4 +1,4 @@
-# RunUp — App para corridas de rua (Android e iOS)
+# Street Running — App para corridas de rua (Android e iOS)
 
 App para organizadores de corrida e participantes, feito com **Expo (React Native)** e **Supabase**.
 
@@ -65,8 +65,8 @@ npx expo start            # leia o QR code com o app Expo Go
 
 Abra **Actions → "Gerar instaladores (APK e IPA)" → Run workflow**. Não há nenhuma opção para escolher. Cada execução gera os **dois instaladores completos**, com o app inteiro dentro, que funcionam sozinhos:
 
-- `android-apk`: `runup-<versão>.apk`
-- `ios-ipa`: `runup-<versão>-unsigned.ipa`, ou `runup-<versão>.ipa` se houver os secrets IOS_*
+- `android-apk`: `street-running-<versão>.apk`
+- `ios-ipa`: `street-running-<versão>-unsigned.ipa`, ou `street-running-<versão>.ipa` se houver os secrets IOS_*
 
 O workflow segue o mesmo modelo do `assistencia-ml` e funciona **sem configurar nenhum secret**:
 
@@ -83,7 +83,7 @@ O `versionCode` (Android) e o `buildNumber` (iOS) recebem o número da execuçã
 
 **Keystore própria (opcional).** Use para distribuir ou para a Play Store. Gere a keystore uma vez e guarde o arquivo e as senhas:
 ```bash
-keytool -genkeypair -v -storetype PKCS12 -keystore release.keystore -alias runup -keyalg RSA -keysize 2048 -validity 10000
+keytool -genkeypair -v -storetype PKCS12 -keystore release.keystore -alias streetrunning -keyalg RSA -keysize 2048 -validity 10000
 ```
 Em PowerShell, converta para base64 com `[Convert]::ToBase64String([IO.File]::ReadAllBytes("release.keystore"))`. Depois crie estes secrets:
 
@@ -91,7 +91,7 @@ Em PowerShell, converta para base64 com `[Convert]::ToBase64String([IO.File]::Re
 |---|---|
 | `ANDROID_KEYSTORE_BASE64` | a keystore em base64 |
 | `ANDROID_KEYSTORE_PASSWORD` | senha da keystore |
-| `ANDROID_KEY_ALIAS` | alias (ex.: `runup`) |
+| `ANDROID_KEY_ALIAS` | alias (ex.: `streetrunning`) |
 | `ANDROID_KEY_PASSWORD` | senha da chave |
 
 **O APK fica em "Instalando…" e não instala:**
@@ -119,7 +119,7 @@ No fim da execução, baixe o IPA em **Artifacts → ios-ipa**.
 |---|---|
 | `IOS_P12_BASE64` | certificado de distribuição/desenvolvimento `.p12` em base64 |
 | `IOS_P12_PASSWORD` | senha do `.p12` |
-| `IOS_PROVISION_PROFILE_BASE64` | perfil **Ad Hoc** `.mobileprovision` do bundle `com.runup.corridas` (com os UDIDs dos iPhones), em base64 |
+| `IOS_PROVISION_PROFILE_BASE64` | perfil **Ad Hoc** `.mobileprovision` do bundle `com.streetrunning.app` (com os UDIDs dos iPhones), em base64 |
 | `IOS_TEAM_ID` | Team ID da conta Apple |
 
 Para gerar o base64 no PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.p12")) | Set-Clipboard`.
