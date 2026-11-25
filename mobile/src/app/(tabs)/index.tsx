@@ -5,9 +5,10 @@ import { router } from 'expo-router';
 import { FlatList, Pressable, Text, View } from 'react-native';
 
 import { ProgressRing } from '@/components/charts';
+import { RaceOnboarding } from '@/components/RaceOnboarding';
 import { SessionCard } from '@/components/SessionCard';
 import { SponsorCarousel } from '@/components/sponsors';
-import { Avatar, Card, Countdown, EmptyState, FadeIn, IconButton, Loading, Muted, PulseBadge, Screen, SectionHeader, Stat } from '@/components/ui';
+import { Avatar, Card, Countdown, FadeIn, IconButton, Loading, Muted, PulseBadge, Screen, SectionHeader, Stat } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { useTraining } from '@/hooks/useTraining';
 import { api } from '@/lib/api';
@@ -48,13 +49,7 @@ export default function HomeScreen() {
     return (
       <Screen>
         {header}
-        <EmptyState
-          icon="flag"
-          title="Vincule sua corrida"
-          message="Comprou o kit? Cadastre-se na sua corrida para liberar treino personalizado, dicas dos treinadores, informações do kit e muito mais."
-          action="Encontrar minha corrida"
-          onAction={() => router.push('/events')}
-        />
+        <RaceOnboarding />
       </Screen>
     );
   }

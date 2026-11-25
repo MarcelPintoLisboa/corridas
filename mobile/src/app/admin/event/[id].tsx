@@ -6,6 +6,7 @@ import { Text, useWindowDimensions, View } from 'react-native';
 import { WeeklyBars } from '@/components/charts';
 import { BackHeader } from '@/components/Header';
 import { Card, FadeIn, IconButton, ListRow, Loading, Muted, Screen, SectionHeader } from '@/components/ui';
+import { GeneratePlansCard } from '@/features/admin/GeneratePlansCard';
 import { resources } from '@/features/admin/resources';
 import { useAsync } from '@/hooks/useAsync';
 import { api } from '@/lib/api';
@@ -52,6 +53,9 @@ export default function AdminEvent() {
       <BackHeader title={event.name} right={<IconButton icon="create-outline" onPress={() => router.push(`/admin/event-form?id=${id}`)} />} />
       <Muted style={{ marginTop: -8, marginBottom: 12 }}>{formatDateTime(event.event_date)}</Muted>
 
+      <GeneratePlansCard eventId={id} color={c} eventDate={event.event_date} />
+
+      <SectionHeader title="Resultados da corrida" />
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
         {kpis.map((k, i) => (
           <FadeIn key={k.label} delay={i * 40}>

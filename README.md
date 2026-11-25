@@ -32,9 +32,10 @@ mobile/                                  ← app Expo (SDK 58, expo-router)
 
 1. No painel do projeto, abra **SQL Editor**.
 2. Cole e rode `supabase/migrations/20261125000001_schema.sql`.
-3. Cole e rode `supabase/seed.sql` (dados de teste: corrida *Night Run Sunset 2027*, planos, dicas, patrocinadores, leads).
-4. Para testar a autenticação sem confirmar e-mail: **Authentication → Providers → Email**, desligue *Confirm email*.
-5. Crie sua conta pelo app e transforme-a em admin:
+3. Cole e rode `supabase/migrations/20261125000002_generate_plans.sql`. Ela cria a função que gera os treinos preparatórios, usada pelo botão **Gerar treinos** do painel do organizador.
+4. Cole e rode `supabase/seed.sql` (dados de teste: corrida *Night Run Sunset 2027*, planos, dicas, patrocinadores, leads).
+5. Para testar a autenticação sem confirmar e-mail: **Authentication → Providers → Email**, desligue *Confirm email*.
+6. Crie sua conta pelo app e transforme-a em admin:
    ```sql
    update public.profiles set role = 'admin' where email = 'seu@email.com';
    ```
