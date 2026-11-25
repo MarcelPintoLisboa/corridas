@@ -31,7 +31,7 @@ on:
       ios_runner:
         description: 'Máquina do iOS (se der "job was not acquired"/fila longa, tente a Intel)'
         type: choice
-        options: [macos-latest, macos-15-intel, macos-15]
+        options: [macos-latest, macos-15-intel]
         default: macos-latest
       ios_export_method:
         description: 'IPA assinado (só se houver secrets IOS_*): método de exportação'
@@ -208,6 +208,22 @@ jobs:
       - name: Instalar Pods
         working-directory: mobile/ios
         run: pod install
+
+      # O expo-modules-jsi declara swift_version 6.0; Xcodes mais novos (ex.: 26.6) tratam um
+      # diagnóstico de concorrência dele como ERRO ("sending 'slot' risks causing data races").
+      # Em modo Swift 5 o mesmo diagnóstico é só aviso — o código gerado é o mesmo.
+      - name: Compatibilidade com o Xcode instalado
+        working-directory: mobile/ios
+        run: |
+          xcodebuild -version
+          ruby -e '
+            require "xcodeproj"
+            p = Xcodeproj::Project.open("Pods/Pods.xcodeproj")
+            p.targets.select { |t| t.name == "ExpoModulesJSI" }.each do |t|
+              t.build_configurations.each { |c| c.build_settings["SWIFT_VERSION"] = "5.0" }
+              puts "SWIFT_VERSION=5.0 aplicado em #{t.name}"
+            end
+            p.save'
 
       - name: Localizar workspace e scheme
         id: proj
