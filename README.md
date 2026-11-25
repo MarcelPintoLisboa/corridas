@@ -55,8 +55,8 @@ Para testar o vínculo por código, use os pedidos do seed: `NRS-1001` a `NRS-10
 
 ```bash
 cd mobile
-cp .env.example .env      # preencha EXPO_PUBLIC_SUPABASE_ANON_KEY (Settings → API)
-npm install
+npm install               # o Supabase de testes já vem configurado em src/lib/supabase.ts
+                          # (.env só se quiser apontar para outro projeto — veja .env.example)
 npx expo start            # leia o QR code com o app Expo Go
 ```
 
@@ -66,8 +66,17 @@ Abra **Actions → "Gerar instaladores" → Run workflow** e escolha a plataform
 
 | Tipo | O que é | Precisa de |
 |---|---|---|
-| `development` (padrão) | *Development build*: o app conecta ao `npx expo start` do seu computador, e cada mudança no código aparece na hora | nada |
-| `preview` | App completo, com o JS embutido, que roda sozinho | secret `SUPABASE_ANON_KEY` |
+| `preview` (padrão) | App completo, com o JS embutido, que roda sozinho | nada |
+| `development` | *Development build*: o app conecta ao `npx expo start` do seu computador, e cada mudança no código aparece na hora | nada |
+
+O workflow segue o mesmo modelo do `assistencia-ml` e funciona **sem configurar nenhum secret**:
+
+| Plataforma | Sem secrets | Com secrets |
+|---|---|---|
+| Android | APK assinado com a chave de debug, que instala em qualquer Android | APK assinado com a sua keystore (`ANDROID_*`) |
+| iOS | IPA **sem assinatura**, para instalar com Sideloadly ou AltStore | IPA assinado (`IOS_*`) |
+
+O `versionCode` (Android) e o `buildNumber` (iOS) recebem o número da execução, então cada instalador novo instala por cima do anterior.
 
 ### Android (compilado no próprio GitHub, sem conta Expo)
 1. No fim da execução, baixe o APK em **Artifacts**. Ele vem dentro de um .zip.
@@ -76,11 +85,26 @@ Abra **Actions → "Gerar instaladores" → Run workflow** e escolha a plataform
    - No computador, rode `cd mobile && npx expo start`, com o celular na mesma rede Wi-Fi. Se estiver em outra rede, use `--tunnel`.
    - Abra o RunUp no celular e escolha o servidor ou leia o QR code.
 
-Todos os APKs são assinados com a mesma chave, então dá para atualizar sem desinstalar o anterior.
+**Keystore própria (opcional).** Use para distribuir ou para a Play Store. Gere a keystore uma vez e guarde o arquivo e as senhas:
+```bash
+keytool -genkeypair -v -storetype PKCS12 -keystore release.keystore -alias runup -keyalg RSA -keysize 2048 -validity 10000
+```
+Em PowerShell, converta para base64 com `[Convert]::ToBase64String([IO.File]::ReadAllBytes("release.keystore"))`. Depois crie estes secrets:
 
-Para o `preview`, crie em **Settings → Secrets and variables → Actions**:
-- o secret `SUPABASE_ANON_KEY`;
-- a variável `SUPABASE_URL`, se usar outro projeto.
+| Secret | Valor |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | a keystore em base64 |
+| `ANDROID_KEYSTORE_PASSWORD` | senha da keystore |
+| `ANDROID_KEY_ALIAS` | alias (ex.: `runup`) |
+| `ANDROID_KEY_PASSWORD` | senha da chave |
+
+**O APK fica em "Instalando…" e não instala:**
+1. Extraia o `.apk` do `.zip`.
+2. Desinstale qualquer versão anterior assinada com outra chave.
+3. Se o Play Protect bloquear, toque em *Mais detalhes → Instalar mesmo assim*.
+4. Se ainda não instalar, instale pelo PC com `adb install arquivo.apk`.
+
+**Outro projeto Supabase:** crie as *variables* `SUPABASE_URL` e `SUPABASE_ANON_KEY` em Settings → Secrets and variables → Actions → *Variables*.
 
 ### iPhone (compilado no macOS do GitHub, sem EAS)
 No fim da execução, baixe o IPA em **Artifacts → ios-ipa**.

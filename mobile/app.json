@@ -58,7 +58,8 @@
           "granularPermissions": ["photo"]
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "./plugins/withReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": false,

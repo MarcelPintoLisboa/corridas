@@ -6,7 +6,12 @@ name: Gerar instaladores (APK e IPA)
 #
 # Tipos:
 #   development → development build (expo-dev-client): conecta ao `npx expo start` do seu PC
-#   preview     → app completo com o JS embutido (usa o secret SUPABASE_ANON_KEY)
+#   preview     → app completo com o JS embutido (padrão; roda sozinho, sem PC)
+#
+# Funciona SEM configurar nada (mesmo modelo do assistencia-ml):
+#   Android sem secrets → APK assinado com a chave de debug (instala em qualquer Android)
+#   Android com secrets ANDROID_* → APK assinado com sua keystore (plugins/withReleaseSigning.js)
+#   versionCode/buildNumber = número da execução: cada instalador novo instala por cima do anterior
 #
 # iOS sem certificados nos Secrets → IPA SEM assinatura: instale com Sideloadly/AltStore
 #   usando um Apple ID gratuito. Com os secrets IOS_* → IPA assinado (ad-hoc/development).
@@ -21,8 +26,8 @@ on:
       profile:
         description: Tipo de instalador
         type: choice
-        options: [development, preview]
-        default: development
+        options: [preview, development]
+        default: preview
       ios_export_method:
         description: 'IPA assinado (só se houver secrets IOS_*): método de exportação'
         type: choice
@@ -37,8 +42,9 @@ concurrency:
 
 env:
   PROFILE: ${{ inputs.profile || 'preview' }}
-  SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://eoowbybfrbmjxcjfniuu.supabase.co' }}
-  SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+  # opcional: só para apontar para OUTRO projeto Supabase (o padrão está em src/lib/supabase.ts)
+  SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+  SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
 
 jobs:
   checks:
@@ -65,6 +71,8 @@ jobs:
     if: (inputs.platform || 'all') != 'ios'
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
     defaults:
       run:
         working-directory: mobile
@@ -89,12 +97,16 @@ jobs:
       - name: Versão e .env
         id: versao
         run: |
-          if [ "$PROFILE" = "preview" ] && [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Para o tipo preview, crie o secret SUPABASE_ANON_KEY (Supabase → Settings → API → anon public)."
-            exit 1
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
           fi
-          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
           echo "v=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
+
+      - name: Preparar keystore própria (opcional)
+        if: env.KEYSTORE_B64 != ''
+        run: |
+          echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
 
       - name: Gerar projeto nativo (expo prebuild)
         run: npx expo prebuild --platform android --no-install
@@ -103,6 +115,11 @@ jobs:
 
       - name: Compilar APK
         working-directory: mobile/android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
         run: |
           # o gradle.properties gerado não termina com quebra de linha: sem o \n inicial
           # o texto colaria na última linha (expo.inlineModules.watchedDirectories=[])
@@ -122,7 +139,12 @@ jobs:
             echo "### 🤖 Android · $PROFILE"
             echo "Baixe **android-apk** em *Artifacts*, passe o .apk para o celular e instale (permita *apps desconhecidos*)."
             [ "$PROFILE" = "development" ] && echo "Depois rode \`cd mobile && npx expo start\` no PC (mesmo Wi-Fi) e abra o app."
+            echo ""
+            echo "Travou em *Instalando…*? Extraia o .apk do .zip, desinstale versões com outra assinatura e, se o Play Protect bloquear, toque em *Mais detalhes → Instalar mesmo assim*."
           } >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::warning::APK assinado com chave de DEBUG (instala normalmente, mas não serve para a Play Store). Configure os secrets ANDROID_* para usar sua keystore."
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
@@ -164,16 +186,17 @@ jobs:
       - name: Versão e .env
         id: versao
         run: |
-          if [ "$PROFILE" = "preview" ] && [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Para o tipo preview, crie o secret SUPABASE_ANON_KEY (Supabase → Settings → API → anon public)."
-            exit 1
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
           fi
-          printf 'EXPO_PUBLIC_SUPABASE_URL=%s\nEXPO_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > .env
           echo "v=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
           echo "config=$([ "$PROFILE" = "development" ] && echo Debug || echo Release)" >> "$GITHUB_OUTPUT"
 
       - name: Gerar projeto nativo (expo prebuild)
-        run: npx expo prebuild --platform ios --no-install
+        run: |
+          # buildNumber = número da execução (cada IPA novo instala por cima do anterior)
+          node -e "const j=require('./app.json');j.expo.ios.buildNumber=String(process.env.GITHUB_RUN_NUMBER);require('fs').writeFileSync('app.json',JSON.stringify(j,null,2))"
+          npx expo prebuild --platform ios --no-install
         env:
           CI: 1
 
