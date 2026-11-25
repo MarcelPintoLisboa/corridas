@@ -29,6 +29,7 @@ export default function WorkoutShare() {
   const [chartMode, setChartMode] = useState<'pace' | 'km'>('pace');
   const [localPhoto, setLocalPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState<'share' | 'save' | null>(null);
+  const [postedToFeed, setPostedToFeed] = useState(false);
 
   const q = useAsync(async () => {
     const workout = await api.workout(id);
@@ -90,6 +91,18 @@ export default function WorkoutShare() {
     }
   }
 
+  async function onPostToFeed() {
+    const { error } = await supabase.from('community_posts').insert({
+      event_id: workout.event_id,
+      body: `${workout.is_race ? '🏆' : '🏃'} ${workout.title ?? 'Treino'}${workout.notes ? ` — ${workout.notes}` : ''}`,
+      image_url: workout.photo_url,
+      workout_id: workout.id,
+    });
+    if (error) return Alert.alert('Não foi possível publicar', error.message);
+    setPostedToFeed(true);
+    Alert.alert('Publicado! 🎉', 'Seu treino está no mural da corrida.', [{ text: 'OK' }, { text: 'Ver mural', onPress: () => router.push('/community') }]);
+  }
+
   async function onDelete() {
     Alert.alert('Excluir treino?', 'Essa ação não pode ser desfeita.', [
       { text: 'Cancelar', style: 'cancel' },
@@ -134,6 +147,17 @@ export default function WorkoutShare() {
 
       <GradientButton title="Postar no Instagram" icon="logo-instagram" colorsPair={['#F58529', '#DD2A7B']} onPress={onShare} loading={busy === 'share'} style={{ marginTop: 20 }} />
       <GradientButton title="Salvar imagem na galeria" icon="download" variant="ghost" colorsPair={[accent, accent2]} onPress={onSave} loading={busy === 'save'} style={{ marginTop: 10 }} />
+      {workout.event_id ? (
+        <GradientButton
+          title={postedToFeed ? 'Publicado no mural ✓' : 'Publicar no mural da corrida'}
+          icon="people"
+          variant="ghost"
+          colorsPair={[colors.lime, colors.cyan]}
+          disabled={postedToFeed}
+          onPress={onPostToFeed}
+          style={{ marginTop: 10 }}
+        />
+      ) : null}
       {workout.shared_instagram ? <Muted style={{ textAlign: 'center', marginTop: 8, color: colors.success }}>✓ Já compartilhado</Muted> : null}
 
       <SectionHeader title="Personalizar" />

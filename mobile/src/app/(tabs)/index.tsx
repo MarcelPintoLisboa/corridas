@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { FlatList, Pressable, Text, View } from 'react-native';
 
 import { ProgressRing } from '@/components/charts';
+import { FirstAdminBanner } from '@/components/FirstAdminBanner';
 import { RaceOnboarding } from '@/components/RaceOnboarding';
 import { SessionCard } from '@/components/SessionCard';
 import { SponsorCarousel } from '@/components/sponsors';
@@ -49,6 +50,7 @@ export default function HomeScreen() {
     return (
       <Screen>
         {header}
+        <FirstAdminBanner />
         <RaceOnboarding />
       </Screen>
     );
@@ -68,6 +70,7 @@ export default function HomeScreen() {
         reloadEvents();
       }}>
       {header}
+      <FirstAdminBanner />
 
       {/* HERO da corrida — customizado pelo organizador */}
       <FadeIn>

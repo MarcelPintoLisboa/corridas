@@ -138,6 +138,18 @@ export function SponsorOfferCard({ sponsor }: { sponsor: Sponsor }) {
           ) : null}
         </View>
       ) : null}
+      {sponsor.material_url ? (
+        <Pressable
+          onPress={() => {
+            trackSponsor(sponsor.id, 'click');
+            Linking.openURL(sponsor.material_url!);
+          }}
+          style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: alpha(tc, 0.12), borderRadius: radius.md, padding: 12 }}>
+          <Ionicons name="document-attach" size={18} color={tc} />
+          <Text style={{ color: colors.text, fontWeight: '700', flex: 1 }}>{sponsor.material_label || 'Ver material do patrocinador'}</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.textDim} />
+        </Pressable>
+      ) : null}
     </Pressable>
   );
 }

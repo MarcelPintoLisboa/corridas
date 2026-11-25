@@ -78,6 +78,8 @@ export const resources: Record<string, Resource> = {
       { key: 'coupon_code', label: 'Cupom', type: 'text' },
       { key: 'website_url', label: 'Site', type: 'url' },
       { key: 'instagram', label: 'Instagram', type: 'text', placeholder: '@marca' },
+      { key: 'material_label', label: 'Material para os corredores (título)', type: 'text', placeholder: 'Guia de tênis, catálogo, vídeo…' },
+      { key: 'material_url', label: 'Link do material (PDF, vídeo, catálogo)', type: 'url' },
       { key: 'sort_order', label: 'Ordem', type: 'number', default: 0 },
       { key: 'active', label: 'Ativo', type: 'bool', default: true },
     ],

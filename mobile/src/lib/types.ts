@@ -155,6 +155,23 @@ export interface Sponsor {
   instagram: string | null;
   sort_order: number;
   active: boolean;
+  material_url: string | null;
+  material_label: string | null;
+}
+
+export interface CommunityPost {
+  id: string;
+  event_id: string;
+  user_id: string;
+  author_name: string | null;
+  author_avatar: string | null;
+  body: string | null;
+  image_url: string | null;
+  workout_id: string | null;
+  workout_km: number | null;
+  workout_seconds: number | null;
+  workout_pace: number | null;
+  created_at: string;
 }
 
 export interface Post {

@@ -127,6 +127,7 @@ export default function EventScreen() {
         {/* Informações */}
         <SectionHeader title="Informações" />
         <Card>
+          <ListRow icon="gift" color={colors.lime} title="Patrocinadores" subtitle="Ofertas, cupons e materiais para inscritos" onPress={() => router.push('/sponsors')} />
           <ListRow icon="location" color={accent} title={event.location_name ?? 'Local'} subtitle={[event.address, event.city, event.state].filter(Boolean).join(' · ')} onPress={event.latitude ? () => Linking.openURL(`https://maps.google.com/?q=${event.latitude},${event.longitude}`) : undefined} />
           <ListRow icon="trail-sign" color={accent} title="Distâncias" subtitle={q.data?.distances.map((d) => d.label).join(' · ')} />
           {event.regulation_url ? <ListRow icon="document-text" color={accent} title="Regulamento" onPress={() => Linking.openURL(event.regulation_url!)} /> : null}

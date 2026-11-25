@@ -63,7 +63,12 @@ export default function AdminHome() {
     <Screen refreshing={q.refreshing} onRefresh={q.refresh} bottomInset={false}>
       <BackHeader title="Corridas de rua" />
       <Muted style={{ marginBottom: 16 }}>Gerencie suas corridas, publicaÃ§Ãµes, patrocinadores e leads.</Muted>
-      <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} style={{ marginBottom: 20 }} />
+      <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} style={{ marginBottom: 10 }} />
+      {isAdmin ? (
+        <GradientButton title="Administradores e acessos" icon="people" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/users')} style={{ marginBottom: 20 }} />
+      ) : (
+        <View style={{ height: 10 }} />
+      )}
 
       {!q.data?.length ? <EmptyState icon="flag" title="Nenhuma corrida ainda" message="Crie sua primeira corrida e personalize com imagem, cores e informaÃ§Ãµes." /> : null}
 

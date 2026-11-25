@@ -53,6 +53,7 @@ function RootNavigator() {
         <Stack.Screen name="workout/new" options={modal} />
         <Stack.Screen name="workout/[id]" />
         <Stack.Screen name="tips" />
+        <Stack.Screen name="sponsors" />
         <Stack.Screen name="profile" />
 
         <Stack.Protected guard={isOrganizer}>

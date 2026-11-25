@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 
+import { FirstAdminBanner } from '@/components/FirstAdminBanner';
 import { BackHeader } from '@/components/Header';
 import { Avatar, Badge, Card, GradientButton, Input, ListRow, Muted, Screen, SectionHeader } from '@/components/ui';
 import { formatDate } from '@/lib/format';
@@ -36,6 +37,7 @@ export default function ProfileScreen() {
   return (
     <Screen bottomInset={false}>
       <BackHeader title="Meu perfil" />
+      <FirstAdminBanner />
       <View style={{ alignItems: 'center', marginBottom: 20 }}>
         <Pressable
           onPress={async () => {
