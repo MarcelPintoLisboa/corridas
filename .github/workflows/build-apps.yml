@@ -28,6 +28,11 @@ on:
         type: choice
         options: [preview, development]
         default: preview
+      ios_runner:
+        description: 'Máquina do iOS (se der "job was not acquired"/fila longa, tente a Intel)'
+        type: choice
+        options: [macos-latest, macos-15-intel, macos-15]
+        default: macos-latest
       ios_export_method:
         description: 'IPA assinado (só se houver secrets IOS_*): método de exportação'
         type: choice
@@ -157,8 +162,8 @@ jobs:
     name: iOS IPA (${{ inputs.profile || 'preview' }})
     needs: checks
     if: (inputs.platform || 'all') != 'android'
-    runs-on: macos-latest
-    timeout-minutes: 90
+    runs-on: ${{ inputs.ios_runner || 'macos-latest' }}
+    timeout-minutes: 120
     defaults:
       run:
         working-directory: mobile
