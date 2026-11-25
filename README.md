@@ -60,19 +60,38 @@ npm install
 npx expo start            # leia o QR code com o app Expo Go
 ```
 
-## 3. Instalar no iPhone e no Android (sem loja)
+## 3. Gerar instaladores pelo GitHub Actions
 
-O EAS Build compila na nuvem da Expo, então funciona no Windows e não precisa de Mac.
+Abra **Actions → "Gerar instaladores" → Run workflow** e escolha a plataforma e o tipo:
 
-| | Android | iPhone |
+| Tipo | O que é | Precisa de |
 |---|---|---|
-| Arquivo | APK | IPA *ad-hoc* |
-| Conta necessária | só a conta grátis da Expo | conta grátis da Expo **+ Apple Developer (US$ 99/ano)** |
-| Quem pode instalar | qualquer celular | só iPhones registrados (até 100 por ano) |
+| `development` (padrão) | *Development build*: o app conecta ao `npx expo start` do seu computador, e cada mudança no código aparece na hora | nada |
+| `preview` | App completo, com o JS embutido, que roda sozinho | secret `SUPABASE_ANON_KEY` |
 
-> A Apple não permite instalar um app fora da App Store num iPhone sem a conta paga de desenvolvedor. **Para testar no iPhone sem pagar**, use o **Expo Go** (seção 2): ele roda o app completo, mas não é um instalador.
+### Android (compilado no próprio GitHub, sem conta Expo)
+1. No fim da execução, baixe o APK em **Artifacts**. Ele vem dentro de um .zip.
+2. Passe o `.apk` para o celular e abra. O Android vai pedir para permitir *instalar apps desconhecidos*.
+3. **No `development`:**
+   - No computador, rode `cd mobile && npx expo start`, com o celular na mesma rede Wi-Fi. Se estiver em outra rede, use `--tunnel`.
+   - Abra o RunUp no celular e escolha o servidor ou leia o QR code.
 
-### Configuração (uma vez, no seu computador)
+Todos os APKs são assinados com a mesma chave, então dá para atualizar sem desinstalar o anterior.
+
+Para o `preview`, crie em **Settings → Secrets and variables → Actions**:
+- o secret `SUPABASE_ANON_KEY`;
+- a variável `SUPABASE_URL`, se usar outro projeto.
+
+### iPhone
+A Apple não permite instalar um app fora da App Store num iPhone sem a conta paga **Apple Developer (US$ 99/ano)**. Nenhum workflow contorna isso. Sem a conta, o job de iOS é pulado e não falha.
+
+- **Para testar no iPhone sem pagar:** use o **Expo Go** (seção 2). Rode `npx expo start` e aperte `s` para trocar para o modo Expo Go.
+- **Com a conta Apple:**
+  - crie o secret `EXPO_TOKEN` (gerado em expo.dev → Access tokens);
+  - rode uma vez `npm run setup:ios` em `mobile/`, para registrar o iPhone e criar os certificados;
+  - a partir daí, o workflow gera o iOS e mostra o link para instalar.
+
+### Configuração manual do iOS (uma vez, no seu computador)
 
 ```bash
 cd mobile
@@ -96,13 +115,7 @@ No fim, abra o link do build **no celular** e toque em *Instalar*.
 
 Depois faça commit e push do `app.json`.
 
-### Próximos instaladores pelo GitHub Actions
-
-1. Gere um token em expo.dev → Account settings → **Access tokens**.
-2. No GitHub, em **Settings → Secrets and variables → Actions**, crie o secret `EXPO_TOKEN`.
-3. Na aba **Actions → "Gerar instaladores" → Run workflow**, escolha `all` / `ios` / `android`.
-   - Ou crie uma tag: `git tag v1.0.1 && git push --tags`. Os links vão para a GitHub Release.
-4. O resumo da execução traz a página do build, com um QR code para instalar.
+Uma tag (`git tag v1.0.1 && git push --tags`) gera os instaladores `preview` e anexa à GitHub Release.
 
 Outros comandos:
 - **Novo iPhone:** rode `npx eas-cli device:create` e gere um novo build iOS. O perfil ad-hoc precisa incluir o aparelho.
