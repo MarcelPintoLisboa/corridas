@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 
 import type { IconName } from '@/components/ui';
 
@@ -12,6 +12,7 @@ import { formatDate } from '@/lib/format';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { RaceEvent } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
+import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, radius } from '@/theme';
 
 async function count(table: string) {
@@ -23,6 +24,8 @@ async function count(table: string) {
 export default function GestaoScreen() {
   const { isAdmin, isAdminGeral } = useAuth();
   const [selected, setSelected] = useState<string | null>(null);
+  const [busy, setBusy] = useState<'fill' | 'clear' | null>(null);
+  const { reload: reloadEvents } = useActiveEvent();
 
   const q = useAsync(async () => {
     const [events, registrations, leads, users] = await Promise.all([
@@ -41,6 +44,35 @@ export default function GestaoScreen() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []),
   );
+
+  async function runDemo(kind: 'fill' | 'clear') {
+    setBusy(kind);
+    const { error } = await supabase.rpc(kind === 'fill' ? 'st_demo_preencher' : 'st_demo_limpar');
+    setBusy(null);
+    if (error) return Alert.alert('Não foi possível', /function|schema cache/i.test(error.message) ? 'Rode o arquivo supabase/migrations/20261126000002_st_demo.sql no SQL Editor do Supabase.' : error.message);
+    if (kind === 'fill') setSelected('11111111-1111-1111-1111-111111111111');
+    else setSelected(null);
+    await Promise.all([q.reload(), reloadEvents()]);
+    Alert.alert(
+      kind === 'fill' ? 'Modelo preenchido ✓' : 'Modelo apagado ✓',
+      kind === 'fill'
+        ? 'Criamos 2 corridas completas e inscrevemos você na Night Run (10K) com treinos das últimas semanas. Veja também as abas Início, Treino, Evolução, Comunidade e Corrida.'
+        : 'As corridas de demonstração e tudo ligado a elas foram removidos. Suas corridas não foram alteradas.',
+    );
+  }
+
+  function confirmDemo(kind: 'fill' | 'clear') {
+    Alert.alert(
+      kind === 'fill' ? 'Preencher modelo?' : 'Limpar modelo?',
+      kind === 'fill'
+        ? 'Cria um fluxo completo de ponta a ponta: corridas, distâncias, kits, planos, dicas, patrocinadores, publicações, leads e a sua inscrição com treinos. Se o modelo já existir, ele é recriado.'
+        : 'Apaga só as corridas de demonstração e tudo ligado a elas. Corridas cadastradas por você continuam.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: kind === 'fill' ? 'Preencher' : 'Limpar', style: kind === 'fill' ? 'default' : 'destructive', onPress: () => runDemo(kind) },
+      ],
+    );
+  }
 
   if (!isAdmin) return <Redirect href="/" />;
   if (q.loading || !q.data) return <Loading />;
@@ -67,6 +99,15 @@ export default function GestaoScreen() {
       </View>
 
       <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} />
+
+      <View style={{ marginTop: 12, padding: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface }}>
+        <Text style={{ color: colors.text, fontWeight: '800' }}>Modelo de demonstração</Text>
+        <Muted style={{ fontSize: 12, marginBottom: 10 }}>Preenche um fluxo completo com dados de exemplo para testar, e limpa quando quiser.</Muted>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <GradientButton small title="Preencher" icon="sparkles" loading={busy === 'fill'} disabled={!!busy} colorsPair={[colors.primary, colors.secondary]} onPress={() => confirmDemo('fill')} style={{ flex: 1 }} />
+          <GradientButton small title="Limpar" icon="trash" variant="ghost" loading={busy === 'clear'} disabled={!!busy} colorsPair={[colors.danger, colors.danger]} onPress={() => confirmDemo('clear')} style={{ flex: 1 }} />
+        </View>
+      </View>
 
       {!ev ? (
         <EmptyState icon="flag" title="Nenhuma corrida cadastrada" message="Crie a primeira corrida. Depois cadastre distâncias, kits, planos de treino, dicas, patrocinadores e publicações aqui." />

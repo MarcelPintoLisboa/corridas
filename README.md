@@ -17,6 +17,7 @@ App para organizadores de corrida e participantes, feito com **Expo (React Nativ
 ```
 supabase/
   migrations/20261126000001_st_schema.sql ← TODAS as tabelas (prefixo st_), funções, RLS e storage
+  migrations/20261126000002_st_demo.sql   ← botões Preencher/Limpar modelo (aba Admin)
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -32,6 +33,8 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 1. No painel do projeto, abra **SQL Editor → New query**.
 2. Cole **todo** o conteúdo de `supabase/migrations/20261126000001_st_schema.sql` e clique em **Run**. O script pode ser rodado mais de uma vez e também remove as tabelas antigas sem prefixo do app.
 3. Pronto: o banco começa vazio. Entre no app com `mapl11@hotmail.com` e cadastre tudo pela área do administrador (corridas, distâncias, kits, planos, dicas, patrocinadores, publicações).
+
+4. Cole também `supabase/migrations/20261126000002_st_demo.sql` e clique em **Run**. Ele ativa os botões **Preencher** e **Limpar** do *Modelo de demonstração* na aba **Admin**: um cria um fluxo completo de exemplo (2 corridas com tudo, e você inscrito com treinos), o outro apaga só esse exemplo.
 
 Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 
