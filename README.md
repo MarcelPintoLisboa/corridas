@@ -128,7 +128,7 @@ Para gerar o base64 no PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAll
 **Sem instalar nada:** o **Expo Go** (seção 2) também roda o app no iPhone. Com `npx expo start`, aperte `s` para entrar no modo Expo Go.
 
 ### Release
-Uma tag (`git tag v1.0.1 && git push --tags`) gera o APK e o IPA e publica os dois numa GitHub Release.
+Toda execução publica uma **GitHub Release** com o APK e o IPA para baixar direto, sem .zip. Pelo botão, ela sai como pré-lançamento `build-<número>`. Com uma tag (`git tag v1.0.1 && git push --tags`), sai como a versão oficial `v1.0.1`.
 
 ### Alternativa: EAS Build (nuvem da Expo)
 O script `npm run setup:ios` / `setup:android`, em `mobile/`, gera os builds pela EAS, com login na Expo e na Apple. Ele é opcional e o workflow não depende dele.
