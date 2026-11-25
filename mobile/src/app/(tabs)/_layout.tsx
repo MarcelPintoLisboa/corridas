@@ -12,12 +12,14 @@ import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors } from '@/theme';
 
-const TABS: { name: string; label: string; icon: IconName; iconActive: IconName }[] = [
+const TABS: { name: string; label: string; icon: IconName; iconActive: IconName; adminOnly?: boolean }[] = [
   { name: 'index', label: 'Início', icon: 'home-outline', iconActive: 'home' },
   { name: 'training', label: 'Treino', icon: 'barbell-outline', iconActive: 'barbell' },
   { name: 'results', label: 'Evolução', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
   { name: 'community', label: 'Comunidade', icon: 'people-outline', iconActive: 'people' },
   { name: 'event', label: 'Corrida', icon: 'flag-outline', iconActive: 'flag' },
+  // menu exclusivo do administrador (escondido para corredores)
+  { name: 'gestao', label: 'Admin', icon: 'construct-outline', iconActive: 'construct', adminOnly: true },
 ];
 
 // SDK 58: a tab bar customizada recebe emitter + navigateToTab (não há mais `navigation`)
@@ -26,11 +28,12 @@ type TabBarProps = Pick<BottomTabBarProps, 'state' | 'emitter' | 'navigateToTab'
 function TabBar({ state, emitter, navigateToTab }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const { accent } = useActiveEvent();
+  const { isAdmin } = useAuth();
   return (
     <View style={[s.bar, { bottom: Math.max(insets.bottom, 12) }]}>
       {state.routes.map((route, i) => {
         const tab = TABS.find((t) => t.name === route.name);
-        if (!tab) return null;
+        if (!tab || (tab.adminOnly && !isAdmin)) return null;
         const focused = state.index === i;
         return (
           <TabItem
