@@ -63,12 +63,10 @@ npx expo start            # leia o QR code com o app Expo Go
 
 ## 3. Gerar instaladores pelo GitHub Actions
 
-Abra **Actions → "Gerar instaladores" → Run workflow** e escolha a plataforma e o tipo:
+Abra **Actions → "Gerar instaladores (APK e IPA)" → Run workflow**. Não há nenhuma opção para escolher. Cada execução gera os **dois instaladores completos**, com o app inteiro dentro, que funcionam sozinhos:
 
-| Tipo | O que é | Precisa de |
-|---|---|---|
-| `preview` (padrão) | App completo, com o JS embutido, que roda sozinho | nada |
-| `development` | *Development build*: o app conecta ao `npx expo start` do seu computador, e cada mudança no código aparece na hora | nada |
+- `android-apk`: `runup-<versão>.apk`
+- `ios-ipa`: `runup-<versão>-unsigned.ipa`, ou `runup-<versão>.ipa` se houver os secrets IOS_*
 
 O workflow segue o mesmo modelo do `assistencia-ml` e funciona **sem configurar nenhum secret**:
 
@@ -82,9 +80,6 @@ O `versionCode` (Android) e o `buildNumber` (iOS) recebem o número da execuçã
 ### Android (compilado no próprio GitHub, sem conta Expo)
 1. No fim da execução, baixe o APK em **Artifacts**. Ele vem dentro de um .zip.
 2. Passe o `.apk` para o celular e abra. O Android vai pedir para permitir *instalar apps desconhecidos*.
-3. **No `development`:**
-   - No computador, rode `cd mobile && npx expo start`, com o celular na mesma rede Wi-Fi. Se estiver em outra rede, use `--tunnel`.
-   - Abra o RunUp no celular e escolha o servidor ou leia o QR code.
 
 **Keystore própria (opcional).** Use para distribuir ou para a Play Store. Gere a keystore uma vez e guarde o arquivo e as senhas:
 ```bash
@@ -105,7 +100,7 @@ Em PowerShell, converta para base64 com `[Convert]::ToBase64String([IO.File]::Re
 3. Se o Play Protect bloquear, toque em *Mais detalhes → Instalar mesmo assim*.
 4. Se ainda não instalar, instale pelo PC com `adb install arquivo.apk`.
 
-**Outro projeto Supabase:** crie as *variables* `SUPABASE_URL` e `SUPABASE_ANON_KEY` em Settings → Secrets and variables → Actions → *Variables*.
+**Outro projeto Supabase:** altere `DEFAULT_URL` e `DEFAULT_ANON_KEY` em `mobile/src/lib/supabase.ts`.
 
 ### iPhone (compilado no macOS do GitHub, sem EAS)
 No fim da execução, baixe o IPA em **Artifacts → ios-ipa**.
@@ -118,13 +113,13 @@ No fim da execução, baixe o IPA em **Artifacts → ios-ipa**.
    - ative **Ajustes → Privacidade e Segurança → Modo de Desenvolvedor** (iOS 16+).
 4. Com Apple ID gratuito, o app **expira em 7 dias** e o limite é de 3 apps por vez. Para continuar usando, reinstale pelo Sideloadly ou use o AltStore, que renova sozinho.
 
-**Com conta Apple Developer (IPA assinado, sem expirar em 7 dias).** Crie estes secrets no GitHub. O workflow passa a assinar automaticamente, e o `ios_export_method` escolhe *ad-hoc* ou *development*.
+**Com conta Apple Developer (IPA assinado, sem expirar em 7 dias).** Crie estes secrets no GitHub. O workflow passa a gerar o IPA assinado (*ad-hoc*) automaticamente.
 
 | Secret | Conteúdo |
 |---|---|
 | `IOS_P12_BASE64` | certificado de distribuição/desenvolvimento `.p12` em base64 |
 | `IOS_P12_PASSWORD` | senha do `.p12` |
-| `IOS_PROVISION_PROFILE_BASE64` | perfil `.mobileprovision` do bundle `com.runup.corridas` (com os UDIDs dos iPhones), em base64 |
+| `IOS_PROVISION_PROFILE_BASE64` | perfil **Ad Hoc** `.mobileprovision` do bundle `com.runup.corridas` (com os UDIDs dos iPhones), em base64 |
 | `IOS_TEAM_ID` | Team ID da conta Apple |
 
 Para gerar o base64 no PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.p12")) | Set-Clipboard`.
@@ -132,7 +127,7 @@ Para gerar o base64 no PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAll
 **Sem instalar nada:** o **Expo Go** (seção 2) também roda o app no iPhone. Com `npx expo start`, aperte `s` para entrar no modo Expo Go.
 
 ### Release
-Uma tag (`git tag v1.0.1 && git push --tags`) gera o APK e o IPA `preview` e publica os dois numa GitHub Release.
+Uma tag (`git tag v1.0.1 && git push --tags`) gera o APK e o IPA e publica os dois numa GitHub Release.
 
 ### Alternativa: EAS Build (nuvem da Expo)
 O script `npm run setup:ios` / `setup:android`, em `mobile/`, gera os builds pela EAS, com login na Expo e na Apple. Ele é opcional e o workflow não depende dele.
