@@ -97,7 +97,7 @@ export default function EventJoin() {
         <SectionHeader title="Código do kit" />
         <Input
           icon="ticket"
-          placeholder={event.require_order_code ? 'Obrigatório — ex: NRS-1001' : 'Opcional — nº do pedido da compra'}
+          placeholder={event.require_order_code ? 'Obrigatório — nº do pedido da compra' : 'Opcional — nº do pedido da compra'}
           value={orderCode}
           onChangeText={setOrderCode}
           autoCapitalize="characters"

@@ -1,7 +1,7 @@
 -- =====================================================================================
 -- STREET RUNNING — schema completo (todas as tabelas, funções e tipos com prefixo st_)
 -- Como aplicar: Supabase > SQL Editor > New query > cole este arquivo inteiro > Run.
--- Pode rodar mais de uma vez. Depois rode supabase/st_seed.sql (dados de teste).
+-- Pode rodar mais de uma vez. O banco começa vazio: tudo é cadastrado pelo app.
 --
 -- Controle de acesso (mesmo modelo do assistencia_usuarios):
 --  * st_usuarios: um registro por pessoa que usa o app (e-mail, nome, papel, ativo).

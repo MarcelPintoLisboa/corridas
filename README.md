@@ -17,7 +17,7 @@ App para organizadores de corrida e participantes, feito com **Expo (React Nativ
 ```
 supabase/
   migrations/20261126000001_st_schema.sql ← TODAS as tabelas (prefixo st_), funções, RLS e storage
-  st_seed.sql                              ← dados de teste (corrida demo completa)
+  st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
   src/app/(tabs)      Início · Treino · Evolução · Comunidade · Corrida
@@ -31,7 +31,9 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 
 1. No painel do projeto, abra **SQL Editor → New query**.
 2. Cole **todo** o conteúdo de `supabase/migrations/20261126000001_st_schema.sql` e clique em **Run**. O script pode ser rodado mais de uma vez e também remove as tabelas antigas sem prefixo do app.
-3. Cole `supabase/st_seed.sql` e clique em **Run**. São os dados de teste: a corrida *Night Run Sunset 2027* com planos, dicas, patrocinadores, kits e leads.
+3. Pronto: o banco começa vazio. Entre no app com `mapl11@hotmail.com` e cadastre tudo pela área do administrador (corridas, distâncias, kits, planos, dicas, patrocinadores, publicações).
+
+Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 
 > ⚠️ No SQL Editor, cole apenas arquivos **.sql**. Os scripts `.cjs`/`.mjs` são ferramentas do computador e não rodam no Supabase.
 
@@ -48,8 +50,6 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 - O admin cadastra outros acessos em **Controle de acesso**. A pessoa cria a conta com aquele e-mail e já entra com o papel definido.
 - Quem cria conta sozinho pelo app entra como **corredor**.
 - Só administradores organizam corridas. Corredores veem apenas a área do corredor e o mural da corrida em que estão inscritos.
-
-Para testar o vínculo por código, use os pedidos do seed: `NRS-1001` a `NRS-1004`.
 
 ## 2. Rodar o app
 
