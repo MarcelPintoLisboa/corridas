@@ -243,7 +243,7 @@ jobs:
           xcodebuild -workspace "${{ steps.proj.outputs.workspace }}" \
             -scheme "${{ steps.proj.outputs.scheme }}" \
             -configuration "${{ steps.versao.outputs.config }}" -sdk iphoneos -destination 'generic/platform=iOS' \
-            -archivePath "$RUNNER_TEMP/app.xcarchive" archive | tail -n 200
+            -archivePath "$RUNNER_TEMP/app.xcarchive" archive | xcbeautify --renderer github-actions
 
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -274,7 +274,7 @@ jobs:
             -configuration "${{ steps.versao.outputs.config }}" -sdk iphoneos -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/app.xcarchive" \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
-            archive | tail -n 200
+            archive | xcbeautify --renderer github-actions
           APP=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app | head -1)
           mkdir -p "$RUNNER_TEMP/ipa/Payload" "$GITHUB_WORKSPACE/dist"
           cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
