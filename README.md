@@ -60,44 +60,54 @@ npm install
 npx expo start            # leia o QR code com o app Expo Go
 ```
 
-## 3. Gerar os instaladores (workflow)
+## 3. Instalar no iPhone e no Android (sem loja)
 
-O workflow `.github/workflows/build-apps.yml` usa o **EAS Build**, que compila na nuvem da Expo. Ele gera o iOS sem precisar de um Mac.
+O EAS Build compila na nuvem da Expo, então funciona no Windows e não precisa de Mac.
 
-| Perfil | Android | iOS |
+| | Android | iPhone |
 |---|---|---|
-| `preview` | **APK**, instala direto no celular | IPA *ad-hoc*, só em aparelhos registrados |
-| `production` | **AAB** para a Google Play | IPA para a App Store / TestFlight |
+| Arquivo | APK | IPA *ad-hoc* |
+| Conta necessária | só a conta grátis da Expo | conta grátis da Expo **+ Apple Developer (US$ 99/ano)** |
+| Quem pode instalar | qualquer celular | só iPhones registrados (até 100 por ano) |
 
-### Configuração (uma vez)
+> A Apple não permite instalar um app fora da App Store num iPhone sem a conta paga de desenvolvedor. **Para testar no iPhone sem pagar**, use o **Expo Go** (seção 2): ele roda o app completo, mas não é um instalador.
+
+### Configuração (uma vez, no seu computador)
 
 ```bash
 cd mobile
-npx eas-cli@latest login
-npx eas-cli@latest init          # cria o projeto e grava o projectId no app.json (faça commit)
-
-# variáveis do Supabase usadas no build (para cada ambiente: preview e production)
-npx eas-cli@latest env:create --environment preview    --name EXPO_PUBLIC_SUPABASE_URL      --value https://eoowbybfrbmjxcjfniuu.supabase.co --visibility plaintext
-npx eas-cli@latest env:create --environment preview    --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon-key> --visibility plaintext
-npx eas-cli@latest env:create --environment production --name EXPO_PUBLIC_SUPABASE_URL      --value https://eoowbybfrbmjxcjfniuu.supabase.co --visibility plaintext
-npx eas-cli@latest env:create --environment production --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon-key> --visibility plaintext
-
-# credenciais (rode uma vez de forma interativa, depois o CI reaproveita)
-npx eas-cli@latest credentials -p android      # gera a keystore
-npx eas-cli@latest credentials -p ios          # exige conta Apple Developer (US$ 99/ano)
-npx eas-cli@latest device:create               # registra iPhones para o build preview (ad-hoc)
+cp .env.example .env        # preencha a anon key do Supabase
+npm install
+npm run setup:ios           # e/ou: npm run setup:android
 ```
 
-No GitHub, em **Settings → Secrets and variables → Actions**, crie o secret `EXPO_TOKEN`. O token é gerado em expo.dev → Account settings → Access tokens.
+O assistente faz tudo em sequência:
+1. Login na Expo. Se você não tiver conta, crie uma grátis em expo.dev.
+2. Cria o projeto EAS e grava o `projectId` no `app.json`.
+3. Envia a URL e a chave do Supabase, lidas do `.env`, para as variáveis do EAS.
+4. **No iOS:** pede o login do Apple ID (Developer) e mostra um link/QR code. Abra-o **no Safari do iPhone** para registrar o aparelho.
+5. Gera o primeiro instalador. No iOS, o EAS cria o certificado e o perfil de distribuição automaticamente.
 
-### Uso
+No fim, abra o link do build **no celular** e toque em *Instalar*.
 
-- **Manual:** aba **Actions → "Gerar instaladores" → Run workflow**. Escolha a plataforma (android / ios / all), o perfil e se envia às lojas.
-- **Por tag:** `git tag v1.0.0 && git push --tags` gera o build de produção de Android e iOS e anexa os links à GitHub Release.
-- O resumo de cada execução traz o link de download e a página do build, com um QR code para instalar.
-- Para enviar às lojas (`submit`), configure a conta de serviço da Google Play e a API key do App Store Connect em `eas credentials`.
+**No iPhone (iOS 16 ou mais novo):**
+- Ative **Ajustes → Privacidade e Segurança → Modo de Desenvolvedor** e reinicie o aparelho.
+- Na primeira vez que abrir o app, confirme o desenvolvedor em **Ajustes → Geral → VPN e Gerenciamento de Dispositivos**, se o iOS pedir.
 
-Para buildar localmente, sem o CI: `npm run build:android` / `npm run build:ios`.
+Depois faça commit e push do `app.json`.
+
+### Próximos instaladores pelo GitHub Actions
+
+1. Gere um token em expo.dev → Account settings → **Access tokens**.
+2. No GitHub, em **Settings → Secrets and variables → Actions**, crie o secret `EXPO_TOKEN`.
+3. Na aba **Actions → "Gerar instaladores" → Run workflow**, escolha `all` / `ios` / `android`.
+   - Ou crie uma tag: `git tag v1.0.1 && git push --tags`. Os links vão para a GitHub Release.
+4. O resumo da execução traz a página do build, com um QR code para instalar.
+
+Outros comandos:
+- **Novo iPhone:** rode `npx eas-cli device:create` e gere um novo build iOS. O perfil ad-hoc precisa incluir o aparelho.
+- **Build pelo terminal, sem o CI:** `npm run build:ios` / `npm run build:android`.
+- **Mudou a chave do Supabase no `.env`:** `npm run setup:env`.
 
 ## Sobre a postagem no Instagram
 

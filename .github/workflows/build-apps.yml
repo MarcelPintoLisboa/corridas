@@ -1,35 +1,34 @@
 name: Gerar instaladores (Android / iOS)
 
-# Gera os instaladores via EAS Build (nuvem da Expo):
-#   preview    → APK Android (instala direto no celular) + IPA iOS ad-hoc (aparelhos registrados)
-#   production → AAB (Google Play) + IPA (App Store / TestFlight), com envio opcional às lojas
+# Gera os instaladores via EAS Build (nuvem da Expo — não precisa de Mac):
+#   preview    → APK Android (instala direto) + IPA iOS ad-hoc (iPhones registrados) — padrão
+#   production → AAB / IPA para lojas (para quando for publicar)
+#
+# Pré-requisito único: rodar "npm run setup:ios" (e/ou setup:android) na pasta mobile
+# e criar o secret EXPO_TOKEN no GitHub. Ver README.
 on:
   workflow_dispatch:
     inputs:
       platform:
         description: Plataforma
         type: choice
-        options: [all, android, ios]
-        default: android
+        options: [all, ios, android]
+        default: all
       profile:
         description: Perfil de build (eas.json)
         type: choice
         options: [preview, production]
         default: preview
-      submit:
-        description: Enviar para as lojas (só production)
-        type: boolean
-        default: false
   push:
     tags:
-      - 'v*' # ex.: git tag v1.0.0 && git push --tags → build production de Android + iOS
+      - 'v*' # git tag v1.0.0 && git push --tags → instaladores preview de Android + iOS
 
 concurrency:
   group: eas-build-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  contents: write # necessário para anexar os links na GitHub Release
+  contents: write # para anexar os links na GitHub Release
 
 jobs:
   checks:
@@ -42,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version: 22
           cache: npm
           cache-dependency-path: mobile/package-lock.json
       - run: npm ci
@@ -50,7 +49,7 @@ jobs:
       - run: npx expo lint
 
   build:
-    name: EAS Build (${{ matrix.platform }})
+    name: Instalador ${{ matrix.platform }}
     needs: checks
     runs-on: ubuntu-latest
     strategy:
@@ -58,26 +57,26 @@ jobs:
       matrix:
         platform: ${{ fromJSON((github.event_name == 'push' || inputs.platform == 'all') && '["android","ios"]' || format('["{0}"]', inputs.platform)) }}
     env:
-      PROFILE: ${{ github.event_name == 'push' && 'production' || inputs.profile }}
-      SUBMIT: ${{ github.event_name == 'push' || inputs.submit }}
+      PROFILE: ${{ github.event_name == 'push' && 'preview' || inputs.profile }}
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     defaults:
       run:
         working-directory: mobile
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 26
-          cache: npm
-          cache-dependency-path: mobile/package-lock.json
-
       - name: Verificar EXPO_TOKEN
         run: |
-          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
-            echo "::error::Crie o secret EXPO_TOKEN (expo.dev → Account settings → Access tokens) em Settings → Secrets → Actions."
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Crie o secret EXPO_TOKEN (expo.dev → Account settings → Access tokens) em Settings → Secrets and variables → Actions."
             exit 1
           fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
 
       - uses: expo/expo-github-action@v8
         with:
@@ -86,15 +85,27 @@ jobs:
 
       - run: npm ci
 
+      - name: Vincular projeto EAS (se ainda não houver projectId no app.json)
+        run: |
+          if ! node -e "process.exit(require('./app.json').expo.extra?.eas?.projectId ? 0 : 1)"; then
+            echo "::warning::app.json sem projectId — vinculando automaticamente. Rode 'npm run setup:ios' localmente e faça commit do app.json."
+            eas init --non-interactive --force
+          fi
+
       - name: Build
         id: build
         run: |
-          EXTRA=""
-          if [ "$PROFILE" = "production" ] && [ "$SUBMIT" = "true" ]; then EXTRA="--auto-submit"; fi
-          eas build --platform ${{ matrix.platform }} --profile "$PROFILE" --non-interactive --json $EXTRA > build.json
-          cat build.json
+          set -o pipefail
+          if ! eas build --platform ${{ matrix.platform }} --profile "$PROFILE" --non-interactive --json > build.json 2> build.log; then
+            cat build.log
+            if grep -qiE "credentials|provisioning|distribution certificate|apple" build.log; then
+              echo "::error::Credenciais ${{ matrix.platform }} não configuradas. Rode uma vez localmente: cd mobile && npm run setup:${{ matrix.platform }}"
+            fi
+            exit 1
+          fi
+          cat build.log
           URL=$(node -e "const b=require('./build.json');console.log(b[0]?.artifacts?.buildUrl||'')")
-          PAGE=$(node -e "const b=require('./build.json');const x=b[0];console.log(x?'https://expo.dev/accounts/'+x.project.ownerAccount.name+'/projects/'+x.project.slug+'/builds/'+x.id:'')")
+          PAGE=$(node -e "const x=require('./build.json')[0];console.log(x?'https://expo.dev/accounts/'+x.project.ownerAccount.name+'/projects/'+x.project.slug+'/builds/'+x.id:'')")
           echo "url=$URL" >> "$GITHUB_OUTPUT"
           echo "page=$PAGE" >> "$GITHUB_OUTPUT"
 
@@ -103,8 +114,8 @@ jobs:
           {
             echo "### 📦 ${{ matrix.platform }} · $PROFILE"
             echo ""
-            echo "- Download do instalador: ${{ steps.build.outputs.url }}"
-            echo "- Página do build (QR code para instalar): ${{ steps.build.outputs.page }}"
+            echo "- **Instalar no celular:** abra a página do build no aparelho (ou leia o QR code): ${{ steps.build.outputs.page }}"
+            echo "- Arquivo: ${{ steps.build.outputs.url }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Anexar à GitHub Release
@@ -113,4 +124,4 @@ jobs:
         with:
           append_body: true
           body: |
-            **${{ matrix.platform }}**: [baixar instalador](${{ steps.build.outputs.url }}) · [página do build](${{ steps.build.outputs.page }})
+            **${{ matrix.platform }}**: [instalar](${{ steps.build.outputs.page }}) · [arquivo](${{ steps.build.outputs.url }})

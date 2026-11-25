@@ -44,7 +44,9 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Usamos suas fotos para montar o post do seu treino e personalizar a corrida."
+          "photosPermission": "Usamos suas fotos para montar o post do seu treino e personalizar a corrida.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ],
       [
@@ -52,11 +54,11 @@
         {
           "photosPermission": "Permite salvar a arte do seu treino na galeria.",
           "savePhotosPermission": "Permite salvar a arte do seu treino na galeria.",
-          "isAccessMediaLocationEnabled": false
+          "isAccessMediaLocationEnabled": false,
+          "granularPermissions": ["photo"]
         }
       ],
-      "expo-sharing",
-      "expo-secure-store"
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": false,

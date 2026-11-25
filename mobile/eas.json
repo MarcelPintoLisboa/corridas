@@ -4,20 +4,15 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "base": {
-      "node": "26.13.1"
-    },
     "development": {
-      "extends": "base",
       "developmentClient": true,
       "distribution": "internal",
       "environment": "development"
     },
     "preview": {
-      "extends": "base",
       "distribution": "internal",
       "environment": "preview",
-      "channel": "preview",
+      "autoIncrement": true,
       "android": {
         "buildType": "apk"
       },
@@ -26,9 +21,7 @@
       }
     },
     "production": {
-      "extends": "base",
       "environment": "production",
-      "channel": "production",
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
@@ -36,12 +29,6 @@
     }
   },
   "submit": {
-    "production": {
-      "android": {
-        "track": "internal",
-        "releaseStatus": "draft"
-      },
-      "ios": {}
-    }
+    "production": {}
   }
 }

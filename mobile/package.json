@@ -21,7 +21,6 @@
     "expo-linking": "~58.0.17",
     "expo-media-library": "~58.0.14",
     "expo-router": "~58.0.32",
-    "expo-secure-store": "~58.0.3",
     "expo-sharing": "~58.0.23",
     "expo-splash-screen": "~58.0.14",
     "expo-status-bar": "~58.0.5",
@@ -54,8 +53,11 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "build:android": "eas build -p android --profile preview",
-    "build:ios": "eas build -p ios --profile preview"
+    "build:android": "npx eas-cli@latest build -p android --profile preview",
+    "build:ios": "npx eas-cli@latest build -p ios --profile preview",
+    "setup:ios": "node scripts/setup-eas.mjs ios",
+    "setup:android": "node scripts/setup-eas.mjs android",
+    "setup:env": "node scripts/setup-eas.mjs env"
   },
   "private": true
 }
