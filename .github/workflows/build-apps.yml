@@ -1,0 +1,116 @@
+name: Gerar instaladores (Android / iOS)
+
+# Gera os instaladores via EAS Build (nuvem da Expo):
+#   preview    → APK Android (instala direto no celular) + IPA iOS ad-hoc (aparelhos registrados)
+#   production → AAB (Google Play) + IPA (App Store / TestFlight), com envio opcional às lojas
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Plataforma
+        type: choice
+        options: [all, android, ios]
+        default: android
+      profile:
+        description: Perfil de build (eas.json)
+        type: choice
+        options: [preview, production]
+        default: preview
+      submit:
+        description: Enviar para as lojas (só production)
+        type: boolean
+        default: false
+  push:
+    tags:
+      - 'v*' # ex.: git tag v1.0.0 && git push --tags → build production de Android + iOS
+
+concurrency:
+  group: eas-build-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # necessário para anexar os links na GitHub Release
+
+jobs:
+  checks:
+    name: Lint & typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx expo lint
+
+  build:
+    name: EAS Build (${{ matrix.platform }})
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON((github.event_name == 'push' || inputs.platform == 'all') && '["android","ios"]' || format('["{0}"]', inputs.platform)) }}
+    env:
+      PROFILE: ${{ github.event_name == 'push' && 'production' || inputs.profile }}
+      SUBMIT: ${{ github.event_name == 'push' || inputs.submit }}
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Verificar EXPO_TOKEN
+        run: |
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "::error::Crie o secret EXPO_TOKEN (expo.dev → Account settings → Access tokens) em Settings → Secrets → Actions."
+            exit 1
+          fi
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci
+
+      - name: Build
+        id: build
+        run: |
+          EXTRA=""
+          if [ "$PROFILE" = "production" ] && [ "$SUBMIT" = "true" ]; then EXTRA="--auto-submit"; fi
+          eas build --platform ${{ matrix.platform }} --profile "$PROFILE" --non-interactive --json $EXTRA > build.json
+          cat build.json
+          URL=$(node -e "const b=require('./build.json');console.log(b[0]?.artifacts?.buildUrl||'')")
+          PAGE=$(node -e "const b=require('./build.json');const x=b[0];console.log(x?'https://expo.dev/accounts/'+x.project.ownerAccount.name+'/projects/'+x.project.slug+'/builds/'+x.id:'')")
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "page=$PAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Resumo
+        run: |
+          {
+            echo "### 📦 ${{ matrix.platform }} · $PROFILE"
+            echo ""
+            echo "- Download do instalador: ${{ steps.build.outputs.url }}"
+            echo "- Página do build (QR code para instalar): ${{ steps.build.outputs.page }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Anexar à GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          append_body: true
+          body: |
+            **${{ matrix.platform }}**: [baixar instalador](${{ steps.build.outputs.url }}) · [página do build](${{ steps.build.outputs.page }})
