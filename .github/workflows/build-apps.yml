@@ -53,11 +53,30 @@ jobs:
         id: versao
         run: echo "v=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
 
+      # Se os secrets estiverem incompletos/inválidos, avisa e segue com a chave de debug
+      # (o APK continua instalando) em vez de derrubar o build.
       - name: Preparar keystore própria (se houver secrets)
         if: env.KEYSTORE_B64 != ''
+        env:
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
-          echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
-          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          KS="$RUNNER_TEMP/release.keystore"
+          # remove \r, \n e espaços (comuns ao copiar o base64 no Windows)
+          if ! printf '%s' "$KEYSTORE_B64" | tr -d '\r\n\t ' | base64 --decode > "$KS" 2>/dev/null; then
+            echo "::warning::ANDROID_KEYSTORE_BASE64 não é um base64 válido — usando a chave de DEBUG. Gere de novo com: [Convert]::ToBase64String([IO.File]::ReadAllBytes(\"release.keystore\")) | Set-Clipboard"
+            exit 0
+          fi
+          if [ -z "$KS_PASS" ] || [ -z "$KS_ALIAS" ]; then
+            echo "::warning::Faltam os secrets ANDROID_KEYSTORE_PASSWORD e/ou ANDROID_KEY_ALIAS — usando a chave de DEBUG."
+            exit 0
+          fi
+          if ! keytool -list -keystore "$KS" -storepass "$KS_PASS" -alias "$KS_ALIAS" >/dev/null 2>&1; then
+            echo "::warning::A keystore não abriu com a senha/alias informados (confira ANDROID_KEYSTORE_PASSWORD e ANDROID_KEY_ALIAS) — usando a chave de DEBUG."
+            exit 0
+          fi
+          echo "ANDROID_KEYSTORE_PATH=$KS" >> "$GITHUB_ENV"
+          echo "Keystore própria OK (alias $KS_ALIAS)."
 
       - name: Gerar projeto nativo (expo prebuild)
         run: npx expo prebuild --platform android --no-install
@@ -82,7 +101,7 @@ jobs:
         run: |
           mkdir -p ../dist
           cp android/app/build/outputs/apk/release/app-release.apk "../dist/runup-${{ steps.versao.outputs.v }}.apk"
-          if [ -z "$KEYSTORE_B64" ]; then
+          if [ -z "$ANDROID_KEYSTORE_PATH" ]; then
             echo "::warning::APK assinado com chave de DEBUG (instala normalmente, mas não serve para a Play Store)."
           fi
 
