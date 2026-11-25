@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Redirect, Tabs } from 'expo-router';
+import type { BottomTabBarProps } from 'expo-router/build/layouts/Tabs';
 import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -19,12 +20,10 @@ const TABS: { name: string; label: string; icon: IconName; iconActive: IconName 
   { name: 'event', label: 'Corrida', icon: 'flag-outline', iconActive: 'flag' },
 ];
 
-type TabBarProps = {
-  state: { index: number; routes: { key: string; name: string }[] };
-  navigation: { navigate: (name: string) => void; emit: (e: { type: 'tabPress'; target: string; canPreventDefault: true }) => { defaultPrevented: boolean } };
-};
+// SDK 58: a tab bar customizada recebe emitter + navigateToTab (não há mais `navigation`)
+type TabBarProps = Pick<BottomTabBarProps, 'state' | 'emitter' | 'navigateToTab'>;
 
-function TabBar({ state, navigation }: TabBarProps) {
+function TabBar({ state, emitter, navigateToTab }: TabBarProps) {
   const insets = useSafeAreaInsets();
   const { accent } = useActiveEvent();
   return (
@@ -40,10 +39,10 @@ function TabBar({ state, navigation }: TabBarProps) {
             focused={focused}
             accent={accent}
             onPress={() => {
-              const ev = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+              const ev = emitter.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
               if (!focused && !ev.defaultPrevented) {
                 Haptics.selectionAsync().catch(() => {});
-                navigation.navigate(route.name);
+                navigateToTab(route.key);
               }
             }}
           />
@@ -77,7 +76,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.bg } }}
-      tabBar={(props) => <TabBar {...(props as unknown as TabBarProps)} />}>
+      tabBar={(props) => <TabBar {...props} />}>
       {TABS.map((t) => (
         <Tabs.Screen key={t.name} name={t.name} options={{ title: t.label }} />
       ))}
