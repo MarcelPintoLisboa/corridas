@@ -576,6 +576,8 @@ export const en: Record<string, string> = {
   'Acesso criado ✓': 'User created ✓',
   'Envie para a pessoa entrar no app:': 'Send this so they can sign in to the app:',
   'Copiar dados': 'Copy details',
+  'Editar cadastro': 'Edit details',
+  'O e-mail é o login da pessoa e não pode ser alterado depois do primeiro acesso.': "The email is the person's login and can't be changed after their first sign-in.",
   'Olá{name}! Seu acesso ao Street Running foi criado.\n\nE-mail: {email}\nSenha provisória: {password}\n\nBaixe o app, entre com esses dados e crie a sua própria senha no primeiro acesso.':
     'Hi{name}! Your Street Running access was created.\n\nEmail: {email}\nTemporary password: {password}\n\nDownload the app, sign in with these details and create your own password on first login.',
   'Seu acesso ao Street Running': 'Your Street Running access',

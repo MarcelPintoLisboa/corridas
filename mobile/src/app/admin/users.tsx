@@ -28,6 +28,7 @@ export default function UsersScreen() {
   const emptyForm = () => ({ email: '', full_name: '', password: generatePassword(), role: (isAdminGeral ? 'admin' : 'athlete') as UserRole });
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState<Profile | null>(null);
   // acesso recém-criado: mostra os dados e as opções de envio
   const [created, setCreated] = useState<{ email: string; password: string; name: string } | null>(null);
   const q = useAsync(async () => unwrap(await supabase.from('st_usuarios').select('*').order('criado_em', { ascending: false })) as Profile[], []);
@@ -154,8 +155,11 @@ export default function UsersScreen() {
                     {!u.ativo ? <Badge label="Desativado" color={colors.danger} /> : null}
                   </View>
                 </View>
+                <Pressable onPress={() => setEditing(u)} hitSlop={10} accessibilityLabel={t('Editar')} style={{ marginRight: geral ? 0 : 14 }}>
+                  <Ionicons name="create-outline" size={19} color={colors.text} />
+                </Pressable>
                 {!geral ? (
-                  <Pressable onPress={() => remove(u)} hitSlop={10}>
+                  <Pressable onPress={() => remove(u)} hitSlop={10} accessibilityLabel={t('Remover')}>
                     <Ionicons name="trash-outline" size={18} color={colors.textDim} />
                   </Pressable>
                 ) : null}
@@ -224,10 +228,104 @@ export default function UsersScreen() {
         </ScrollView>
       </Modal>
 
+      <Modal visible={!!editing} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setEditing(null)}>
+        {editing ? (
+          <EditUser
+            user={editing}
+            canEditRole={isAdminGeral && editing.email !== ADMIN_GERAL}
+            onClose={() => setEditing(null)}
+            onSaved={(patch) => {
+              q.setData(all.map((x) => (x.id === editing.id ? { ...x, ...patch } : x)));
+              if (editing.user_id === session?.user.id) refreshProfile();
+              setEditing(null);
+            }}
+          />
+        ) : null}
+      </Modal>
+
       <Modal visible={!!created} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setCreated(null)}>
         {created ? <CreatedAccess access={created} onClose={() => setCreated(null)} /> : null}
       </Modal>
     </View>
+  );
+}
+
+/** Edição de um usuário já cadastrado (nome, contato, papel e, antes do 1º acesso, o e-mail) */
+function EditUser({ user, canEditRole, onClose, onSaved }: {
+  user: Profile;
+  canEditRole: boolean;
+  onClose: () => void;
+  onSaved: (patch: Partial<Profile>) => void;
+}) {
+  const [f, setF] = useState({
+    full_name: user.full_name ?? '',
+    email: user.email ?? '',
+    phone: user.phone ?? '',
+    city: user.city ?? '',
+    instagram: user.instagram ?? '',
+    role: user.role,
+  });
+  const [saving, setSaving] = useState(false);
+  // depois do 1º acesso o e-mail é o login da pessoa: não muda por aqui
+  const emailLocked = !!user.user_id;
+
+  async function save() {
+    const email = f.email.trim().toLowerCase();
+    if (!emailLocked && !/^\S+@\S+\.\S+$/.test(email)) return Alert.alert(t('Informe um e-mail válido'));
+    const ig = f.instagram.trim().replace(/^@/, '');
+    const patch: Partial<Profile> = {
+      full_name: f.full_name.trim(),
+      phone: f.phone.trim() || null,
+      city: f.city.trim() || null,
+      instagram: ig ? `@${ig}` : null,
+      ...(emailLocked ? {} : { email }),
+      ...(canEditRole ? { role: f.role } : {}),
+    };
+    setSaving(true);
+    const { error } = await supabase.from('st_usuarios').update(patch).eq('id', user.id);
+    setSaving(false);
+    if (error) {
+      return Alert.alert(t('Não foi possível alterar'), /duplicate|unique/i.test(error.message) ? t('Este e-mail já está cadastrado.') : t(error.message));
+    }
+    onSaved(patch);
+  }
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: 24, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+        <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t('Editar cadastro')}</Text>
+        <IconButton icon="close" onPress={onClose} />
+      </View>
+      <Input label="Nome" icon="person-outline" value={f.full_name} onChangeText={(v) => setF({ ...f, full_name: v })} />
+      <Input
+        label="E-mail"
+        icon="mail-outline"
+        value={f.email}
+        onChangeText={(v) => setF({ ...f, email: v })}
+        editable={!emailLocked}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        style={emailLocked ? { color: colors.textMuted } : undefined}
+      />
+      {emailLocked ? (
+        <Muted style={{ fontSize: 12, marginTop: -8, marginBottom: 14 }}>{t('O e-mail é o login da pessoa e não pode ser alterado depois do primeiro acesso.')}</Muted>
+      ) : null}
+      <Input label="WhatsApp" icon="logo-whatsapp" value={f.phone} onChangeText={(v) => setF({ ...f, phone: v })} keyboardType="phone-pad" />
+      <Input label="Cidade" icon="location-outline" value={f.city} onChangeText={(v) => setF({ ...f, city: v })} />
+      <Input label="Instagram" icon="logo-instagram" value={f.instagram} onChangeText={(v) => setF({ ...f, instagram: v })} autoCapitalize="none" placeholder="@seuperfil" />
+      {canEditRole ? (
+        <>
+          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8 }]}>{t('Papel')}</Text>
+          <View style={{ flexDirection: 'row', marginBottom: 6 }}>
+            {ROLES.map((r) => (
+              <Chip key={r.value} label={r.label} active={f.role === r.value} color={r.color} onPress={() => setF({ ...f, role: r.value })} />
+            ))}
+          </View>
+          <Muted style={{ fontSize: 12, marginBottom: 16 }}>{t(ROLES.find((r) => r.value === f.role)?.help ?? '')}</Muted>
+        </>
+      ) : null}
+      <GradientButton title="Salvar" icon="checkmark" onPress={save} loading={saving} style={{ marginTop: 8 }} />
+    </ScrollView>
   );
 }
 
