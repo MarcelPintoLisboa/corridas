@@ -6,7 +6,8 @@ import { Alert, KeyboardAvoidingView, Platform, Pressable, Switch, Text, View } 
 
 import { BackHeader } from '@/components/Header';
 import { GradientButton, Input, Muted, Screen, SectionHeader } from '@/components/ui';
-import { formatPace, parseDateTimeInput, parseDuration, toDateTimeInput } from '@/lib/format';
+import { DateTimeFields } from '@/components/DateTimeFields';
+import { formatPace, parseDateTimeBR, parseDuration, toDateInputBR, toTimeInput } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { pickImage, uploadImage } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
@@ -23,7 +24,7 @@ export default function NewWorkout() {
   const [title, setTitle] = useState(params.title ?? '');
   const [km, setKm] = useState(params.km ? String(params.km).replace('.', ',') : '');
   const [time, setTime] = useState('');
-  const [when, setWhen] = useState(toDateTimeInput(new Date().toISOString()));
+  const [when, setWhen] = useState(() => { const now = new Date().toISOString(); return { date: toDateInputBR(now), time: toTimeInput(now) }; });
   const [feeling, setFeeling] = useState(3);
   const [notes, setNotes] = useState('');
   const [isRace, setIsRace] = useState(false);
@@ -37,7 +38,7 @@ export default function NewWorkout() {
   async function onSave() {
     if (!(distance > 0)) return Alert.alert('Informe a distância em km');
     if (!seconds) return Alert.alert('Informe o tempo', 'Formato: 45:30 ou 1:05:20');
-    const performedAt = parseDateTimeInput(when) ?? new Date().toISOString();
+    const performedAt = parseDateTimeBR(when.date, when.time) ?? new Date().toISOString();
     setSaving(true);
     try {
       const photoUrl = photo ? await uploadImage(photo.uri, 'workouts', photo.mime) : null;
@@ -104,7 +105,7 @@ export default function NewWorkout() {
           <Text style={{ color: accent, fontSize: 26, fontWeight: '900' }}>{formatPace(pace)} <Text style={{ fontSize: 14 }}>/km</Text></Text>
         </View>
 
-        <Input label="Data e hora" icon="calendar" placeholder="AAAA-MM-DD HH:mm" value={when} onChangeText={setWhen} />
+        <DateTimeFields dateLabel="Data do treino" value={when} onChange={setWhen} />
 
         <SectionHeader title="Como você se sentiu?" />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>

@@ -125,3 +125,44 @@ export const sessionTypeMeta: Record<string, { label: string; color: string; ico
   rest: { label: 'Descanso', color: '#6B6B8A', icon: 'bed' },
   race: { label: 'PROVA', color: '#C6FF00', icon: 'flag' },
 };
+
+// ------------------------------------------------ Data/hora no formato brasileiro (campos separados)
+/** ISO → "25/12/2027" */
+export function toDateInputBR(iso: string | null | undefined) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '' : `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+/** ISO → "19:30" */
+export function toTimeInput(iso: string | null | undefined) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? '' : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Máscara enquanto digita: "25122027" → "25/12/2027" */
+export function maskDateBR(text: string) {
+  const n = text.replace(/\D/g, '').slice(0, 8);
+  return [n.slice(0, 2), n.slice(2, 4), n.slice(4, 8)].filter(Boolean).join('/');
+}
+
+/** Máscara enquanto digita: "1930" → "19:30" */
+export function maskTime(text: string) {
+  const n = text.replace(/\D/g, '').slice(0, 4);
+  return n.length > 2 ? `${n.slice(0, 2)}:${n.slice(2)}` : n;
+}
+
+/** "25/12/2027" + "19:30" (hora opcional = 00:00) → ISO; null se inválido */
+export function parseDateTimeBR(date: string, time: string): string | null {
+  const m = date.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return null;
+  const t = time.trim() ? time.trim().match(/^(\d{1,2}):(\d{2})$/) : (['', '0', '0'] as unknown as RegExpMatchArray);
+  if (!t) return null;
+  const [day, month, year, h, min] = [Number(m[1]), Number(m[2]), Number(m[3]), Number(t[1]), Number(t[2])];
+  if (h > 23 || min > 59) return null;
+  const d = new Date(year, month - 1, day, h, min);
+  // rejeita datas como 31/02
+  if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+  return d.toISOString();
+}

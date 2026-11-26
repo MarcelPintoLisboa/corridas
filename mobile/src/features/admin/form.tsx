@@ -3,8 +3,9 @@ import { Image } from 'expo-image';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, Switch, Text, View } from 'react-native';
 
+import { DateTimeFields, type DateTimeValue } from '@/components/DateTimeFields';
 import { Chip, Input } from '@/components/ui';
-import { parseDateTimeInput, toDateTimeInput } from '@/lib/format';
+import { parseDateTimeBR, toDateInputBR, toTimeInput } from '@/lib/format';
 import { pickAndUpload } from '@/lib/upload';
 import { alpha, colors, font, radius } from '@/theme';
 
@@ -25,6 +26,8 @@ export interface Field {
   help?: string;
   aspect?: [number, number];
   default?: unknown;
+  /** datetime: rótulo do campo de hora (a data usa `label`) */
+  timeLabel?: string;
 }
 
 export type FormValues = Record<string, unknown>;
@@ -36,7 +39,7 @@ export function toFormValues(fields: Field[], row: Record<string, unknown> | nul
   const v: FormValues = {};
   for (const f of fields) {
     const raw = row?.[f.key] ?? f.default ?? null;
-    if (f.type === 'datetime') v[f.key] = toDateTimeInput(raw as string | null);
+    if (f.type === 'datetime') v[f.key] = { date: toDateInputBR(raw as string | null), time: toTimeInput(raw as string | null) } satisfies DateTimeValue;
     else if (f.type === 'bool') v[f.key] = Boolean(raw);
     else if (f.type === 'tags') v[f.key] = Array.isArray(raw) ? raw.join(', ') : '';
     else v[f.key] = raw == null ? '' : String(raw);
@@ -50,6 +53,18 @@ export function serialize(fields: Field[], values: FormValues) {
   for (const f of fields) {
     const val = values[f.key];
     const str = typeof val === 'string' ? val.trim() : val;
+    if (f.type === 'datetime') {
+      const dt = (val as DateTimeValue | undefined) ?? { date: '', time: '' };
+      if (!dt.date.trim()) {
+        if (f.required) throw new Error(`Preencha "${f.label}"`);
+        out[f.key] = null;
+        continue;
+      }
+      const iso = parseDateTimeBR(dt.date, dt.time);
+      if (!iso) throw new Error(`"${f.label}": use a data DD/MM/AAAA e a hora HH:mm`);
+      out[f.key] = iso;
+      continue;
+    }
     if (f.required && (str === '' || str == null)) throw new Error(`Preencha "${f.label}"`);
     switch (f.type) {
       case 'bool':
@@ -59,16 +74,6 @@ export function serialize(fields: Field[], values: FormValues) {
         out[f.key] = str === '' ? null : Number(String(str).replace(',', '.'));
         if (out[f.key] != null && isNaN(out[f.key] as number)) throw new Error(`"${f.label}" deve ser um número`);
         break;
-      case 'datetime': {
-        if (str === '') {
-          out[f.key] = null;
-          break;
-        }
-        const iso = parseDateTimeInput(String(str));
-        if (!iso) throw new Error(`"${f.label}" no formato AAAA-MM-DD HH:mm`);
-        out[f.key] = iso;
-        break;
-      }
       case 'tags':
         out[f.key] = String(str ?? '')
           .split(',')
@@ -107,6 +112,16 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
   const str = (value as string) ?? '';
 
   switch (field.type) {
+    case 'datetime':
+      return (
+        <DateTimeFields
+          dateLabel={`${field.label}${field.required ? ' *' : ''}`}
+          timeLabel={field.timeLabel}
+          value={(value as DateTimeValue) ?? { date: '', time: '' }}
+          onChange={onChange}
+        />
+      );
+
     case 'bool':
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -186,7 +201,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
           label={`${field.label}${field.required ? ' *' : ''}`}
           value={str}
           onChangeText={onChange}
-          placeholder={field.placeholder ?? (field.type === 'datetime' ? 'AAAA-MM-DD HH:mm' : undefined)}
+          placeholder={field.placeholder}
           multiline={field.type === 'multiline'}
           keyboardType={field.type === 'number' ? 'decimal-pad' : field.type === 'url' ? 'url' : 'default'}
           autoCapitalize={field.type === 'url' ? 'none' : 'sentences'}

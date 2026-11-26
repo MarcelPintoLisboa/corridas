@@ -18,6 +18,7 @@ App para organizadores de corrida e participantes, feito com **Expo (React Nativ
 supabase/
   migrations/20261126000001_st_schema.sql ← TODAS as tabelas (prefixo st_), funções, RLS e storage
   migrations/20261126000002_st_demo.sql   ← botões Preencher/Limpar modelo (aba Admin)
+  migrations/20261126000003_st_corredores.sql ← associar corredores à corrida (admin)
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -35,6 +36,7 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 3. Pronto: o banco começa vazio. Entre no app com `mapl11@hotmail.com` e cadastre tudo pela área do administrador (corridas, distâncias, kits, planos, dicas, patrocinadores, publicações).
 
 4. Cole também `supabase/migrations/20261126000002_st_demo.sql` e clique em **Run**. Ele ativa os botões **Preencher** e **Limpar** do *Modelo de demonstração* na aba **Admin**: um cria um fluxo completo de exemplo (2 corridas com tudo, e você inscrito com treinos), o outro apaga só esse exemplo.
+5. Cole também `supabase/migrations/20261126000003_st_corredores.sql` e clique em **Run**. Ele permite ao administrador associar pessoas do controle de acesso a uma corrida (inclusive outros administradores, que também podem correr). Quem ainda não fez o 1º acesso é inscrito automaticamente ao entrar. O mural de cada corrida é visto só pelos corredores inscritos nela.
 
 Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 

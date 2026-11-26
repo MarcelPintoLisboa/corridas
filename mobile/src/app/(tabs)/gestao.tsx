@@ -145,7 +145,7 @@ export default function GestaoScreen() {
 
           <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 12, marginBottom: 8, marginTop: 4 }}>PARTICIPANTES E MARKETING</Text>
           <Card animated={false}>
-            <ListRow icon="people" color={c} title="Inscritos e entrega de kits" subtitle="Nº de peito e check-in de kit" onPress={() => router.push(`/admin/registrations?eventId=${ev.id}`)} />
+            <ListRow icon="people" color={c} title="Corredores da corrida" subtitle="Associar corredores cadastrados, nº de peito e kits" onPress={() => router.push(`/admin/registrations?eventId=${ev.id}`)} />
             <ListRow icon="cloud-upload" color={c} title="Importar compras de kit" subtitle="Colar planilha (CSV) da plataforma de vendas" onPress={() => router.push(`/admin/import?eventId=${ev.id}`)} />
             <ListRow icon="magnet" color={c} title="Leads (CRM)" subtitle="Funil, contatos, WhatsApp e exportação" onPress={() => router.push(`/admin/leads?eventId=${ev.id}`)} />
           </Card>

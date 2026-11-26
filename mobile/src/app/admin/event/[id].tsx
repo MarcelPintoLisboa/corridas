@@ -83,7 +83,7 @@ export default function AdminEvent() {
       <SectionHeader title="Marketing & participantes" />
       <Card animated={false}>
         <ListRow icon="magnet" color={colors.cyan} title="Leads (CRM)" subtitle="Funil, contatos, WhatsApp e exportação" onPress={() => router.push(`/admin/leads?eventId=${id}`)} />
-        <ListRow icon="people" color={c} title="Inscritos & check-in de kit" subtitle="Nº de peito e retirada" onPress={() => router.push(`/admin/registrations?eventId=${id}`)} />
+        <ListRow icon="people" color={c} title="Corredores da corrida" subtitle="Associar corredores cadastrados, nº de peito e kits" onPress={() => router.push(`/admin/registrations?eventId=${id}`)} />
         <ListRow icon="cloud-upload" color={colors.lime} title="Importar compras de kit" subtitle="Colar planilha (CSV) da plataforma de vendas" onPress={() => router.push(`/admin/import?eventId=${id}`)} />
       </Card>
 
