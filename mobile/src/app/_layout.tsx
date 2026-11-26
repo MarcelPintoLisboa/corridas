@@ -62,6 +62,7 @@ function RootNavigator() {
       <Stack.Screen name="tips" />
       <Stack.Screen name="sponsors" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="updates" />
       <Stack.Screen name="admin" />
     </Stack>
   );

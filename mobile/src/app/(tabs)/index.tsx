@@ -8,6 +8,7 @@ import { ProgressRing } from '@/components/charts';
 import { RaceOnboarding } from '@/components/RaceOnboarding';
 import { SessionCard } from '@/components/SessionCard';
 import { SponsorCarousel } from '@/components/sponsors';
+import { UpdatesList, useUpdates } from '@/components/UpdatesFeed';
 import { Avatar, Card, Countdown, FadeIn, IconButton, Loading, Muted, PulseBadge, Screen, SectionHeader, Stat } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { supabase, unwrap } from '@/lib/supabase';
@@ -49,6 +50,8 @@ export default function HomeScreen() {
     return { posts: posts as Post[], pickups: pickups as KitPickup[] };
   }, [eventIds.join(',')]);
 
+  const updates = useUpdates(registrations, 6);
+
   if (loading) return <Loading />;
 
   const firstName = profile?.full_name?.split(' ')[0] ?? 'atleta';
@@ -86,6 +89,7 @@ export default function HomeScreen() {
         training.refresh();
         content.refresh();
         allRaces.refresh();
+        updates.refresh();
         reloadEvents();
       }}>
       {header}
@@ -117,7 +121,27 @@ export default function HomeScreen() {
       </FadeIn>
       ) : null}
 
-      <RaceNews posts={allRaces.data?.posts ?? []} pickups={allRaces.data?.pickups ?? []} registrations={registrations} />
+      {/* Tudo o que a organização adicionou/alterou nas corridas do corredor */}
+      {updates.items.length ? (
+        <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+              <Text style={[font.h2, { color: colors.text }]}>{registrations.length > 1 ? 'Atualizações das corridas' : 'Atualizações da corrida'}</Text>
+              {updates.unread ? (
+                <View style={{ backgroundColor: colors.primary, borderRadius: 99, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{updates.unread}</Text>
+                </View>
+              ) : null}
+            </View>
+            <Pressable onPress={() => router.push('/updates')} hitSlop={10}>
+              <Text style={[font.small, { color: colors.textMuted }]}>Ver todas ›</Text>
+            </Pressable>
+          </View>
+          <UpdatesList items={updates.items} seenAt={updates.seenAt} registrations={registrations} />
+        </>
+      ) : null}
+
+      <RaceNews posts={[]} pickups={allRaces.data?.pickups ?? []} registrations={registrations} />
 
       {registrations.length > 1 ? (
         <SectionHeader title={`Em foco: ${event.name}`} />

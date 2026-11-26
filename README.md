@@ -20,6 +20,7 @@ supabase/
   migrations/20261126000002_st_demo.sql   ← botões Preencher/Limpar modelo (aba Admin)
   migrations/20261126000003_st_corredores.sql ← associar corredores à corrida (admin)
   migrations/20261126000004_st_gestores.sql   ← gestores (cada um com as suas corridas), comentários no mural
+  migrations/20261126000005_st_atualizacoes.sql ← feed de atualizações das corridas no Início
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -40,7 +41,9 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 5. Cole também `supabase/migrations/20261126000003_st_corredores.sql` e clique em **Run**. Ele permite ao administrador associar pessoas do controle de acesso a uma corrida (inclusive outros administradores, que também podem correr). Quem ainda não fez o 1º acesso é inscrito automaticamente ao entrar. O mural de cada corrida é visto só pelos corredores inscritos nela.
 6. Cole também `supabase/migrations/20261126000004_st_gestores.sql` e clique em **Run**. Ele ativa o modelo de venda: o administrador geral cadastra **gestores**; cada gestor cria as próprias corridas, associa os corredores pelo e-mail e não vê as corridas de outros gestores. O corredor vê só as corridas em que foi associado, e o mural (fotos e comentários) é só entre os corredores da mesma corrida.
 
-> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004. Se rodar o 0001 de novo, rode os outros depois dele.
+7. Cole também `supabase/migrations/20261126000005_st_atualizacoes.sql` e clique em **Run**. Tudo o que o gestor adicionar ou alterar numa corrida (publicações, patrocinadores, kits, distâncias, dicas, planos e dados da corrida) aparece no **Início** dos corredores associados, com a marcação **Novo**.
+
+> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005. Se rodar o 0001 de novo, rode os outros depois dele.
 
 Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 
