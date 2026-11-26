@@ -247,6 +247,20 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             archive | xcbeautify --renderer github-actions
           APP=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app | head -1)
+          # Sem assinatura o Xcode não grava os entitlements (ex.: HealthKit) no binário, e o
+          # Sideloadly não pede essas capacidades à Apple ao reassinar. Assinatura "ad-hoc" (-)
+          # com o arquivo de entitlements: o Sideloadly substitui a assinatura, mas lê os
+          # entitlements e, com conta de desenvolvedor paga, habilita o HealthKit no App ID.
+          ENT=$(find . -maxdepth 2 -name "*.entitlements" -path "./${{ steps.proj.outputs.scheme }}/*" | head -1)
+          if [ -n "$ENT" ]; then
+            echo "Entitlements: $ENT"; cat "$ENT"
+            find "$APP/Frameworks" -maxdepth 1 \( -name "*.framework" -o -name "*.dylib" \) -exec codesign --force --sign - --timestamp=none {} \; 2>/dev/null || true
+            find "$APP/PlugIns" -maxdepth 1 -name "*.appex" -exec codesign --force --sign - --timestamp=none {} \; 2>/dev/null || true
+            codesign --force --sign - --timestamp=none --entitlements "$ENT" "$APP"
+            echo "Entitlements gravados no app:"; codesign -d --entitlements - "$APP" || true
+          else
+            echo "::warning::Arquivo .entitlements não encontrado — o HealthKit não será habilitado no IPA."
+          fi
           mkdir -p "$RUNNER_TEMP/ipa/Payload" "$GITHUB_WORKSPACE/dist"
           cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
           (cd "$RUNNER_TEMP/ipa" && zip -qry "$GITHUB_WORKSPACE/dist/street-running-${{ steps.versao.outputs.v }}-unsigned.ipa" Payload)
