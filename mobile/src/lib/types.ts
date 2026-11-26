@@ -30,6 +30,8 @@ export interface RaceEvent {
   id: string;
   organizer_id: string | null;
   name: string;
+  /** horas após a largada em que os corredores perdem o acesso (null = nunca fecha) */
+  acesso_horas_apos?: number | null;
   slug: string | null;
   tagline: string | null;
   description: string | null;

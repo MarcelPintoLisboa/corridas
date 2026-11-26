@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppState } from 'react-native';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { supabase } from '@/lib/supabase';
@@ -60,6 +61,24 @@ export function EventProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     reload();
   }, [reload]);
+
+  // a corrida fecha X horas após a largada: recarrega ao voltar para o app e no minuto exato do fechamento
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (st) => {
+      if (st === 'active') reload();
+    });
+    return () => sub.remove();
+  }, [reload]);
+  useEffect(() => {
+    const now = Date.now();
+    const closes = registrations
+      .map((r) => (r.event?.acesso_horas_apos ? new Date(r.event.event_date).getTime() + r.event.acesso_horas_apos * 3600_000 : NaN))
+      .filter((t) => t > now);
+    if (!closes.length) return;
+    const wait = Math.min(Math.min(...closes) - now + 5_000, 2 ** 31 - 1);
+    const timer = setTimeout(() => reload(), wait);
+    return () => clearTimeout(timer);
+  }, [registrations, reload]);
 
   const value = useMemo<EventCtx>(() => {
     const active = registrations.find((r) => r.event_id === activeId) ?? null;
