@@ -3,11 +3,16 @@
 // Chamada pelo app (Corredores da corrida → Associar) com o token do gestor:
 //   supabase.functions.invoke('st-boas-vindas', { body: { event_id, email } })
 //
-// Segredos (Supabase → Edge Functions → Secrets):
-//   RESEND_API_KEY   chave da API do Resend (https://resend.com)
-//   EMAIL_FROM       remetente verificado no Resend, ex.: corridas@seudominio.com.br
+// Segredos (Supabase → Edge Functions → Secrets). Use SMTP (ex.: HostDime/cPanel) OU Resend:
+//   SMTP_HOST        servidor SMTP, ex.: mail.seudominio.com.br  (se existir, o SMTP é usado)
+//   SMTP_PORT        465 (SSL). As Edge Functions bloqueiam as portas 25 e 587.
+//   SMTP_USER        conta de e-mail completa, ex.: corridas@seudominio.com.br
+//   SMTP_PASS        senha dessa conta
+//   RESEND_API_KEY   chave da API do Resend (https://resend.com), usada quando não há SMTP_HOST
+//   EMAIL_FROM       remetente, ex.: corridas@seudominio.com.br (no SMTP, padrão = SMTP_USER)
 // SUPABASE_URL, SUPABASE_ANON_KEY e SUPABASE_SERVICE_ROLE_KEY já existem nas Edge Functions.
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import nodemailer from 'npm:nodemailer@6.9.16';
 
 import { welcomeHtml, welcomeSubject, welcomeText } from './template.ts';
 
@@ -22,9 +27,13 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
   if (req.method !== 'POST') return json({ error: 'Use POST' }, 405);
 
+  const SMTP_HOST = Deno.env.get('SMTP_HOST');
+  const SMTP_USER = Deno.env.get('SMTP_USER');
+  const SMTP_PASS = Deno.env.get('SMTP_PASS');
   const RESEND = Deno.env.get('RESEND_API_KEY');
-  const FROM = Deno.env.get('EMAIL_FROM');
-  if (!RESEND || !FROM) return json({ error: 'Configure os segredos RESEND_API_KEY e EMAIL_FROM' }, 500);
+  const FROM = Deno.env.get('EMAIL_FROM') || (SMTP_HOST ? SMTP_USER : undefined);
+  if (SMTP_HOST ? !SMTP_USER || !SMTP_PASS : !RESEND || !FROM)
+    return json({ error: SMTP_HOST ? 'Configure os segredos SMTP_USER e SMTP_PASS' : 'Configure os segredos SMTP_HOST/SMTP_USER/SMTP_PASS (ou RESEND_API_KEY e EMAIL_FROM)' }, 500);
 
   let body: { event_id?: string; email?: string };
   try {
@@ -90,12 +99,26 @@ Deno.serve(async (req) => {
     hasAccount: !!usuario?.user_id,
   };
 
-  // 3) envio pelo Resend (remetente com o nome da corrida)
+  const from = `"${ev.name.replace(/[<>"\\]/g, '')}" <${FROM}>`;
+
+  // 3a) envio por SMTP (HostDime/cPanel etc.)
+  if (SMTP_HOST) {
+    const port = Number(Deno.env.get('SMTP_PORT') || 465);
+    try {
+      const tx = nodemailer.createTransport({ host: SMTP_HOST, port, secure: port === 465, auth: { user: SMTP_USER, pass: SMTP_PASS }, connectionTimeout: 15_000 });
+      const info = await tx.sendMail({ from, to: email, subject: welcomeSubject(data), html: welcomeHtml(data), text: welcomeText(data) });
+      return json({ sent: true, id: info.messageId ?? null, via: 'smtp' });
+    } catch (e) {
+      return json({ error: 'Falha no envio', detail: { message: `SMTP: ${(e as Error).message}` } }, 502);
+    }
+  }
+
+  // 3b) envio pelo Resend (remetente com o nome da corrida)
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${RESEND}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: `${ev.name.replace(/[<>"]/g, '')} <${FROM}>`,
+      from,
       to: [email],
       subject: welcomeSubject(data),
       html: welcomeHtml(data),
