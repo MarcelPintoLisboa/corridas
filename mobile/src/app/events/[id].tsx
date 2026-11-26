@@ -13,6 +13,7 @@ import type { RunnerLevel } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 const SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
 
@@ -41,8 +42,8 @@ export default function EventJoin() {
   const c2 = event.secondary_color;
 
   async function onSubmit() {
-    if (!event.require_order_code && !distanceId) return Alert.alert('Escolha sua distância');
-    if (event.require_order_code && !orderCode.trim()) return Alert.alert('Informe o código do pedido do seu kit');
+    if (!event.require_order_code && !distanceId) return Alert.alert(t('Escolha sua distância'));
+    if (event.require_order_code && !orderCode.trim()) return Alert.alert(t('Informe o código do pedido do seu kit'));
     setSaving(true);
     try {
       await api.register({
@@ -56,10 +57,10 @@ export default function EventJoin() {
       });
       await reload();
       setActiveEventId(event.id);
-      Alert.alert('Inscrição vinculada! 🎉', 'Seu plano de treino personalizado já está pronto.');
+      Alert.alert(t('Inscrição vinculada! 🎉'), t('Seu plano de treino personalizado já está pronto.'));
       router.replace('/');
     } catch (e) {
-      Alert.alert('Não foi possível vincular', (e as Error).message);
+      Alert.alert(t('Não foi possível vincular'), (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -70,9 +71,9 @@ export default function EventJoin() {
     try {
       await api.captureLead({ eventId: event.id, name: profile.full_name ?? profile.email, email: profile.email, phone: profile.phone ?? undefined, interest: distances.find((d) => d.id === distanceId)?.label });
       setInterestSent(true);
-      Alert.alert('Combinado! 💪', 'O organizador vai te avisar sobre lotes e novidades.');
+      Alert.alert(t('Combinado! 💪'), t('O organizador vai te avisar sobre lotes e novidades.'));
     } catch (e) {
-      Alert.alert('Erro', (e as Error).message);
+      Alert.alert(t('Erro'), (e as Error).message);
     }
   }
 

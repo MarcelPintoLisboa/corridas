@@ -8,6 +8,7 @@ import { Chip, GradientButton, IconButton, Input, Muted } from '@/components/ui'
 import { useAsync } from '@/hooks/useAsync';
 import { supabase } from '@/lib/supabase';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 /**
  * Card principal do painel: o organizador gera os treinos preparatórios de todos os
@@ -39,15 +40,15 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
       p_replace: replace,
     });
     setBusy(false);
-    if (error) return Alert.alert('Não foi possível gerar', error.message);
+    if (error) return Alert.alert(t('Não foi possível gerar'), t(error.message));
     setOpen(false);
     stats.reload();
     Alert.alert(
-      'Treinos gerados! 🏃',
+      t('Treinos gerados! 🏃'),
       data
-        ? `${data} planos criados (cada distância × iniciante, intermediário e avançado). Cada participante já recebe o plano da sua distância e nível, com as datas contadas até o dia da prova.`
-        : 'Todos os planos já existiam. Marque "Substituir planos existentes" para gerar de novo.',
-      [{ text: 'OK' }, { text: 'Ver e editar planos', onPress: () => router.push(`/admin/crud/plans?parentId=${eventId}`) }],
+        ? t('{n} planos criados (cada distância × iniciante, intermediário e avançado). Cada participante já recebe o plano da sua distância e nível, com as datas contadas até o dia da prova.', { n: data })
+        : t('Todos os planos já existiam. Marque "Substituir planos existentes" para gerar de novo.'),
+      [{ text: 'OK' }, { text: t('Ver e editar planos'), onPress: () => router.push(`/admin/crud/plans?parentId=${eventId}`) }],
     );
   }
 
@@ -62,16 +63,16 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
             <Ionicons name="barbell" size={22} color="#fff" />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[font.h3, { color: '#fff' }]}>Treinos preparatórios</Text>
+            <Text style={[font.h3, { color: '#fff' }]}>{t('Treinos preparatórios')}</Text>
             <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>
-              {s ? `${s.plans} planos · ${s.distances} distâncias · ${s.regs} inscritos` : 'carregando…'}
+              {s ? t('{p} planos · {d} distâncias · {r} inscritos', { p: s.plans, d: s.distances, r: s.regs }) : t('carregando…')}
             </Text>
           </View>
         </View>
         <Text style={{ color: 'rgba(255,255,255,0.9)', marginTop: 10, fontSize: 13 }}>
-          {s && s.plans === 0
+          {t(s && s.plans === 0
             ? 'Nenhum plano ainda. Gere agora os treinos de todos os participantes até o dia da prova — por distância e nível.'
-            : 'Cada participante recebe o plano da sua distância e nível. Você pode ajustar qualquer sessão.'}
+            : 'Cada participante recebe o plano da sua distância e nível. Você pode ajustar qualquer sessão.')}
         </Text>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
           <GradientButton small title={s?.plans ? 'Gerar novamente' : 'Gerar treinos'} icon="flash" colorsPair={[color, colors.secondary]} onPress={() => setOpen(true)} style={{ flex: 1 }} />
@@ -84,33 +85,32 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
       <Modal visible={open} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setOpen(false)}>
         <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: 24, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-            <Text style={[font.h2, { color: colors.text, flex: 1 }]}>Gerar treinos preparatórios</Text>
+            <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t('Gerar treinos preparatórios')}</Text>
             <IconButton icon="close" onPress={() => setOpen(false)} />
           </View>
           <Muted style={{ marginBottom: 16 }}>
-            Cria um plano para cada distância da corrida nos níveis iniciante, intermediário e avançado: rodagens, treinos de ritmo, tiros, longões, fortalecimento e descanso,
-            com volume progressivo e polimento na semana da prova. As datas são calculadas a partir do dia da corrida.
+            {t('Cria um plano para cada distância da corrida nos níveis iniciante, intermediário e avançado: rodagens, treinos de ritmo, tiros, longões, fortalecimento e descanso, com volume progressivo e polimento na semana da prova. As datas são calculadas a partir do dia da corrida.')}
           </Muted>
 
           {s && s.distances === 0 ? (
             <View style={{ backgroundColor: alpha(colors.warning, 0.12), padding: 12, borderRadius: radius.md, marginBottom: 16 }}>
-              <Text style={{ color: colors.warning, fontWeight: '700' }}>Cadastre as distâncias da corrida primeiro (menu Distâncias).</Text>
+              <Text style={{ color: colors.warning, fontWeight: '700' }}>{t('Cadastre as distâncias da corrida primeiro (menu Distâncias).')}</Text>
             </View>
           ) : null}
 
-          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8 }]}>Duração do plano</Text>
+          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8 }]}>{t('Duração do plano')}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 8, marginBottom: 6 }}>
             {weekOptions.map((w) => (
-              <Chip key={w} label={`${w} semanas`} active={weeks === w} color={color} onPress={() => setWeeks(w)} />
+              <Chip key={w} label={t('{n} semanas', { n: w })} active={weeks === w} color={color} onPress={() => setWeeks(w)} />
             ))}
           </View>
-          <Muted style={{ fontSize: 12, marginBottom: 16 }}>Faltam ~{weeksToRace} semanas para a prova. Quem se inscrever depois entra na semana em andamento.</Muted>
+          <Muted style={{ fontSize: 12, marginBottom: 16 }}>{t('Faltam ~{n} semanas para a prova. Quem se inscrever depois entra na semana em andamento.', { n: weeksToRace })}</Muted>
 
           <Input label="Treinador(a) responsável (opcional)" placeholder="Ex.: Coach Marina Alves" value={coach} onChangeText={setCoach} icon="person" />
 
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
             <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={{ color: colors.text, fontWeight: '700' }}>Substituir planos existentes</Text>
+              <Text style={{ color: colors.text, fontWeight: '700' }}>{t('Substituir planos existentes')}</Text>
               <Muted style={{ fontSize: 12 }}>Apaga os planos atuais desta corrida (inclusive edições) e gera de novo.</Muted>
             </View>
             <Switch value={replace} onValueChange={setReplace} trackColor={{ true: colors.danger }} />

@@ -11,6 +11,7 @@ import { api } from '@/lib/api';
 import { daysUntil, formatDate } from '@/lib/format';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { tn } from '@/i18n';
 
 export default function EventsList() {
   const q = useAsync(() => api.publishedEvents(), []);
@@ -35,7 +36,7 @@ export default function EventsList() {
               <LinearGradient colors={[alpha(e.secondary_color, 0.4), alpha(e.primary_color, 0.95)]} style={{ flex: 1, padding: 18, justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   {registered ? <Badge label="✓ Inscrito" color={colors.lime} /> : null}
-                  {days > 0 ? <Badge label={`${days} dias`} color="#fff" /> : null}
+                  {days > 0 ? <Badge label={tn(days, '{n} dia', '{n} dias')} color="#fff" /> : null}
                 </View>
                 <View>
                   <Text style={[font.tiny, { color: 'rgba(255,255,255,0.85)' }]}>

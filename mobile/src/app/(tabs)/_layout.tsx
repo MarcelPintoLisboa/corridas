@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { IconName } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
+import { t as tr } from '@/i18n';
 import { alpha, colors } from '@/theme';
 
 const TABS: { name: string; label: string; icon: IconName; iconActive: IconName; adminOnly?: boolean }[] = [
@@ -68,7 +69,7 @@ function TabItem({ tab, focused, accent, onPress }: { tab: (typeof TABS)[number]
       <Animated.View style={icon}>
         <Ionicons name={focused ? tab.iconActive : tab.icon} size={22} color={focused ? accent : colors.textMuted} />
       </Animated.View>
-      <Text style={[s.label, { color: focused ? colors.text : colors.textDim }]}>{tab.label}</Text>
+      <Text style={[s.label, { color: focused ? colors.text : colors.textDim }]}>{tr(tab.label)}</Text>
     </Pressable>
   );
 }
@@ -81,7 +82,7 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.bg } }}
       tabBar={(props) => <TabBar {...props} />}>
       {TABS.map((t) => (
-        <Tabs.Screen key={t.name} name={t.name} options={{ title: t.label }} />
+        <Tabs.Screen key={t.name} name={t.name} options={{ title: tr(t.label) }} />
       ))}
     </Tabs>
   );

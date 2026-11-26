@@ -19,7 +19,9 @@ import { daysUntil, formatDate, formatKm, formatTime, tipCategoryLabel } from '@
 import { isSameDay, planProgress } from '@/lib/plan';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { alpha, colors, font, radius } from '@/theme';
+import { t, tn } from '@/i18n';
 
 export default function HomeScreen() {
   const { profile, isAdmin } = useAuth();
@@ -54,15 +56,16 @@ export default function HomeScreen() {
 
   if (loading) return <Loading />;
 
-  const firstName = profile?.full_name?.split(' ')[0] ?? 'atleta';
+  const firstName = profile?.full_name?.split(' ')[0] ?? t('atleta');
   const header = (
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 18 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 18 }}>
       <View style={{ flex: 1 }}>
         <Muted>Olá,</Muted>
         <Text style={[font.h1, { color: colors.text }]}>{firstName} 👋</Text>
       </View>
+      <LanguageToggle />
       {isAdmin ? <IconButton icon="construct" color={colors.lime} onPress={() => router.push('/admin')} /> : null}
-      <Pressable onPress={() => router.push('/profile')} style={{ marginLeft: 10 }}>
+      <Pressable onPress={() => router.push('/profile')} style={{ marginLeft: 2 }}>
         <Avatar uri={profile?.avatar_url} name={profile?.full_name} />
       </Pressable>
     </View>
@@ -126,7 +129,7 @@ export default function HomeScreen() {
         <>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-              <Text style={[font.h2, { color: colors.text }]}>{registrations.length > 1 ? 'Atualizações das corridas' : 'Atualizações da corrida'}</Text>
+              <Text style={[font.h2, { color: colors.text }]}>{t(registrations.length > 1 ? 'Atualizações das corridas' : 'Atualizações da corrida')}</Text>
               {updates.unread ? (
                 <View style={{ backgroundColor: colors.primary, borderRadius: 99, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
                   <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{updates.unread}</Text>
@@ -134,7 +137,7 @@ export default function HomeScreen() {
               ) : null}
             </View>
             <Pressable onPress={() => router.push('/updates')} hitSlop={10}>
-              <Text style={[font.small, { color: colors.textMuted }]}>Ver todas ›</Text>
+              <Text style={[font.small, { color: colors.textMuted }]}>{t('Ver todas')} ›</Text>
             </Pressable>
           </View>
           <UpdatesList items={updates.items} seenAt={updates.seenAt} registrations={registrations} />
@@ -144,12 +147,12 @@ export default function HomeScreen() {
       <RaceNews posts={[]} pickups={allRaces.data?.pickups ?? []} registrations={registrations} />
 
       {registrations.length > 1 ? (
-        <SectionHeader title={`Em foco: ${event.name}`} />
+        <SectionHeader title={t('Em foco: {name}', { name: event.name })} />
       ) : null}
 
       {/* Progresso */}
       <Card delay={100} style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-        <ProgressRing progress={progress} color={accent} color2={accent2} label={`${Math.round(progress * 100)}%`} sublabel="DO PLANO" />
+        <ProgressRing progress={progress} color={accent} color2={accent2} label={`${Math.round(progress * 100)}%`} sublabel={t('DO PLANO')} />
         <View style={{ flex: 1, gap: 14 }}>
           <View style={{ flexDirection: 'row' }}>
             <Stat label="Treinos" value={String(training.workouts.length)} />
@@ -157,7 +160,7 @@ export default function HomeScreen() {
           </View>
           <Pressable onPress={() => router.push('/workout/new')} style={{ backgroundColor: alpha(accent, 0.15), borderRadius: radius.pill, paddingVertical: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
             <Ionicons name="add" size={18} color={accent} />
-            <Text style={{ color: accent, fontWeight: '800' }}>Registrar treino</Text>
+            <Text style={{ color: accent, fontWeight: '800' }}>{t('Registrar treino')}</Text>
           </Pressable>
         </View>
       </Card>
@@ -179,7 +182,7 @@ export default function HomeScreen() {
           <FlatList
             horizontal
             data={content.data.tips}
-            keyExtractor={(t) => t.id}
+            keyExtractor={(tip) => tip.id}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ gap: 12 }}
             renderItem={({ item }) => {
@@ -218,7 +221,7 @@ function MyRaces({ registrations, activeId }: { registrations: Registration[]; a
   const { setActiveEventId } = useActiveEvent();
   return (
     <>
-      <SectionHeader title={`Minhas corridas (${registrations.length})`} />
+      <SectionHeader title={t('Minhas corridas ({n})', { n: registrations.length })} />
       <FlatList
         horizontal
         data={registrations}
@@ -242,7 +245,7 @@ function MyRaces({ registrations, activeId }: { registrations: Registration[]; a
               <LinearGradient colors={[alpha(e.secondary_color, 0.45), alpha(e.primary_color, 0.95)]} style={{ flex: 1, padding: 14, justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <View style={{ backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 4 }}>
-                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>{days > 0 ? `Faltam ${days} dias` : days === 0 ? 'É hoje!' : 'Realizada'}</Text>
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>{days > 0 ? tn(days, 'Falta {n} dia', 'Faltam {n} dias') : days === 0 ? t('É hoje!') : t('Realizada')}</Text>
                   </View>
                   {on ? <Ionicons name="checkmark-circle" size={22} color="#fff" /> : null}
                 </View>
@@ -252,7 +255,7 @@ function MyRaces({ registrations, activeId }: { registrations: Registration[]; a
                   </Text>
                   <Text style={[font.h2, { color: '#fff' }]} numberOfLines={2}>{e.name}</Text>
                   <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, marginTop: 2 }}>
-                    {item.distance?.label ?? 'Distância a definir'} · {item.kit_picked_up ? 'Kit retirado ✓' : 'Kit pendente'}
+                    {item.distance?.label ?? t('Distância a definir')} · {item.kit_picked_up ? t('Kit retirado ✓') : t('Kit pendente')}
                   </Text>
                 </View>
               </LinearGradient>
@@ -260,7 +263,7 @@ function MyRaces({ registrations, activeId }: { registrations: Registration[]; a
           );
         }}
       />
-      <Muted style={{ fontSize: 11, marginBottom: 4 }}>Toque para focar a corrida · segure para abrir os detalhes</Muted>
+      <Muted style={{ fontSize: 11, marginBottom: 4 }}>{t('Toque para focar a corrida · segure para abrir os detalhes')}</Muted>
     </>
   );
 }
@@ -292,7 +295,7 @@ function RaceNews({ posts, pickups, registrations }: { posts: Post[]; pickups: K
                     {multi && e ? <Text style={[font.tiny, { color: e.primary_color, fontSize: 10 }]}>{e.name}</Text> : null}
                     <Text style={{ color: colors.text, fontWeight: '800' }}>{p.location_name}</Text>
                     <Muted style={{ fontSize: 12 }}>
-                      {formatDate(p.starts_at, true)} · {formatTime(p.starts_at)} às {formatTime(p.ends_at)}
+                      {formatDate(p.starts_at, true)} · {formatTime(p.starts_at)} {t('às')} {formatTime(p.ends_at)}
                     </Muted>
                   </View>
                 </View>
@@ -315,7 +318,7 @@ function RaceNews({ posts, pickups, registrations }: { posts: Post[]; pickups: K
                   <View style={{ flex: 1 }}>
                     <Text style={[font.tiny, { color: c, fontSize: 10 }]}>
                       {p.pinned ? '📌 ' : ''}
-                      {POST_LABEL[p.type]}
+                      {t(POST_LABEL[p.type])}
                       {multi && e ? ` · ${e.name}` : ''}
                     </Text>
                     <Text style={[font.h3, { color: colors.text }]}>{p.title}</Text>

@@ -7,6 +7,7 @@ import { Card, GradientButton, Input, Muted, Screen } from '@/components/ui';
 import { api } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { colors, font } from '@/theme';
+import { t } from '@/i18n';
 
 const EXAMPLE = `codigo;nome;email;distancia;camiseta;cpf
 NRS-2001;Maria Silva;maria@email.com;10K;M;12345678900
@@ -23,7 +24,7 @@ export default function ImportKits() {
 
   async function onImport() {
     const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    if (lines.length < 2) return Alert.alert('Cole o cabeçalho + ao menos uma linha');
+    if (lines.length < 2) return Alert.alert(t('Cole o cabeçalho + ao menos uma linha'));
     const sep = lines[0].includes(';') ? ';' : ',';
     const header = lines[0].toLowerCase().split(sep).map((h) => h.trim());
     const idx = (names: string[]) => header.findIndex((h) => names.includes(h));
@@ -35,7 +36,7 @@ export default function ImportKits() {
       size: idx(['camiseta', 'tamanho', 'shirt_size']),
       doc: idx(['cpf', 'documento']),
     };
-    if (col.code < 0) return Alert.alert('Coluna "codigo" não encontrada no cabeçalho');
+    if (col.code < 0) return Alert.alert(t('Coluna "codigo" não encontrada no cabeçalho'));
 
     setBusy(true);
     try {
@@ -71,10 +72,10 @@ export default function ImportKits() {
       }));
       for (const l of leads) await supabase.from('st_leads').insert(l); // ignora duplicados (índice único)
 
-      Alert.alert('Importação concluída ✓', `${rows.length} compras importadas. Os participantes já podem vincular pelo código.`);
+      Alert.alert(t('Importação concluída ✓'), t('{n} compras importadas. Os participantes já podem vincular pelo código.', { n: rows.length }));
       router.back();
     } catch (e) {
-      Alert.alert('Erro', (e as Error).message);
+      Alert.alert(t('Erro'), (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -84,10 +85,10 @@ export default function ImportKits() {
     <Screen bottomInset={false}>
       <BackHeader title="Importar compras de kit" />
       <Muted style={{ marginBottom: 12 }}>
-        Exporte a planilha da sua plataforma de vendas e cole abaixo (CSV separado por ; ou ,). O participante usa o código do pedido para vincular a inscrição no app.
+        {t('Exporte a planilha da sua plataforma de vendas e cole abaixo (CSV separado por ; ou ,). O participante usa o código do pedido para vincular a inscrição no app.')}
       </Muted>
       <Card animated={false}>
-        <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 6 }]}>Exemplo</Text>
+        <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 6 }]}>{t('Exemplo')}</Text>
         <Text style={{ color: colors.lime, fontFamily: 'monospace', fontSize: 11 }}>{EXAMPLE}</Text>
       </Card>
       <Input multiline value={text} onChangeText={setText} placeholder="Cole aqui..." autoCapitalize="none" style={{ minHeight: 200, fontFamily: 'monospace', fontSize: 12 }} />

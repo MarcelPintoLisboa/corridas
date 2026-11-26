@@ -3,6 +3,7 @@ import { formatDate, formatDateTime, formatTime, sessionTypeMeta, tipCategoryLab
 import { supabase } from '@/lib/supabase';
 
 import type { Field, Option } from './form';
+import { t } from '@/i18n';
 
 type Row = Record<string, any>;
 
@@ -55,7 +56,7 @@ export const resources: Record<string, Resource> = {
       { key: 'published', label: 'Publicado', type: 'bool', default: true },
       { key: 'published_at', label: 'Data de publicação', timeLabel: 'Hora', type: 'datetime', help: 'Agende para o futuro' },
     ],
-    display: (r) => ({ title: r.title, subtitle: `${r.published ? '' : '🔒 Rascunho · '}${formatDateTime(r.published_at)}`, image: r.image_url, badge: r.pinned ? '📌' : undefined }),
+    display: (r) => ({ title: r.title, subtitle: `${r.published ? '' : `🔒 ${t('Rascunho')} · `}${formatDateTime(r.published_at)}`, image: r.image_url, badge: r.pinned ? '📌' : undefined }),
   },
 
   sponsors: {
@@ -83,7 +84,7 @@ export const resources: Record<string, Resource> = {
       { key: 'sort_order', label: 'Ordem', type: 'number', default: 0 },
       { key: 'active', label: 'Ativo', type: 'bool', default: true },
     ],
-    display: (r) => ({ title: r.name, subtitle: [r.tier?.toUpperCase(), r.offer_title, r.active ? null : 'inativo'].filter(Boolean).join(' · '), image: r.logo_url }),
+    display: (r) => ({ title: r.name, subtitle: [r.tier?.toUpperCase(), r.offer_title, r.active ? null : t('inativo')].filter(Boolean).join(' · '), image: r.logo_url }),
     rowAction: { label: 'Métricas', icon: 'analytics', href: (r) => `/admin/sponsor/${r.id}` },
   },
 
@@ -122,7 +123,7 @@ export const resources: Record<string, Resource> = {
       { key: 'max_participants', label: 'Vagas', type: 'number' },
       { key: 'sort_order', label: 'Ordem', type: 'number', default: 0 },
     ],
-    display: (r) => ({ title: r.label, subtitle: `${r.distance_km} km${r.start_time ? ` · largada ${formatTime(r.start_time)}` : ''}` }),
+    display: (r) => ({ title: r.label, subtitle: `${r.distance_km} km${r.start_time ? ` · ${t('largada')} ${formatTime(r.start_time)}` : ''}` }),
   },
 
   tips: {
@@ -143,7 +144,7 @@ export const resources: Record<string, Resource> = {
       { key: 'days_before_race', label: 'Liberar X dias antes da prova', type: 'number', help: 'Vazio = sempre visível' },
       { key: 'published', label: 'Publicada', type: 'bool', default: true },
     ],
-    display: (r) => ({ title: r.title, subtitle: `${tipCategoryLabel[r.category]?.label}${r.days_before_race ? ` · libera D-${r.days_before_race}` : ''}`, image: r.image_url }),
+    display: (r) => ({ title: r.title, subtitle: `${tipCategoryLabel[r.category]?.label}${r.days_before_race ? ` · ${t('libera D-{n}', { n: r.days_before_race })}` : ''}`, image: r.image_url }),
   },
 
   plans: {
@@ -164,7 +165,7 @@ export const resources: Record<string, Resource> = {
       { key: 'coach_avatar_url', label: 'Foto do treinador', type: 'image', aspect: [1, 1] },
     ],
     loadOptions: distanceOptions,
-    display: (r) => ({ title: r.name, subtitle: `${r.weeks} semanas · ${r.coach_name ?? 'sem treinador'}` }),
+    display: (r) => ({ title: r.name, subtitle: `${t('{n} semanas', { n: r.weeks })} · ${r.coach_name ?? t('sem treinador')}` }),
     rowAction: { label: 'Sessões', icon: 'list', href: (r) => `/admin/crud/sessions?parentId=${r.id}` },
   },
 
@@ -188,7 +189,7 @@ export const resources: Record<string, Resource> = {
       { key: 'description', label: 'Instruções', type: 'multiline' },
     ],
     display: (r) => ({
-      title: `S${r.week} · ${['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][r.day_of_week - 1]} — ${r.title}`,
+      title: `${t('S')}${r.week} · ${t(['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][r.day_of_week - 1])} — ${r.title}`,
       subtitle: [sessionTypeMeta[r.type]?.label, r.distance_km ? `${r.distance_km} km` : null, r.target_pace].filter(Boolean).join(' · '),
     }),
   },
@@ -211,7 +212,7 @@ export const resources: Record<string, Resource> = {
       { key: 'kit_type', label: 'Tipo de kit', type: 'text', default: 'standard' },
     ],
     loadOptions: distanceOptions,
-    display: (r) => ({ title: `${r.order_code} — ${r.buyer_name ?? ''}`, subtitle: `${r.buyer_email ?? ''} · ${r.claimed_by ? '✅ vinculado' : '⏳ aguardando app'}` }),
+    display: (r) => ({ title: `${r.order_code} — ${r.buyer_name ?? ''}`, subtitle: `${r.buyer_email ?? ''} · ${r.claimed_by ? `✅ ${t('vinculado')}` : `⏳ ${t('aguardando app')}`}` }),
   },
 };
 

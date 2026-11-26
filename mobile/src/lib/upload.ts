@@ -2,6 +2,7 @@ import { File } from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
 
 import { supabase } from './supabase';
+import { t } from '@/i18n';
 
 /** Abre a galeria e devolve a URI local da imagem escolhida */
 export async function pickImage(aspect?: [number, number]) {
@@ -18,7 +19,7 @@ export async function pickImage(aspect?: [number, number]) {
 /** Envia uma imagem local para o bucket `media` e devolve a URL pública */
 export async function uploadImage(localUri: string, folder: string, mimeType = 'image/jpeg') {
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) throw new Error('Faça login para enviar imagens');
+  if (!auth.user) throw new Error(t('Faça login para enviar imagens'));
 
   const ext = mimeType.split('/')[1] ?? 'jpg';
   const path = `${auth.user.id}/${folder}/${Date.now()}.${ext}`;

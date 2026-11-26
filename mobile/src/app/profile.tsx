@@ -10,6 +10,7 @@ import { pickAndUpload } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 export default function ProfileScreen() {
   const { profile, refreshProfile, signOut, isAdmin, isAdminGeral } = useAuth();
@@ -28,9 +29,9 @@ export default function ProfileScreen() {
       .update({ full_name: name, phone, city, instagram: instagram ? `@${instagram.replace('@', '')}` : null, ...extra })
       .eq('id', profile.id); // linha de st_usuarios
     setSaving(false);
-    if (error) return Alert.alert('Erro', error.message);
+    if (error) return Alert.alert(t('Erro'), error.message);
     await refreshProfile();
-    if (!Object.keys(extra).length) Alert.alert('Perfil atualizado ✓');
+    if (!Object.keys(extra).length) Alert.alert(t('Perfil atualizado ✓'));
   }
 
   return (
@@ -43,11 +44,11 @@ export default function ProfileScreen() {
               const url = await pickAndUpload('avatars', [1, 1]);
               if (url) await save({ avatar_url: url });
             } catch (e) {
-              Alert.alert('Erro', (e as Error).message);
+              Alert.alert(t('Erro'), (e as Error).message);
             }
           }}>
           <Avatar uri={profile?.avatar_url} name={profile?.full_name} size={96} />
-          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 6, fontSize: 12 }}>Trocar foto</Text>
+          <Text style={{ color: colors.textMuted, textAlign: 'center', marginTop: 6, fontSize: 12 }}>{t('Trocar foto')}</Text>
         </Pressable>
         <Text style={{ color: colors.text, fontSize: 20, fontWeight: '800', marginTop: 8 }}>{profile?.full_name}</Text>
         <Muted>{profile?.email}</Muted>

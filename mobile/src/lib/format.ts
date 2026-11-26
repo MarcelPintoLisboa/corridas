@@ -1,4 +1,18 @@
+import { isEn, t } from '@/i18n';
+
 const pad = (n: number) => String(n).padStart(2, '0');
+
+/** Mapa de rótulos traduzidos na hora do acesso (o idioma pode mudar em tempo de execução) */
+function translated<T extends Record<string, string | { label: string }>>(map: T): T {
+  return new Proxy(map, {
+    get(target, key) {
+      const v = target[key as keyof T];
+      if (typeof v === 'string') return t(v);
+      if (v && typeof v === 'object') return { ...v, label: t(v.label) };
+      return v;
+    },
+  });
+}
 
 /** 3725 → "1:02:05" ; 1505 → "25:05" */
 export function formatDuration(totalSeconds: number | null | undefined) {
@@ -29,20 +43,33 @@ export function parseDuration(input: string): number | null {
 
 export function formatKm(km: number | null | undefined, digits = 1) {
   if (km == null) return '--';
-  return Number(km).toFixed(digits).replace('.', ',');
+  const s = Number(km).toFixed(digits);
+  return isEn() ? s : s.replace('.', ',');
 }
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+/** pt: "Sáb, 25 dez" / "25 dez 2027" · en: "Sat, Dec 25" / "Dec 25, 2027" */
 export function formatDate(d: string | Date, withWeekday = false) {
   const date = typeof d === 'string' ? new Date(d) : d;
+  if (isEn()) {
+    const base = `${MONTHS_EN[date.getMonth()]} ${date.getDate()}`;
+    return withWeekday ? `${WEEKDAYS_EN[date.getDay()]}, ${base}` : `${base}, ${date.getFullYear()}`;
+  }
   const base = `${date.getDate()} ${MONTHS[date.getMonth()]}`;
   return withWeekday ? `${WEEKDAYS[date.getDay()]}, ${base}` : `${base} ${date.getFullYear()}`;
 }
 
+/** pt: "19:30" · en: "7:30 PM" */
 export function formatTime(d: string | Date) {
   const date = typeof d === 'string' ? new Date(d) : d;
+  if (isEn()) {
+    const h = date.getHours();
+    return `${h % 12 || 12}:${pad(date.getMinutes())} ${h < 12 ? 'AM' : 'PM'}`;
+  }
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
@@ -51,7 +78,7 @@ export function formatDateTime(d: string | Date) {
 }
 
 export function weekdayShort(d: Date) {
-  return WEEKDAYS[d.getDay()];
+  return (isEn() ? WEEKDAYS_EN : WEEKDAYS)[d.getDay()];
 }
 
 /** "2027-01-20 19:00" → ISO; aceita também ISO */
@@ -83,19 +110,19 @@ export function initials(name?: string | null) {
     .join('');
 }
 
-export const levelLabel: Record<string, string> = {
+export const levelLabel: Record<string, string> = translated({
   beginner: 'Iniciante',
   intermediate: 'Intermediário',
   advanced: 'Avançado',
-};
+});
 
-export const leadStatusLabel: Record<string, string> = {
+export const leadStatusLabel: Record<string, string> = translated({
   new: 'Novo',
   contacted: 'Contatado',
   qualified: 'Qualificado',
   converted: 'Convertido',
   lost: 'Perdido',
-};
+});
 
 export const leadStatusColor: Record<string, string> = {
   new: '#00E5FF',
@@ -105,16 +132,16 @@ export const leadStatusColor: Record<string, string> = {
   lost: '#FF3D71',
 };
 
-export const tipCategoryLabel: Record<string, { label: string; emoji: string; color: string }> = {
+export const tipCategoryLabel: Record<string, { label: string; emoji: string; color: string }> = translated({
   training: { label: 'Treino', emoji: '🏃', color: '#FF4D2E' },
   nutrition: { label: 'Alimentação', emoji: '🥗', color: '#00E676' },
   hydration: { label: 'Hidratação', emoji: '💧', color: '#00E5FF' },
   recovery: { label: 'Recuperação', emoji: '😴', color: '#7B2FF7' },
   mindset: { label: 'Mente', emoji: '🧠', color: '#FFC400' },
   race_day: { label: 'Dia da prova', emoji: '🏁', color: '#FF3D71' },
-};
+});
 
-export const sessionTypeMeta: Record<string, { label: string; color: string; icon: string }> = {
+export const sessionTypeMeta: Record<string, { label: string; color: string; icon: string }> = translated({
   easy: { label: 'Leve', color: '#00E676', icon: 'walk' },
   long: { label: 'Longão', color: '#7B2FF7', icon: 'trail-sign' },
   tempo: { label: 'Ritmo', color: '#FFC400', icon: 'speedometer' },
@@ -124,14 +151,16 @@ export const sessionTypeMeta: Record<string, { label: string; color: string; ico
   strength: { label: 'Força', color: '#B388FF', icon: 'barbell' },
   rest: { label: 'Descanso', color: '#6B6B8A', icon: 'bed' },
   race: { label: 'PROVA', color: '#C6FF00', icon: 'flag' },
-};
+});
 
 // ------------------------------------------------ Data/hora no formato brasileiro (campos separados)
 /** ISO → "25/12/2027" */
 export function toDateInputBR(iso: string | null | undefined) {
   if (!iso) return '';
   const d = new Date(iso);
-  return isNaN(d.getTime()) ? '' : `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  if (isNaN(d.getTime())) return '';
+  // em inglês (EUA) a data é MM/DD/YYYY
+  return isEn() ? `${pad(d.getMonth() + 1)}/${pad(d.getDate())}/${d.getFullYear()}` : `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
 }
 
 /** ISO → "19:30" */
@@ -157,9 +186,10 @@ export function maskTime(text: string) {
 export function parseDateTimeBR(date: string, time: string): string | null {
   const m = date.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!m) return null;
-  const t = time.trim() ? time.trim().match(/^(\d{1,2}):(\d{2})$/) : (['', '0', '0'] as unknown as RegExpMatchArray);
-  if (!t) return null;
-  const [day, month, year, h, min] = [Number(m[1]), Number(m[2]), Number(m[3]), Number(t[1]), Number(t[2])];
+  const tm = time.trim() ? time.trim().match(/^(\d{1,2}):(\d{2})$/) : (['', '0', '0'] as unknown as RegExpMatchArray);
+  if (!tm) return null;
+  const [a, b] = isEn() ? [m[2], m[1]] : [m[1], m[2]]; // en: MM/DD/YYYY
+  const [day, month, year, h, min] = [Number(a), Number(b), Number(m[3]), Number(tm[1]), Number(tm[2])];
   if (h > 23 || min > 59) return null;
   const d = new Date(year, month - 1, day, h, min);
   // rejeita datas como 31/02

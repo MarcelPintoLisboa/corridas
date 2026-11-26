@@ -7,6 +7,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { api } from '@/lib/api';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 /** Patrocinadores da corrida: banners, ofertas/cupons e materiais */
 export default function SponsorsScreen() {
@@ -30,7 +31,7 @@ export default function SponsorsScreen() {
     <Screen refreshing={q.refreshing} onRefresh={q.refresh} bottomInset={false}>
       <BackHeader title="Parceiros" />
       <Muted style={{ marginBottom: 16 }}>
-        Quem faz a <Text style={{ color: colors.text, fontWeight: '800' }}>{event.name}</Text> acontecer — com benefícios e materiais para você.
+        {t('Quem faz a')} <Text style={{ color: colors.text, fontWeight: '800' }}>{event.name}</Text> {t('acontecer — com benefícios e materiais para você.')}
       </Muted>
 
       <SponsorCarousel sponsors={sponsors} height={200} />

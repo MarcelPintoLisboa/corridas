@@ -14,6 +14,7 @@ import type { RaceEvent } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, radius } from '@/theme';
+import { t } from '@/i18n';
 
 async function count(table: string) {
   const { count: n } = await supabase.from(table).select('*', { count: 'exact', head: true });
@@ -49,27 +50,27 @@ export default function GestaoScreen() {
     setBusy(kind);
     const { error } = await supabase.rpc(kind === 'fill' ? 'st_demo_preencher' : 'st_demo_limpar');
     setBusy(null);
-    if (error) return Alert.alert('Não foi possível', /function|schema cache/i.test(error.message) ? 'Rode o arquivo supabase/migrations/20261126000002_st_demo.sql no SQL Editor do Supabase.' : error.message);
+    if (error) return Alert.alert(t('Não foi possível'), /function|schema cache/i.test(error.message) ? t('Rode o arquivo supabase/migrations/20261126000002_st_demo.sql no SQL Editor do Supabase.') : t(error.message));
     if (kind === 'fill') setSelected('11111111-1111-1111-1111-111111111111');
     else setSelected(null);
     await Promise.all([q.reload(), reloadEvents()]);
     Alert.alert(
-      kind === 'fill' ? 'Modelo preenchido ✓' : 'Modelo apagado ✓',
-      kind === 'fill'
+      t(kind === 'fill' ? 'Modelo preenchido ✓' : 'Modelo apagado ✓'),
+      t(kind === 'fill'
         ? 'Criamos 2 corridas completas e inscrevemos você na Night Run (10K) com treinos das últimas semanas. Veja também as abas Início, Treino, Evolução, Comunidade e Corrida.'
-        : 'As corridas de demonstração e tudo ligado a elas foram removidos. Suas corridas não foram alteradas.',
+        : 'As corridas de demonstração e tudo ligado a elas foram removidos. Suas corridas não foram alteradas.'),
     );
   }
 
   function confirmDemo(kind: 'fill' | 'clear') {
     Alert.alert(
-      kind === 'fill' ? 'Preencher modelo?' : 'Limpar modelo?',
-      kind === 'fill'
+      t(kind === 'fill' ? 'Preencher modelo?' : 'Limpar modelo?'),
+      t(kind === 'fill'
         ? 'Cria um fluxo completo de ponta a ponta: corridas, distâncias, kits, planos, dicas, patrocinadores, publicações, leads e a sua inscrição com treinos. Se o modelo já existir, ele é recriado.'
-        : 'Apaga só as corridas de demonstração e tudo ligado a elas. Corridas cadastradas por você continuam.',
+        : 'Apaga só as corridas de demonstração e tudo ligado a elas. Corridas cadastradas por você continuam.'),
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: kind === 'fill' ? 'Preencher' : 'Limpar', style: kind === 'fill' ? 'default' : 'destructive', onPress: () => runDemo(kind) },
+        { text: t('Cancelar'), style: 'cancel' },
+        { text: t(kind === 'fill' ? 'Preencher' : 'Limpar'), style: kind === 'fill' ? 'default' : 'destructive', onPress: () => runDemo(kind) },
       ],
     );
   }
@@ -89,7 +90,7 @@ export default function GestaoScreen() {
         <Title>Administração</Title>
         <Badge label={isAdminGeral ? 'Admin geral' : 'Admin'} color={colors.lime} />
       </View>
-      <Muted style={{ marginBottom: 14 }}>{isAdminGeral ? 'Você vê todas as corridas de todos os gestores.' : 'Suas corridas, o conteúdo delas e os corredores associados.'}</Muted>
+      <Muted style={{ marginBottom: 14 }}>{t(isAdminGeral ? 'Você vê todas as corridas de todos os gestores.' : 'Suas corridas, o conteúdo delas e os corredores associados.')}</Muted>
 
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
         <Stat icon="flag" label="Corridas" value={events.length} color={colors.primary} />
@@ -101,7 +102,7 @@ export default function GestaoScreen() {
       <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} />
 
       <View style={{ marginTop: 12, padding: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface }}>
-        <Text style={{ color: colors.text, fontWeight: '800' }}>Modelo de demonstração</Text>
+        <Text style={{ color: colors.text, fontWeight: '800' }}>{t('Modelo de demonstração')}</Text>
         <Muted style={{ fontSize: 12, marginBottom: 10 }}>Preenche um fluxo completo com dados de exemplo para testar, e limpa quando quiser.</Muted>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <GradientButton small title="Preencher" icon="sparkles" loading={busy === 'fill'} disabled={!!busy} colorsPair={[colors.primary, colors.secondary]} onPress={() => confirmDemo('fill')} style={{ flex: 1 }} />
@@ -126,7 +127,7 @@ export default function GestaoScreen() {
             <View style={{ borderRadius: radius.lg, padding: 14, marginBottom: 12, backgroundColor: alpha(c, 0.15), borderWidth: 1, borderColor: alpha(c, 0.4) }}>
               <Text style={{ color: colors.text, fontWeight: '900', fontSize: 18 }}>{ev.name}</Text>
               <Muted style={{ fontSize: 13 }}>
-                {formatDate(ev.event_date, true)} · {ev.city ?? 'local a definir'} · {ev.status === 'published' ? 'Publicada' : ev.status === 'draft' ? 'Rascunho' : ev.status === 'finished' ? 'Finalizada' : 'Cancelada'}
+                {formatDate(ev.event_date, true)} · {ev.city ?? t('local a definir')} · {t(ev.status === 'published' ? 'Publicada' : ev.status === 'draft' ? 'Rascunho' : ev.status === 'finished' ? 'Finalizada' : 'Cancelada')}
               </Muted>
             </View>
           </FadeIn>
@@ -136,14 +137,14 @@ export default function GestaoScreen() {
             <ListRow icon="color-palette" color={c} title="Personalizar corrida" subtitle="Nome, ícone, imagens, cores, local e links" onPress={() => router.push(`/admin/event-form?id=${ev.id}`)} />
           </Card>
 
-          <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 12, marginBottom: 8, marginTop: 4 }}>CONTEÚDO</Text>
+          <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 12, marginBottom: 8, marginTop: 4 }}>{t('CONTEÚDO')}</Text>
           <Card animated={false}>
             {menu.map((r) => (
               <ListRow key={r.key} icon={r.icon} color={c} title={r.title} subtitle={r.description} onPress={() => router.push(`/admin/crud/${r.key}?parentId=${ev.id}`)} />
             ))}
           </Card>
 
-          <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 12, marginBottom: 8, marginTop: 4 }}>PARTICIPANTES E MARKETING</Text>
+          <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 12, marginBottom: 8, marginTop: 4 }}>{t('PARTICIPANTES E MARKETING')}</Text>
           <Card animated={false}>
             <ListRow icon="people" color={c} title="Corredores da corrida" subtitle="Associar corredores cadastrados, nº de peito e kits" onPress={() => router.push(`/admin/registrations?eventId=${ev.id}`)} />
             <ListRow icon="cloud-upload" color={c} title="Importar compras de kit" subtitle="Colar planilha (CSV) da plataforma de vendas" onPress={() => router.push(`/admin/import?eventId=${ev.id}`)} />
@@ -167,7 +168,7 @@ function Stat({ icon, label, value, color }: { icon: IconName; label: string; va
     <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 14, padding: 10, borderWidth: 1, borderColor: colors.border }}>
       <Ionicons name={icon} size={16} color={color} />
       <Text style={{ color: colors.text, fontWeight: '900', fontSize: 18, marginTop: 4 }}>{value}</Text>
-      <Text style={{ color: colors.textMuted, fontSize: 10 }}>{label}</Text>
+      <Text style={{ color: colors.textMuted, fontSize: 10 }}>{t(label)}</Text>
     </View>
   );
 }

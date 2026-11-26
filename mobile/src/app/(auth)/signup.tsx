@@ -6,6 +6,7 @@ import { AuthHero } from '@/components/AuthHero';
 import { FadeIn, GradientButton, Input } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 export default function SignupScreen() {
   const { signUp } = useAuth();
@@ -17,17 +18,17 @@ export default function SignupScreen() {
 
   async function onSignup() {
     if (!name || !email || password.length < 6) {
-      return Alert.alert('Confira os dados', 'Nome, e-mail e senha (mín. 6 caracteres) são obrigatórios.');
+      return Alert.alert(t('Confira os dados'), t('Nome, e-mail e senha (mín. 6 caracteres) são obrigatórios.'));
     }
     setLoading(true);
     try {
       const { needsConfirmation } = await signUp(email, password, name, phone);
       if (needsConfirmation) {
-        Alert.alert('Confirme seu e-mail 📩', 'Enviamos um link de confirmação. Depois é só entrar!');
+        Alert.alert(t('Confirme seu e-mail 📩'), t('Enviamos um link de confirmação. Depois é só entrar!'));
         router.back();
       }
     } catch (e) {
-      Alert.alert('Não foi possível cadastrar', (e as Error).message);
+      Alert.alert(t('Não foi possível cadastrar'), (e as Error).message);
     } finally {
       setLoading(false);
     }
@@ -45,7 +46,7 @@ export default function SignupScreen() {
             <Input label="Senha" icon="lock-closed-outline" value={password} onChangeText={setPassword} secureTextEntry placeholder="mínimo 6 caracteres" />
             <GradientButton title="Criar conta" icon="rocket" onPress={onSignup} loading={loading} style={{ marginTop: 8 }} />
             <Text onPress={() => router.back()} style={{ color: colors.textMuted, textAlign: 'center', marginTop: 24 }}>
-              Já tenho conta · <Text style={{ color: colors.lime, fontWeight: '800' }}>Entrar</Text>
+              {t('Já tenho conta')} · <Text style={{ color: colors.lime, fontWeight: '800' }}>{t('Entrar')}</Text>
             </Text>
           </FadeIn>
         </View>

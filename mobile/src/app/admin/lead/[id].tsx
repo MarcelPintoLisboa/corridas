@@ -11,6 +11,7 @@ import { supabase, unwrap } from '@/lib/supabase';
 import type { Lead, LeadInteraction, LeadStatus } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 const STATUSES: LeadStatus[] = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 const typeIcon = { note: 'document-text', email: 'mail', whatsapp: 'logo-whatsapp', call: 'call', status_change: 'swap-horizontal' } as const;
@@ -40,7 +41,7 @@ export default function LeadDetail() {
     if (s === lead.status) return;
     const score = { new: 30, contacted: 50, qualified: 75, converted: 100, lost: 0 }[s];
     const { error } = await supabase.from('st_leads').update({ status: s, score }).eq('id', id);
-    if (error) return Alert.alert('Erro', error.message);
+    if (error) return Alert.alert(t('Erro'), error.message);
     await log('status_change', `${leadStatusLabel[lead.status]} → ${leadStatusLabel[s]}`);
     q.reload();
   }
@@ -48,16 +49,16 @@ export default function LeadDetail() {
   async function contact(type: 'whatsapp' | 'email' | 'call') {
     const phone = (lead.phone ?? '').replace(/\D/g, '');
     const first = lead.name.split(' ')[0];
-    const event = lead.event?.name ?? 'nossa corrida';
-    const msg = encodeURIComponent(`Olá ${first}! Aqui é da organização da ${event} 🏃 Ainda dá tempo de garantir seu kit! Posso te ajudar?`);
+    const event = lead.event?.name ?? t('nossa corrida');
+    const msg = encodeURIComponent(t('Olá {first}! Aqui é da organização da {event} 🏃 Ainda dá tempo de garantir seu kit! Posso te ajudar?', { first, event }));
     const url =
       type === 'whatsapp'
         ? `https://wa.me/${phone.length <= 11 ? '55' + phone : phone}?text=${msg}`
         : type === 'email'
           ? `mailto:${lead.email}?subject=${encodeURIComponent(event)}&body=${msg}`
           : `tel:${phone}`;
-    await Linking.openURL(url).catch(() => Alert.alert('Não foi possível abrir'));
-    await log(type, type === 'whatsapp' ? 'Mensagem de WhatsApp enviada' : type === 'email' ? 'E-mail enviado' : 'Ligação realizada');
+    await Linking.openURL(url).catch(() => Alert.alert(t('Não foi possível abrir')));
+    await log(type, t(type === 'whatsapp' ? 'Mensagem de WhatsApp enviada' : type === 'email' ? 'E-mail enviado' : 'Ligação realizada'));
     if (lead.status === 'new') await setStatus('contacted');
     else q.reload();
   }
@@ -70,7 +71,7 @@ export default function LeadDetail() {
   }
 
   async function saveTags() {
-    const arr = (tags ?? '').split(',').map((t) => t.trim()).filter(Boolean);
+    const arr = (tags ?? '').split(',').map((v) => v.trim()).filter(Boolean);
     await supabase.from('st_leads').update({ tags: arr }).eq('id', id);
     setTags(null);
     q.reload();
@@ -107,7 +108,7 @@ export default function LeadDetail() {
       <SectionHeader title="Tags" action={tags == null ? 'Editar' : undefined} onAction={() => setTags(lead.tags.join(', '))} />
       {tags == null ? (
         <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-          {lead.tags.length ? lead.tags.map((t) => <Badge key={t} label={`#${t}`} color={colors.secondary} />) : <Muted>Sem tags</Muted>}
+          {lead.tags.length ? lead.tags.map((tag) => <Badge key={tag} label={`#${tag}`} color={colors.secondary} />) : <Muted>Sem tags</Muted>}
         </View>
       ) : (
         <>
@@ -130,7 +131,7 @@ export default function LeadDetail() {
           </View>
         </View>
       ))}
-      <Muted style={{ fontSize: 12, marginBottom: 30 }}>Lead criado em {formatDateTime(lead.created_at)}</Muted>
+      <Muted style={{ fontSize: 12, marginBottom: 30 }}>{t('Lead criado em {date}', { date: formatDateTime(lead.created_at) })}</Muted>
     </Screen>
   );
 }
@@ -139,7 +140,7 @@ function ActionBtn({ icon, color, label, onPress }: { icon: 'logo-whatsapp' | 'c
   return (
     <Pressable onPress={onPress} style={{ alignItems: 'center', backgroundColor: alpha(color, 0.15), borderRadius: radius.md, paddingVertical: 10, paddingHorizontal: 16 }}>
       <Ionicons name={icon} size={22} color={color} />
-      <Text style={{ color, fontWeight: '700', fontSize: 12, marginTop: 2 }}>{label}</Text>
+      <Text style={{ color, fontWeight: '700', fontSize: 12, marginTop: 2 }}>{t(label)}</Text>
     </Pressable>
   );
 }

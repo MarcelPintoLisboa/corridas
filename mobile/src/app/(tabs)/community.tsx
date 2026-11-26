@@ -14,6 +14,7 @@ import { pickImage, uploadImage } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 /** Mural interno da corrida: só os corredores associados à MESMA corrida veem, publicam fotos/treinos e comentam */
 export default function CommunityScreen() {
@@ -64,16 +65,16 @@ export default function CommunityScreen() {
   }
 
   function remove(p: CommunityPost) {
-    Alert.alert('Apagar publicação?', undefined, [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Apagar', style: 'destructive', onPress: async () => { await supabase.from('st_community_posts').delete().eq('id', p.id); q.reload(); } },
+    Alert.alert(t('Apagar publicação?'), undefined, [
+      { text: t('Cancelar'), style: 'cancel' },
+      { text: t('Apagar'), style: 'destructive', onPress: async () => { await supabase.from('st_community_posts').delete().eq('id', p.id); q.reload(); } },
     ]);
   }
 
   return (
     <Screen refreshing={q.refreshing} onRefresh={q.refresh}>
       <Title>Comunidade</Title>
-      <Muted style={{ marginBottom: 12 }}>Mural dos corredores da {event.name}. Só quem está nesta corrida vê.</Muted>
+      <Muted style={{ marginBottom: 12 }}>{t('Mural dos corredores da {name}. Só quem está nesta corrida vê.', { name: event.name })}</Muted>
       <RaceSwitcher />
 
       <Composer eventId={event.id} accent={accent} lastWorkout={lastWorkout} onPosted={q.reload} />
@@ -88,7 +89,7 @@ export default function CommunityScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 }}>
               <Avatar uri={p.author_avatar} name={p.author_name} size={38} />
               <View style={{ flex: 1 }}>
-                <Text style={{ color: colors.text, fontWeight: '800' }}>{p.author_name ?? 'Corredor'}</Text>
+                <Text style={{ color: colors.text, fontWeight: '800' }}>{p.author_name ?? t('Corredor')}</Text>
                 <Muted style={{ fontSize: 12 }}>{formatDate(p.created_at, true)} · {formatTime(p.created_at)}</Muted>
               </View>
               {canDelete ? (
@@ -130,7 +131,7 @@ export default function CommunityScreen() {
 function Metric({ label, value, color = colors.text }: { label: string; value: string; color?: string }) {
   return (
     <View style={{ flex: 1 }}>
-      <Text style={[font.tiny, { color: colors.textMuted, fontSize: 9 }]}>{label}</Text>
+      <Text style={[font.tiny, { color: colors.textMuted, fontSize: 9 }]}>{t(label)}</Text>
       <Text style={{ color, fontWeight: '900', fontSize: 17 }}>{value}</Text>
     </View>
   );
@@ -159,7 +160,7 @@ function Composer({ eventId, accent, lastWorkout, onPosted }: { eventId: string;
       setAttach(false);
       onPosted();
     } catch (e) {
-      Alert.alert('Não foi possível publicar', (e as Error).message);
+      Alert.alert(t('Não foi possível publicar'), (e as Error).message);
     } finally {
       setBusy(false);
     }
@@ -170,7 +171,7 @@ function Composer({ eventId, accent, lastWorkout, onPosted }: { eventId: string;
       <TextInput
         value={text}
         onChangeText={setText}
-        placeholder="Como foi o treino hoje?"
+        placeholder={t('Como foi o treino hoje?')}
         placeholderTextColor={colors.textDim}
         multiline
         style={{ color: colors.text, fontSize: 15, minHeight: 50, textAlignVertical: 'top' }}
@@ -200,12 +201,12 @@ function Composer({ eventId, accent, lastWorkout, onPosted }: { eventId: string;
         {lastWorkout ? (
           <Pressable onPress={() => setAttach(!attach)} hitSlop={8} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="stats-chart" size={20} color={attach ? accent : colors.textMuted} />
-            <Text style={{ color: attach ? accent : colors.textMuted, fontWeight: '700', fontSize: 12 }}>Último treino</Text>
+            <Text style={{ color: attach ? accent : colors.textMuted, fontWeight: '700', fontSize: 12 }}>{t('Último treino')}</Text>
           </Pressable>
         ) : null}
         <View style={{ flex: 1 }} />
         <Pressable onPress={publish} disabled={busy} style={{ backgroundColor: accent, borderRadius: radius.pill, paddingHorizontal: 18, paddingVertical: 9, opacity: busy ? 0.6 : 1 }}>
-          {busy ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800' }}>Publicar</Text>}
+          {busy ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800' }}>{t('Publicar')}</Text>}
         </Pressable>
       </View>
     </Card>
@@ -231,17 +232,17 @@ function Comments({ post, comments, accent, uid, canModerate, onChanged, likeBut
     setBusy(true);
     const { error } = await supabase.from('st_community_comments').insert({ post_id: post.id, body: text.trim() });
     setBusy(false);
-    if (error) return Alert.alert('Não foi possível comentar', error.message);
+    if (error) return Alert.alert(t('Não foi possível comentar'), error.message);
     setText('');
     setOpen(true);
     onChanged();
   }
 
   function remove(c: CommunityComment) {
-    Alert.alert('Apagar comentário?', undefined, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('Apagar comentário?'), undefined, [
+      { text: t('Cancelar'), style: 'cancel' },
       {
-        text: 'Apagar',
+        text: t('Apagar'),
         style: 'destructive',
         onPress: async () => {
           await supabase.from('st_community_comments').delete().eq('id', c.id);
@@ -263,7 +264,7 @@ function Comments({ post, comments, accent, uid, canModerate, onChanged, likeBut
 
       {comments.length > 2 && !open ? (
         <Text onPress={() => setOpen(true)} style={{ color: colors.textMuted, marginTop: 10, fontWeight: '600' }}>
-          Ver os {comments.length} comentários
+          {t('Ver os {n} comentários', { n: comments.length })}
         </Text>
       ) : null}
       {shown.map((c) => (
@@ -271,7 +272,7 @@ function Comments({ post, comments, accent, uid, canModerate, onChanged, likeBut
           <Avatar uri={c.author_avatar} name={c.author_name} size={28} />
           <View style={{ flex: 1, backgroundColor: colors.bgElevated, borderRadius: radius.md, paddingHorizontal: 10, paddingVertical: 7 }}>
             <Text style={{ color: colors.text, fontWeight: '800', fontSize: 13 }}>
-              {c.author_name ?? 'Corredor'}{' '}
+              {c.author_name ?? t('Corredor')}{' '}
               <Text style={{ color: colors.textDim, fontWeight: '400', fontSize: 11 }}>
                 · {formatDate(c.created_at, true)} {formatTime(c.created_at)}
               </Text>
@@ -290,7 +291,7 @@ function Comments({ post, comments, accent, uid, canModerate, onChanged, likeBut
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Escreva um comentário…"
+          placeholder={t('Escreva um comentário…')}
           placeholderTextColor={colors.textDim}
           maxLength={1000}
           onSubmitEditing={send}

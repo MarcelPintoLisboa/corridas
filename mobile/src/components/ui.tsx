@@ -27,6 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { t } from '@/i18n';
 import { daysUntil, initials } from '@/lib/format';
 import { alpha, colors, font, radius, spacing } from '@/theme';
 
@@ -70,23 +71,26 @@ export function Screen({
 
 // ---------------------------------------------------------------- Text
 export function Title({ children, style }: { children: ReactNode; style?: object }) {
-  return <Text style={[font.h1, { color: colors.text }, style]}>{children}</Text>;
+  return <Text style={[font.h1, { color: colors.text }, style]}>{tr(children)}</Text>;
 }
 export function Muted({ children, style, numberOfLines }: { children: ReactNode; style?: object; numberOfLines?: number }) {
   return (
     <Text numberOfLines={numberOfLines} style={[font.body, { color: colors.textMuted }, style]}>
-      {children}
+      {tr(children)}
     </Text>
   );
 }
 
+/** traduz quando o conteúdo é um texto simples */
+const tr = (c: ReactNode) => (typeof c === 'string' ? t(c) : c);
+
 export function SectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <View style={styles.sectionHeader}>
-      <Text style={[font.h2, { color: colors.text }]}>{title}</Text>
+      <Text style={[font.h2, { color: colors.text }]}>{t(title)}</Text>
       {action ? (
         <Pressable onPress={onAction} hitSlop={10}>
-          <Text style={[font.small, { color: colors.textMuted }]}>{action} ›</Text>
+          <Text style={[font.small, { color: colors.textMuted }]}>{t(action)} ›</Text>
         </Pressable>
       ) : null}
     </View>
@@ -125,7 +129,7 @@ export function GradientButton({
       ) : (
         <>
           {icon ? <Ionicons name={icon} size={small ? 16 : 20} color="#fff" /> : null}
-          <Text style={[styles.btnText, small && { fontSize: 14 }]}>{title}</Text>
+          <Text style={[styles.btnText, small && { fontSize: 14 }]}>{t(title)}</Text>
         </>
       )}
     </View>
@@ -198,12 +202,13 @@ export function Input({ label, icon, style, ...props }: TextInputProps & { label
   const [focused, setFocused] = useState(false);
   return (
     <View style={{ marginBottom: spacing.md }}>
-      {label ? <Text style={styles.label}>{label}</Text> : null}
+      {label ? <Text style={styles.label}>{t(label)}</Text> : null}
       <View style={[styles.inputWrap, focused && { borderColor: colors.primary }]}>
         {icon ? <Ionicons name={icon} size={18} color={colors.textMuted} style={{ marginRight: 8 }} /> : null}
         <TextInput
           placeholderTextColor={colors.textDim}
           {...props}
+          placeholder={props.placeholder ? t(props.placeholder) : undefined}
           onFocus={(e) => {
             setFocused(true);
             props.onFocus?.(e);
@@ -226,7 +231,7 @@ export function Chip({ label, active, onPress, color = colors.primary }: {
     <Pressable
       onPress={onPress}
       style={[styles.chip, active ? { backgroundColor: color, borderColor: color } : { borderColor: colors.border }]}>
-      <Text style={[font.small, { color: active ? '#fff' : colors.textMuted, fontWeight: '700' }]}>{label}</Text>
+      <Text style={[font.small, { color: active ? '#fff' : colors.textMuted, fontWeight: '700' }]}>{t(label)}</Text>
     </Pressable>
   );
 }
@@ -234,7 +239,7 @@ export function Chip({ label, active, onPress, color = colors.primary }: {
 export function Badge({ label, color = colors.primary }: { label: string; color?: string }) {
   return (
     <View style={[styles.badge, { backgroundColor: alpha(color, 0.18) }]}>
-      <Text style={[font.tiny, { color, fontSize: 10 }]}>{label}</Text>
+      <Text style={[font.tiny, { color, fontSize: 10 }]}>{t(label)}</Text>
     </View>
   );
 }
@@ -257,9 +262,9 @@ export function EmptyState({ icon = 'sparkles', title, message, action, onAction
         <View style={styles.emptyIcon}>
           <Ionicons name={icon} size={34} color={colors.primary} />
         </View>
-        <Text style={[font.h2, { color: colors.text, textAlign: 'center' }]}>{title}</Text>
-        {message ? <Muted style={{ textAlign: 'center', marginTop: 6 }}>{message}</Muted> : null}
-        {action ? <GradientButton title={action} onPress={onAction} style={{ marginTop: spacing.lg }} /> : null}
+        <Text style={[font.h2, { color: colors.text, textAlign: 'center' }]}>{t(title)}</Text>
+        {message ? <Muted style={{ textAlign: 'center', marginTop: 6 }}>{t(message)}</Muted> : null}
+        {action ? <GradientButton title={t(action)} onPress={onAction} style={{ marginTop: spacing.lg }} /> : null}
       </View>
     </FadeIn>
   );
@@ -278,10 +283,10 @@ export function Avatar({ uri, name, size = 44 }: { uri?: string | null; name?: s
 export function Stat({ label, value, unit, color = colors.text }: { label: string; value: string; unit?: string; color?: string }) {
   return (
     <View style={{ flex: 1 }}>
-      <Text style={[font.tiny, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[font.tiny, { color: colors.textMuted }]}>{t(label)}</Text>
       <Text style={{ color, fontSize: 24, fontWeight: '900', marginTop: 2 }}>
         {value}
-        {unit ? <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '600' }}> {unit}</Text> : null}
+        {unit ? <Text style={{ fontSize: 13, color: colors.textMuted, fontWeight: '600' }}> {t(unit)}</Text> : null}
       </Text>
     </View>
   );
@@ -291,8 +296,8 @@ export function Stat({ label, value, unit, color = colors.text }: { label: strin
 export function Countdown({ date, color = colors.lime }: { date: string; color?: string }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
   }, []);
   const diff = Math.max(0, new Date(date).getTime() - now);
   const d = Math.floor(diff / 86_400_000);
@@ -300,10 +305,10 @@ export function Countdown({ date, color = colors.lime }: { date: string; color?:
   const m = Math.floor((diff % 3_600_000) / 60_000);
   const s = Math.floor((diff % 60_000) / 1000);
   const items = [
-    { v: d, l: 'dias' },
+    { v: d, l: t('dias') },
     { v: h, l: 'h' },
     { v: m, l: 'min' },
-    { v: s, l: 'seg' },
+    { v: s, l: t('seg') },
   ];
   return (
     <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -325,7 +330,7 @@ export function PulseBadge({ date, color = colors.lime }: { date: string; color?
   }, [pulse]);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: pulse.value }] }));
   const days = daysUntil(date);
-  const label = days > 1 ? `FALTAM ${days} DIAS` : days === 1 ? 'É AMANHÃ!' : days === 0 ? 'É HOJE! 🔥' : 'FINALIZADA';
+  const label = days > 1 ? t('FALTAM {n} DIAS', { n: days }) : days === 1 ? t('É AMANHÃ!') : days === 0 ? t('É HOJE! 🔥') : t('FINALIZADA');
   return (
     <Animated.View style={[styles.pulse, { backgroundColor: color }, style]}>
       <Text style={{ color: '#000', fontWeight: '900', fontSize: 12, letterSpacing: 1 }}>{label}</Text>
@@ -345,8 +350,8 @@ export function ListRow({ icon, title, subtitle, onPress, right, color = colors.
         </View>
       ) : null}
       <View style={{ flex: 1 }}>
-        <Text style={[font.h3, { color: colors.text }]}>{title}</Text>
-        {subtitle ? <Muted style={{ fontSize: 13, marginTop: 2 }} numberOfLines={2}>{subtitle}</Muted> : null}
+        <Text style={[font.h3, { color: colors.text }]}>{t(title)}</Text>
+        {subtitle ? <Muted style={{ fontSize: 13, marginTop: 2 }} numberOfLines={2}>{t(subtitle)}</Muted> : null}
       </View>
       {right ?? (onPress ? <Ionicons name="chevron-forward" size={18} color={colors.textDim} /> : null)}
     </Pressable>

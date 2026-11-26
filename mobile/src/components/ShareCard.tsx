@@ -7,6 +7,7 @@ import { formatDate, formatDuration, formatKm, formatPace } from '@/lib/format';
 import type { RaceEvent, Workout } from '@/lib/types';
 
 import { EvolutionChart, type ChartPoint } from './charts';
+import { t, tn } from '@/i18n';
 
 const APP_LOGO = require('../../assets/images/logo.png');
 
@@ -54,15 +55,15 @@ export function ShareCard({ ref, workout, event, history, photoUri, width, athle
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16 * s }} numberOfLines={1}>
-            {event?.name ?? 'Meu treino'}
+            {event?.name ?? t('Meu treino')}
           </Text>
           <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 11 * s, fontWeight: '600' }}>
             {formatDate(workout.performed_at)}
-            {daysToRace != null && daysToRace > 0 ? `  ·  faltam ${daysToRace} dias` : ''}
+            {daysToRace != null && daysToRace > 0 ? `  ·  ${tn(daysToRace, 'falta {n} dia', 'faltam {n} dias')}` : ''}
           </Text>
         </View>
         <View style={{ backgroundColor: c1, paddingHorizontal: 10 * s, paddingVertical: 5 * s, borderRadius: 99 }}>
-          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 10 * s, letterSpacing: 1 }}>{workout.is_race ? 'PROVA' : 'TREINO'}</Text>
+          <Text style={{ color: '#fff', fontWeight: '900', fontSize: 10 * s, letterSpacing: 1 }}>{t(workout.is_race ? 'PROVA' : 'TREINO')}</Text>
         </View>
       </View>
 
@@ -70,7 +71,7 @@ export function ShareCard({ ref, workout, event, history, photoUri, width, athle
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: 22 * s }}>
         {show.distance ? (
           <View style={{ marginBottom: 8 * s }}>
-            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 * s, fontWeight: '800', letterSpacing: 2 }}>DISTÂNCIA</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 * s, fontWeight: '800', letterSpacing: 2 }}>{t('DISTÂNCIA')}</Text>
             <Text style={{ color: '#fff', fontSize: 64 * s, fontWeight: '900', letterSpacing: -2, lineHeight: 68 * s }}>
               {formatKm(workout.distance_km, 2)}
               <Text style={{ fontSize: 22 * s, color: c1 }}> km</Text>
@@ -79,14 +80,14 @@ export function ShareCard({ ref, workout, event, history, photoUri, width, athle
         ) : null}
 
         <View style={{ flexDirection: 'row', gap: 24 * s, marginBottom: 14 * s }}>
-          {show.time ? <Metric label="TEMPO" value={formatDuration(workout.duration_seconds)} s={s} /> : null}
+          {show.time ? <Metric label={t('TEMPO')} value={formatDuration(workout.duration_seconds)} s={s} /> : null}
           {show.pace ? <Metric label="PACE" value={`${formatPace(workout.avg_pace_seconds)}/km`} s={s} /> : null}
         </View>
 
         {show.chart && history.length > 1 ? (
           <View style={{ backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 14 * s, padding: 10 * s, borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)' }}>
             <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 10 * s, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 * s }}>
-              {chartMode === 'pace' ? 'EVOLUÇÃO DO PACE' : 'KM ACUMULADOS'} · {history.length} TREINOS
+              {t(chartMode === 'pace' ? 'EVOLUÇÃO DO PACE' : 'KM ACUMULADOS')} · {t('{n} TREINOS', { n: history.length })}
             </Text>
             <EvolutionChart
               data={history}

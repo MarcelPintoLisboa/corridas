@@ -13,6 +13,7 @@ import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, radius } from '@/theme';
 
 import { Badge, FadeIn, Muted, type IconName } from './ui';
+import { t, tn } from '@/i18n';
 
 export interface Atualizacao {
   id: string;
@@ -115,15 +116,15 @@ export function UpdatesList({ items, seenAt, registrations, onOpen }: {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ color: m.color, fontSize: 10, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                  {u.acao === 'novo' ? 'Novo' : 'Atualizado'} · {m.label}
+                  {t(u.acao === 'novo' ? 'Novo' : 'Atualizado')} · {t(m.label)}
                   {multi && e ? ` · ${e.name}` : ''}
                 </Text>
                 <Text style={{ color: colors.text, fontWeight: '800' }} numberOfLines={1}>
-                  {u.titulo}
+                  {t(u.titulo)}
                 </Text>
                 {u.detalhe ? (
                   <Muted style={{ fontSize: 12 }} numberOfLines={1}>
-                    {u.detalhe}
+                    {translateDetail(u.detalhe)}
                   </Muted>
                 ) : null}
               </View>
@@ -139,10 +140,15 @@ export function UpdatesList({ items, seenAt, registrations, onOpen }: {
   );
 }
 
+/** detalhes gerados no banco (ex.: "8 semanas · Coach") */
+function translateDetail(d: string) {
+  return t(d).replace(/^(d+) semanas/, (_, n) => tn(Number(n), '{n} semana', '{n} semanas'));
+}
+
 function whenLabel(iso: string) {
   const d = new Date(iso);
   const diff = (Date.now() - d.getTime()) / 60000;
-  if (diff < 1) return 'agora';
+  if (diff < 1) return t('agora');
   if (diff < 60) return `${Math.floor(diff)} min`;
   if (diff < 60 * 24 && d.getDate() === new Date().getDate()) return formatTime(d);
   return formatDate(d, true);

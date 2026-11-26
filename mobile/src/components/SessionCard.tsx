@@ -8,6 +8,7 @@ import { isSameDay } from '@/lib/plan';
 import { alpha, colors, font, radius } from '@/theme';
 
 import type { IconName } from './ui';
+import { t } from '@/i18n';
 
 export function SessionCard({ s, compact }: { s: ScheduledSession; compact?: boolean }) {
   const meta = sessionTypeMeta[s.type];
@@ -42,7 +43,7 @@ export function SessionCard({ s, compact }: { s: ScheduledSession; compact?: boo
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text style={[font.tiny, { color: meta.color, fontSize: 10 }]}>{meta.label}</Text>
-          <Text style={{ color: colors.textDim, fontSize: 11 }}>· {today ? 'HOJE' : formatDate(s.date, true)}</Text>
+          <Text style={{ color: colors.textDim, fontSize: 11 }}>· {today ? t('HOJE') : formatDate(s.date, true)}</Text>
         </View>
         <Text style={[font.h3, { color: colors.text, marginTop: 2 }]}>{s.title}</Text>
         {!compact && s.description ? (

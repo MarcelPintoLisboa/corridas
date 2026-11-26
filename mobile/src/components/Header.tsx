@@ -5,6 +5,7 @@ import { Text, View } from 'react-native';
 import { colors, font } from '@/theme';
 
 import { IconButton } from './ui';
+import { t } from '@/i18n';
 
 /** Cabeçalho simples com botão voltar */
 export function BackHeader({ title, right }: { title?: string; right?: ReactNode }) {
@@ -12,7 +13,7 @@ export function BackHeader({ title, right }: { title?: string; right?: ReactNode
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 }}>
       <IconButton icon="chevron-back" onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} />
       <Text style={[font.h2, { color: colors.text, flex: 1 }]} numberOfLines={1}>
-        {title}
+        {title ? t(title) : title}
       </Text>
       {right}
     </View>

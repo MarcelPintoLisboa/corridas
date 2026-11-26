@@ -12,9 +12,11 @@ import { formatDate, leadStatusColor, leadStatusLabel } from '@/lib/format';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { Lead, LeadStatus } from '@/lib/types';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 const STATUSES: LeadStatus[] = ['new', 'contacted', 'qualified', 'converted', 'lost'];
 const sourceLabel: Record<string, string> = { app: 'App', instagram: 'Instagram', sponsor: 'Patrocinador', landing: 'Landing page', referral: 'Indicação', event: 'Evento', import: 'Importação' };
+const source = (k: string) => t(sourceLabel[k] ?? k);
 
 export default function LeadsScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>();
@@ -50,20 +52,20 @@ export default function LeadsScreen() {
   async function exportCsv() {
     const header = 'nome;email;telefone;cidade;origem;status;interesse;score;consentimento;tags;criado_em';
     const lines = (q.data ?? []).map((l) =>
-      [l.name, l.email, l.phone, l.city, sourceLabel[l.source], leadStatusLabel[l.status], l.interest, l.score, l.consent_marketing ? 'sim' : 'não', l.tags.join('|'), l.created_at]
+      [l.name, l.email, l.phone, l.city, source(l.source), leadStatusLabel[l.status], l.interest, l.score, t(l.consent_marketing ? 'sim' : 'não'), l.tags.join('|'), l.created_at]
         .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`)
         .join(';'),
     );
     const file = new File(Paths.cache, `leads-${Date.now()}.csv`);
     file.create();
     file.write('﻿' + [header, ...lines].join('\n'));
-    await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: 'Exportar leads', UTI: 'public.comma-separated-values-text' });
+    await Sharing.shareAsync(file.uri, { mimeType: 'text/csv', dialogTitle: t('Exportar leads'), UTI: 'public.comma-separated-values-text' });
   }
 
   async function addLead() {
-    if (!form.name) return Alert.alert('Informe o nome');
+    if (!form.name) return Alert.alert(t('Informe o nome'));
     const { error } = await supabase.from('st_leads').insert({ event_id: eventId, ...form, email: form.email.toLowerCase() || null, source: 'event', consent_marketing: true });
-    if (error) return Alert.alert('Erro', error.message);
+    if (error) return Alert.alert(t('Erro'), error.message);
     setAdding(false);
     setForm({ name: '', email: '', phone: '', interest: '' });
     q.reload();
@@ -84,7 +86,7 @@ export default function LeadsScreen() {
 
         {/* Funil */}
         <Card animated={false}>
-          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 10 }]}>Funil · {total} leads</Text>
+          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 10 }]}>{t('Funil · {n} leads', { n: total })}</Text>
           {STATUSES.map((s) => {
             const n = counts[s] ?? 0;
             const pct = total ? n / total : 0;
@@ -114,7 +116,7 @@ export default function LeadsScreen() {
                 <Muted style={{ fontSize: 12 }}>{[l.email, l.phone].filter(Boolean).join(' · ')}</Muted>
                 <View style={{ flexDirection: 'row', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
                   <Badge label={leadStatusLabel[l.status]} color={leadStatusColor[l.status]} />
-                  <Badge label={sourceLabel[l.source]} color={colors.textMuted} />
+                  <Badge label={source(l.source)} color={colors.textMuted} />
                   {l.interest ? <Badge label={l.interest} color={colors.lime} /> : null}
                 </View>
               </View>
@@ -130,7 +132,7 @@ export default function LeadsScreen() {
       <Modal visible={adding} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setAdding(false)}>
         <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: 24 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <Text style={[font.h2, { color: colors.text, flex: 1 }]}>Novo lead</Text>
+            <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t('Novo lead')}</Text>
             <IconButton icon="close" onPress={() => setAdding(false)} />
           </View>
           <Input label="Nome *" value={form.name} onChangeText={(v) => setForm({ ...form, name: v })} />

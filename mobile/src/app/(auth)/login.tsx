@@ -7,6 +7,7 @@ import { FadeIn, GradientButton, Input } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
@@ -15,21 +16,21 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   async function onLogin() {
-    if (!email || !password) return Alert.alert('Preencha e-mail e senha');
+    if (!email || !password) return Alert.alert(t('Preencha e-mail e senha'));
     setLoading(true);
     try {
       await signIn(email, password);
     } catch (e) {
-      Alert.alert('Não foi possível entrar', (e as Error).message);
+      Alert.alert(t('Não foi possível entrar'), (e as Error).message);
     } finally {
       setLoading(false);
     }
   }
 
   async function onForgot() {
-    if (!email) return Alert.alert('Informe seu e-mail acima para recuperar a senha');
+    if (!email) return Alert.alert(t('Informe seu e-mail acima para recuperar a senha'));
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-    Alert.alert(error ? 'Erro' : 'Pronto!', error ? error.message : 'Enviamos um link de recuperação para seu e-mail.');
+    Alert.alert(t(error ? 'Erro' : 'Pronto!'), error ? error.message : t('Enviamos um link de recuperação para seu e-mail.'));
   }
 
   return (
@@ -41,13 +42,13 @@ export default function LoginScreen() {
             <Input label="E-mail" icon="mail-outline" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholder="voce@email.com" />
             <Input label="Senha" icon="lock-closed-outline" value={password} onChangeText={setPassword} secureTextEntry placeholder="••••••" />
             <Text onPress={onForgot} style={{ color: colors.textMuted, textAlign: 'right', marginTop: -6, marginBottom: 20 }}>
-              Esqueci minha senha
+              {t('Esqueci minha senha')}
             </Text>
             <GradientButton title="Entrar" icon="arrow-forward" onPress={onLogin} loading={loading} />
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
-              <Text style={{ color: colors.textMuted }}>Ainda não tem conta? </Text>
+              <Text style={{ color: colors.textMuted }}>{t('Ainda não tem conta?')} </Text>
               <Link href="/signup" style={{ color: colors.lime, fontWeight: '800' }}>
-                Criar conta
+                {t('Criar conta')}
               </Link>
             </View>
           </FadeIn>

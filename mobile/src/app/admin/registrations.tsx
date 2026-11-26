@@ -11,6 +11,7 @@ import { levelLabel } from '@/lib/format';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { EventDistance, Profile } from '@/lib/types';
 import { colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 interface Row {
   id: string;
@@ -76,19 +77,19 @@ export default function RegistrationsScreen() {
 
   async function update(id: string, patch: Partial<Row> & { kit_picked_up_at?: string | null }) {
     const { error } = await supabase.from('st_registrations').update(patch).eq('id', id);
-    if (error) return Alert.alert('Erro', error.message);
+    if (error) return Alert.alert(t('Erro'), t(error.message));
     q.setData({ ...q.data!, rows: all.map((r) => (r.id === id ? { ...r, ...patch } : r)) });
   }
 
   function removeRegistration(r: Row) {
-    Alert.alert('Remover da corrida?', `${r.profile?.full_name || r.profile?.email || 'Este corredor'} deixa de ver os treinos e o mural desta corrida.`, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('Remover da corrida?'), t('{name} deixa de ver os treinos e o mural desta corrida.', { name: r.profile?.full_name || r.profile?.email || t('Este corredor') }), [
+      { text: t('Cancelar'), style: 'cancel' },
       {
-        text: 'Remover',
+        text: t('Remover'),
         style: 'destructive',
         onPress: async () => {
           const { error } = await supabase.from('st_registrations').delete().eq('id', r.id);
-          if (error) return Alert.alert('Erro', error.message);
+          if (error) return Alert.alert(t('Erro'), t(error.message));
           q.reload();
         },
       },
@@ -97,7 +98,7 @@ export default function RegistrationsScreen() {
 
   async function removePending(p: Pending) {
     const { error } = await supabase.from('st_inscricoes_pendentes').delete().eq('id', p.id);
-    if (error) return Alert.alert('Erro', error.message);
+    if (error) return Alert.alert(t('Erro'), t(error.message));
     q.reload();
   }
 
@@ -109,21 +110,21 @@ export default function RegistrationsScreen() {
       <Screen refreshing={q.refreshing} onRefresh={q.refresh} bottomInset={false}>
         <BackHeader title="Corredores da corrida" right={<IconButton icon="person-add" bg={colors.primary} onPress={() => setAdding(true)} />} />
         <Muted style={{ marginTop: -8, marginBottom: 12 }}>
-          {all.length} inscritos · {done} kits retirados{q.data.pending.length ? ` · ${q.data.pending.length} aguardando 1º acesso` : ''}
+          {t('{n} inscritos', { n: all.length })} · {t('{n} kits retirados', { n: done })}{q.data.pending.length ? ` · ${t('{n} aguardando 1º acesso', { n: q.data.pending.length })}` : ''}
         </Muted>
 
         <GradientButton title="Associar corredor cadastrado" icon="person-add" onPress={() => setAdding(true)} style={{ marginBottom: 14 }} />
 
         {q.data.pending.length ? (
           <Card animated={false} style={{ borderColor: colors.warning }}>
-            <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 4 }}>Aguardando 1º acesso</Text>
+            <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 4 }}>{t('Aguardando 1º acesso')}</Text>
             <Muted style={{ fontSize: 12, marginBottom: 8 }}>São inscritos automaticamente quando entrarem no app com este e-mail.</Muted>
             {q.data.pending.map((p) => (
               <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 6 }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: colors.text, fontWeight: '700' }}>{p.usuario?.full_name || p.usuario?.email}</Text>
                   <Muted style={{ fontSize: 12 }}>
-                    {p.usuario?.email} · {p.distance?.label ?? 'sem distância'} · {levelLabel[p.level]}
+                    {p.usuario?.email} · {p.distance?.label ?? t('sem distância')} · {levelLabel[p.level]}
                   </Muted>
                 </View>
                 <Pressable onPress={() => removePending(p)} hitSlop={10}>
@@ -151,7 +152,7 @@ export default function RegistrationsScreen() {
                   {r.profile?.role === 'admin' ? <Badge label="Admin" color={colors.lime} /> : null}
                   {r.distance ? <Badge label={r.distance.label} color={colors.primary} /> : null}
                   <Badge label={levelLabel[r.level]} color={colors.textMuted} />
-                  {r.shirt_size ? <Badge label={`Cam. ${r.shirt_size}`} color={colors.cyan} /> : null}
+                  {r.shirt_size ? <Badge label={`${t('Cam.')} ${r.shirt_size}`} color={colors.cyan} /> : null}
                 </View>
               </View>
               <TextInput
@@ -168,7 +169,7 @@ export default function RegistrationsScreen() {
                 onPress={() => update(r.id, { kit_picked_up: !r.kit_picked_up, kit_picked_up_at: !r.kit_picked_up ? new Date().toISOString() : null })}
                 style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: radius.pill, backgroundColor: r.kit_picked_up ? colors.success : colors.surfaceAlt }}>
                 <Ionicons name={r.kit_picked_up ? 'checkmark-circle' : 'cube-outline'} size={18} color={r.kit_picked_up ? '#000' : colors.text} />
-                <Text style={{ color: r.kit_picked_up ? '#000' : colors.text, fontWeight: '800' }}>{r.kit_picked_up ? 'Kit entregue' : 'Marcar kit entregue'}</Text>
+                <Text style={{ color: r.kit_picked_up ? '#000' : colors.text, fontWeight: '800' }}>{t(r.kit_picked_up ? 'Kit entregue' : 'Marcar kit entregue')}</Text>
               </Pressable>
               <Pressable onPress={() => removeRegistration(r)} style={{ width: 44, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: colors.surfaceAlt }}>
                 <Ionicons name="person-remove-outline" size={18} color={colors.danger} />
@@ -228,14 +229,14 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
       : await supabase.rpc('st_associar_corredor', { p_event_id: eventId, p_usuario_id: picked.id, p_distance_id: distanceId, p_level: level });
     setSaving(false);
     if (error) {
-      return Alert.alert('Não foi possível associar', /function|schema cache/i.test(error.message) ? 'Rode os arquivos supabase/migrations/20261126000003_st_corredores.sql e 20261126000004_st_gestores.sql no SQL Editor do Supabase.' : error.message);
+      return Alert.alert(t('Não foi possível associar'), /function|schema cache/i.test(error.message) ? t('Rode os arquivos supabase/migrations/20261126000003_st_corredores.sql e 20261126000004_st_gestores.sql no SQL Editor do Supabase.') : t(error.message));
     }
     onDone();
     Alert.alert(
-      data === 'pendente' ? 'Associado — aguardando 1º acesso' : 'Corredor associado ✓',
+      t(data === 'pendente' ? 'Associado — aguardando 1º acesso' : 'Corredor associado ✓'),
       data === 'pendente'
-        ? `${picked.email} ainda não entrou no app. A inscrição é feita automaticamente no primeiro acesso.`
-        : `${picked.full_name || picked.email} já vê os treinos, o mural e as informações desta corrida.`,
+        ? t('{email} ainda não entrou no app. A inscrição é feita automaticamente no primeiro acesso.', { email: picked.email ?? '' })
+        : t('{name} já vê os treinos, o mural e as informações desta corrida.', { name: picked.full_name || picked.email || '' }),
     );
     close();
   }
@@ -246,7 +247,7 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={close}>
       <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: 24 }} keyboardShouldPersistTaps="handled">
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <Text style={[font.h2, { color: colors.text, flex: 1 }]}>Associar corredor</Text>
+          <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t('Associar corredor')}</Text>
           <IconButton icon="close" onPress={close} />
         </View>
         <Muted style={{ marginBottom: 14 }}>Informe o e-mail do corredor ou escolha alguém que você já cadastrou. Gestores também podem correr.</Muted>
@@ -254,7 +255,7 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
         {!picked ? (
           <>
             <Card animated={false}>
-              <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 8 }}>Pelo e-mail</Text>
+              <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 8 }}>{t('Pelo e-mail')}</Text>
               <Input icon="mail-outline" placeholder="email@docorredor.com" value={newEmail} onChangeText={setNewEmail} autoCapitalize="none" keyboardType="email-address" />
               <Input icon="person-outline" placeholder="Nome (opcional)" value={newName} onChangeText={setNewName} />
               <GradientButton
@@ -264,13 +265,13 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
                 disabled={!/^\S+@\S+\.\S+$/.test(newEmail.trim())}
                 onPress={() => {
                   const email = newEmail.trim().toLowerCase();
-                  if (enrolledEmails.has(email)) return Alert.alert('Já está na corrida', `${email} já está associado a esta corrida.`);
+                  if (enrolledEmails.has(email)) return Alert.alert(t('Já está na corrida'), t('{email} já está associado a esta corrida.', { email }));
                   setPicked({ id: '', email, full_name: newName.trim() || null, avatar_url: null, byEmail: true });
                 }}
               />
               <Muted style={{ fontSize: 11, marginTop: 8 }}>Se a pessoa ainda não tem conta, ela entra no app com este e-mail e já encontra a corrida.</Muted>
             </Card>
-            <Text style={[font.tiny, { color: colors.textMuted, marginTop: 10, marginBottom: 8 }]}>Ou escolha alguém já cadastrado</Text>
+            <Text style={[font.tiny, { color: colors.textMuted, marginTop: 10, marginBottom: 8 }]}>{t('Ou escolha alguém já cadastrado')}</Text>
             <Input icon="search" placeholder="Buscar por nome ou e-mail" value={search} onChangeText={setSearch} autoCapitalize="none" />
             {users.loading ? <Loading /> : null}
             {!users.loading && !list.length ? <EmptyState icon="people" title="Ninguém encontrado" message="Cadastre a pessoa em Controle de acesso." /> : null}
@@ -303,10 +304,10 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
                 <Text style={{ color: colors.text, fontWeight: '800' }}>{picked.full_name || '—'}</Text>
                 <Muted style={{ fontSize: 12 }}>{picked.email}</Muted>
               </View>
-              <Text onPress={() => setPicked(null)} style={{ color: colors.primary, fontWeight: '700' }}>Trocar</Text>
+              <Text onPress={() => setPicked(null)} style={{ color: colors.primary, fontWeight: '700' }}>{t('Trocar')}</Text>
             </Card>
 
-            <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, marginTop: 6 }]}>Distância</Text>
+            <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, marginTop: 6 }]}>{t('Distância')}</Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 6 }}>
               {distances.length ? (
                 distances.map((d) => <Chip key={d.id} label={d.label} active={distanceId === d.id} onPress={() => setDistanceId(d.id)} />)
@@ -315,7 +316,7 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
               )}
             </View>
 
-            <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, marginTop: 6 }]}>Nível</Text>
+            <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, marginTop: 6 }]}>{t('Nível')}</Text>
             <View style={{ flexDirection: 'row', marginBottom: 20 }}>
               {LEVELS.map((l) => (
                 <Chip key={l} label={levelLabel[l]} active={level === l} onPress={() => setLevel(l)} />

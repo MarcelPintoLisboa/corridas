@@ -11,6 +11,7 @@ import { formatDate, formatDateTime, formatTime, levelLabel } from '@/lib/format
 import type { KitPickup } from '@/lib/types';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 const postMeta = {
   news: { label: 'Notícia', icon: 'newspaper', color: colors.cyan },
@@ -23,9 +24,9 @@ function pickupStatus(p: KitPickup) {
   const now = Date.now();
   const s = new Date(p.starts_at).getTime();
   const e = new Date(p.ends_at).getTime();
-  if (now < s) return { label: 'EM BREVE', color: colors.cyan };
-  if (now <= e) return { label: 'ABERTO AGORA', color: colors.success };
-  return { label: 'ENCERRADO', color: colors.textDim };
+  if (now < s) return { label: t('EM BREVE'), color: colors.cyan };
+  if (now <= e) return { label: t('ABERTO AGORA'), color: colors.success };
+  return { label: t('ENCERRADO'), color: colors.textDim };
 }
 
 export default function EventScreen() {
@@ -62,22 +63,22 @@ export default function EventScreen() {
           <LinearGradient colors={[accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.lg, padding: 18, marginTop: 8 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
-                <Text style={[font.tiny, { color: 'rgba(255,255,255,0.8)' }]}>Minha inscrição</Text>
+                <Text style={[font.tiny, { color: 'rgba(255,255,255,0.8)' }]}>{t('Minha inscrição')}</Text>
                 <Text style={{ color: '#fff', fontSize: 30, fontWeight: '900' }}>{active.distance?.label ?? '—'}</Text>
                 <Text style={{ color: 'rgba(255,255,255,0.9)' }}>
                   {levelLabel[active.level]}
-                  {active.shirt_size ? ` · Camiseta ${active.shirt_size}` : ''}
+                  {active.shirt_size ? ` · ${t('Camiseta')} ${active.shirt_size}` : ''}
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={[font.tiny, { color: 'rgba(255,255,255,0.8)' }]}>Nº de peito</Text>
+                <Text style={[font.tiny, { color: 'rgba(255,255,255,0.8)' }]}>{t('Nº de peito')}</Text>
                 <Text style={{ color: '#fff', fontSize: 30, fontWeight: '900' }}>{active.bib_number ?? '---'}</Text>
               </View>
             </View>
             <View style={{ marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: radius.md, padding: 10 }}>
               <Ionicons name={active.kit_picked_up ? 'checkmark-circle' : 'cube'} size={20} color={active.kit_picked_up ? colors.lime : '#fff'} />
               <Text style={{ color: '#fff', fontWeight: '700', flex: 1 }}>
-                {active.kit_picked_up ? 'Kit retirado! Bora pra prova 🔥' : 'Kit ainda não retirado'}
+                {t(active.kit_picked_up ? 'Kit retirado! Bora pra prova 🔥' : 'Kit ainda não retirado')}
               </Text>
               <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>#{active.id.slice(0, 8).toUpperCase()}</Text>
             </View>
@@ -101,7 +102,7 @@ export default function EventScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 }}>
                   <Ionicons name="calendar" size={16} color={accent} />
                   <Text style={{ color: colors.text, fontWeight: '700' }}>
-                    {formatDate(p.starts_at, true)} · {formatTime(p.starts_at)} às {formatTime(p.ends_at)}
+                    {formatDate(p.starts_at, true)} · {formatTime(p.starts_at)} {t('às')} {formatTime(p.ends_at)}
                   </Text>
                 </View>
                 {p.required_docs ? (
@@ -114,7 +115,7 @@ export default function EventScreen() {
                 {p.maps_url ? (
                   <Pressable onPress={() => Linking.openURL(p.maps_url!)} style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: alpha(accent, 0.15), paddingHorizontal: 12, paddingVertical: 8, borderRadius: radius.pill }}>
                     <Ionicons name="navigate" size={16} color={accent} />
-                    <Text style={{ color: accent, fontWeight: '800' }}>Como chegar</Text>
+                    <Text style={{ color: accent, fontWeight: '800' }}>{t('Como chegar')}</Text>
                   </Pressable>
                 ) : null}
               </Card>
@@ -128,7 +129,7 @@ export default function EventScreen() {
         <SectionHeader title="Informações" />
         <Card>
           <ListRow icon="gift" color={colors.lime} title="Patrocinadores" subtitle="Ofertas, cupons e materiais para inscritos" onPress={() => router.push('/sponsors')} />
-          <ListRow icon="location" color={accent} title={event.location_name ?? 'Local'} subtitle={[event.address, event.city, event.state].filter(Boolean).join(' · ')} onPress={event.latitude ? () => Linking.openURL(`https://maps.google.com/?q=${event.latitude},${event.longitude}`) : undefined} />
+          <ListRow icon="location" color={accent} title={event.location_name ?? t('Local')} subtitle={[event.address, event.city, event.state].filter(Boolean).join(' · ')} onPress={event.latitude ? () => Linking.openURL(`https://maps.google.com/?q=${event.latitude},${event.longitude}`) : undefined} />
           <ListRow icon="trail-sign" color={accent} title="Distâncias" subtitle={q.data?.distances.map((d) => d.label).join(' · ')} />
           {event.regulation_url ? <ListRow icon="document-text" color={accent} title="Regulamento" onPress={() => Linking.openURL(event.regulation_url!)} /> : null}
           {event.instagram_handle ? <ListRow icon="logo-instagram" color="#E1306C" title={event.instagram_handle} subtitle={event.hashtag ?? undefined} onPress={() => Linking.openURL(`https://instagram.com/${event.instagram_handle!.replace('@', '')}`)} /> : null}
@@ -152,7 +153,7 @@ export default function EventScreen() {
               <View style={{ padding: 16 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <Ionicons name={m.icon} size={14} color={m.color} />
-                  <Text style={[font.tiny, { color: m.color, fontSize: 10 }]}>{m.label}</Text>
+                  <Text style={[font.tiny, { color: m.color, fontSize: 10 }]}>{t(m.label)}</Text>
                   <Text style={{ color: colors.textDim, fontSize: 11 }}>· {formatDate(p.published_at)}</Text>
                   {p.pinned ? <Text style={{ marginLeft: 'auto' }}>📌</Text> : null}
                 </View>
@@ -160,7 +161,7 @@ export default function EventScreen() {
                 {p.body ? <Muted style={{ marginTop: 4 }}>{p.body}</Muted> : null}
                 {p.cta_url ? (
                   <Pressable onPress={() => Linking.openURL(p.cta_url!)} style={{ marginTop: 12, alignSelf: 'flex-start', backgroundColor: m.color, paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill }}>
-                    <Text style={{ color: '#000', fontWeight: '800' }}>{p.cta_label ?? 'Saiba mais'}</Text>
+                    <Text style={{ color: '#000', fontWeight: '800' }}>{p.cta_label ?? t('Saiba mais')}</Text>
                   </Pressable>
                 ) : null}
               </View>

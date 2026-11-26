@@ -12,6 +12,7 @@ import { formatDuration, formatKm, levelLabel } from '@/lib/format';
 import { currentWeek } from '@/lib/plan';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t, tn } from '@/i18n';
 
 export default function TrainingScreen() {
   const { event, active, accent, accent2 } = useActiveEvent();
@@ -49,14 +50,14 @@ export default function TrainingScreen() {
   return (
     <Screen refreshing={refreshing} onRefresh={refresh}>
       <Title>Seu plano</Title>
-      <Muted style={{ marginBottom: 16 }}>Personalizado para {event.name}</Muted>
+      <Muted style={{ marginBottom: 16 }}>{t('Personalizado para {name}', { name: event.name })}</Muted>
 
       <Card animated={false} style={{ padding: 0, overflow: 'hidden' }}>
         <LinearGradient colors={[alpha(accent, 0.35), alpha(accent2, 0.25)]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 16 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <Badge label={active.distance?.label ?? 'Distância'} color={colors.lime} />
             <Badge label={levelLabel[active.level]} color="#fff" />
-            <Badge label={`${plan.weeks} semanas`} color={colors.cyan} />
+            <Badge label={tn(plan.weeks, '{n} semana', '{n} semanas')} color={colors.cyan} />
           </View>
           <Text style={[font.h2, { color: '#fff' }]}>{plan.name}</Text>
           {plan.description ? <Text style={{ color: 'rgba(255,255,255,0.85)', marginTop: 4 }}>{plan.description}</Text> : null}
@@ -65,19 +66,19 @@ export default function TrainingScreen() {
               <Avatar uri={plan.coach_avatar_url} name={plan.coach_name} size={34} />
               <View>
                 <Text style={{ color: '#fff', fontWeight: '800' }}>{plan.coach_name}</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Treinador(a) responsável</Text>
+                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>{t('Treinador(a) responsável')}</Text>
               </View>
             </View>
           ) : null}
           {active.goal_time_seconds ? (
-            <Text style={{ color: colors.lime, fontWeight: '800', marginTop: 10 }}>🎯 Meta: {formatDuration(active.goal_time_seconds)}</Text>
+            <Text style={{ color: colors.lime, fontWeight: '800', marginTop: 10 }}>🎯 {t('Meta')}: {formatDuration(active.goal_time_seconds)}</Text>
           ) : null}
         </LinearGradient>
       </Card>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 12 }}>
         {Array.from({ length: plan.weeks }, (_, i) => i + 1).map((w) => (
-          <Chip key={w} label={w === plan.weeks ? '🏁 Prova' : `Sem ${w}${w === nowWeek ? ' •' : ''}`} active={w === selected} color={accent} onPress={() => setWeek(w)} />
+          <Chip key={w} label={w === plan.weeks ? t('🏁 Prova') : `${t('Sem')} ${w}${w === nowWeek ? ' •' : ''}`} active={w === selected} color={accent} onPress={() => setWeek(w)} />
         ))}
       </ScrollView>
 
@@ -86,7 +87,7 @@ export default function TrainingScreen() {
         <MiniStat icon="checkmark-done" label="Feitos" value={`${weekDone}/${weekTotal}`} color={colors.success} />
       </View>
 
-      <SectionHeader title={selected === plan.weeks ? 'Semana da prova' : `Semana ${selected}`} action="Dicas" onAction={() => router.push('/tips')} />
+      <SectionHeader title={selected === plan.weeks ? t('Semana da prova') : t('Semana {n}', { n: selected })} action="Dicas" onAction={() => router.push('/tips')} />
       <Animated.View key={selected} entering={RFadeIn.duration(300)} exiting={FadeOut.duration(150)}>
         {weekSessions.map((s) => (
           <SessionCard key={s.id} s={s} />
@@ -101,7 +102,7 @@ function MiniStat({ icon, label, value, color }: { icon: 'map' | 'checkmark-done
     <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.surface, borderRadius: radius.md, padding: 12, borderWidth: 1, borderColor: colors.border }}>
       <Ionicons name={icon} size={20} color={color} />
       <View>
-        <Text style={[font.tiny, { color: colors.textMuted, fontSize: 9 }]}>{label}</Text>
+        <Text style={[font.tiny, { color: colors.textMuted, fontSize: 9 }]}>{t(label)}</Text>
         <Text style={{ color: colors.text, fontWeight: '900', fontSize: 16 }}>{value}</Text>
       </View>
     </View>

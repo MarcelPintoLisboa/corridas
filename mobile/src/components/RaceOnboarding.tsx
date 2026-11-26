@@ -6,6 +6,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { alpha, colors, font, radius } from '@/theme';
 
 import { FadeIn, Muted, SectionHeader, type IconName } from './ui';
+import { t } from '@/i18n';
 
 const BENEFITS: { icon: IconName; color: string; title: string; text: string }[] = [
   { icon: 'barbell', color: colors.primary, title: 'Treino até o dia da prova', text: 'Plano dos treinadores para a sua distância e nível' },
@@ -25,13 +26,13 @@ export function RaceOnboarding() {
       <FadeIn>
         <LinearGradient colors={[colors.primary, colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.xl, padding: 20 }}>
           <Ionicons name="hourglass-outline" size={28} color="#fff" />
-          <Text style={[font.h1, { color: '#fff', marginTop: 8 }]}>Aguardando sua corrida</Text>
+          <Text style={[font.h1, { color: '#fff', marginTop: 8 }]}>{t('Aguardando sua corrida')}</Text>
           <Text style={{ color: 'rgba(255,255,255,0.92)', marginTop: 6 }}>
-            O organizador da corrida associa você pelo seu e-mail. Assim que isso acontecer, tudo aparece aqui automaticamente.
+            {t('O organizador da corrida associa você pelo seu e-mail. Assim que isso acontecer, tudo aparece aqui automaticamente.')}
           </Text>
           {email ? (
             <View style={{ marginTop: 14, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: radius.md, padding: 10 }}>
-              <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>INFORME ESTE E-MAIL AO ORGANIZADOR</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>{t('INFORME ESTE E-MAIL AO ORGANIZADOR')}</Text>
               <Text style={{ color: '#fff', fontWeight: '800', fontSize: 16, marginTop: 2 }} selectable>
                 {email}
               </Text>
@@ -48,7 +49,7 @@ export function RaceOnboarding() {
               <Ionicons name={b.icon} size={20} color={b.color} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text, fontWeight: '800' }}>{b.title}</Text>
+              <Text style={{ color: colors.text, fontWeight: '800' }}>{t(b.title)}</Text>
               <Muted style={{ fontSize: 12 }}>{b.text}</Muted>
             </View>
           </View>

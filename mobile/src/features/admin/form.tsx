@@ -8,6 +8,7 @@ import { Chip, Input } from '@/components/ui';
 import { parseDateTimeBR, toDateInputBR, toTimeInput } from '@/lib/format';
 import { pickAndUpload } from '@/lib/upload';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 export type FieldType = 'text' | 'multiline' | 'number' | 'bool' | 'datetime' | 'select' | 'image' | 'color' | 'url' | 'tags';
 
@@ -31,6 +32,12 @@ export interface Field {
 }
 
 export type FormValues = Record<string, unknown>;
+
+/** traduz rótulos com emoji na frente ("🏃 Treino") */
+export const tl = (s: string) => {
+  const m = s.match(/^([^A-Za-zÀ-ÿ]+\s)(.*)$/);
+  return m ? m[1] + t(m[2]) : t(s);
+};
 
 const PALETTE = ['#FF4D2E', '#FF3D71', '#FF9100', '#FFC400', '#C6FF00', '#00E676', '#00E5FF', '#2979FF', '#7B2FF7', '#D500F9', '#FFFFFF', '#111111'];
 
@@ -56,28 +63,28 @@ export function serialize(fields: Field[], values: FormValues) {
     if (f.type === 'datetime') {
       const dt = (val as DateTimeValue | undefined) ?? { date: '', time: '' };
       if (!dt.date.trim()) {
-        if (f.required) throw new Error(`Preencha "${f.label}"`);
+        if (f.required) throw new Error(t('Preencha "{field}"', { field: t(f.label) }));
         out[f.key] = null;
         continue;
       }
       const iso = parseDateTimeBR(dt.date, dt.time);
-      if (!iso) throw new Error(`"${f.label}": use a data DD/MM/AAAA e a hora HH:mm`);
+      if (!iso) throw new Error(t('"{field}": use a data DD/MM/AAAA e a hora HH:mm', { field: t(f.label) }));
       out[f.key] = iso;
       continue;
     }
-    if (f.required && (str === '' || str == null)) throw new Error(`Preencha "${f.label}"`);
+    if (f.required && (str === '' || str == null)) throw new Error(t('Preencha "{field}"', { field: t(f.label) }));
     switch (f.type) {
       case 'bool':
         out[f.key] = Boolean(val);
         break;
       case 'number':
         out[f.key] = str === '' ? null : Number(String(str).replace(',', '.'));
-        if (out[f.key] != null && isNaN(out[f.key] as number)) throw new Error(`"${f.label}" deve ser um número`);
+        if (out[f.key] != null && isNaN(out[f.key] as number)) throw new Error(t('"{field}" deve ser um número', { field: t(f.label) }));
         break;
       case 'tags':
         out[f.key] = String(str ?? '')
           .split(',')
-          .map((t) => t.trim())
+          .map((v) => v.trim())
           .filter(Boolean);
         break;
       default:
@@ -101,7 +108,7 @@ export function FormFields({ fields, values, onChange }: { fields: Field[]; valu
 function FieldLabel({ field }: { field: Field }) {
   return (
     <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 6 }]}>
-      {field.label}
+      {t(field.label)}
       {field.required ? ' *' : ''}
     </Text>
   );
@@ -115,8 +122,8 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
     case 'datetime':
       return (
         <DateTimeFields
-          dateLabel={`${field.label}${field.required ? ' *' : ''}`}
-          timeLabel={field.timeLabel}
+          dateLabel={`${t(field.label)}${field.required ? ' *' : ''}`}
+          timeLabel={field.timeLabel ? t(field.timeLabel) : undefined}
           value={(value as DateTimeValue) ?? { date: '', time: '' }}
           onChange={onChange}
         />
@@ -126,8 +133,8 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <View style={{ flex: 1 }}>
-            <Text style={{ color: colors.text, fontWeight: '600' }}>{field.label}</Text>
-            {field.help ? <Text style={{ color: colors.textDim, fontSize: 12 }}>{field.help}</Text> : null}
+            <Text style={{ color: colors.text, fontWeight: '600' }}>{t(field.label)}</Text>
+            {field.help ? <Text style={{ color: colors.textDim, fontSize: 12 }}>{t(field.help)}</Text> : null}
           </View>
           <Switch value={Boolean(value)} onValueChange={onChange} trackColor={{ true: colors.primary }} />
         </View>
@@ -140,7 +147,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', rowGap: 8 }}>
             {!field.required ? <Chip label="—" active={!str} onPress={() => onChange('')} /> : null}
             {(field.options ?? []).map((o) => (
-              <Chip key={o.value} label={o.label} active={str === o.value} onPress={() => onChange(o.value)} />
+              <Chip key={o.value} label={tl(o.label)} active={str === o.value} onPress={() => onChange(o.value)} />
             ))}
           </View>
         </View>
@@ -170,7 +177,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
                 const url = await pickAndUpload('admin', field.aspect);
                 if (url) onChange(url);
               } catch (e) {
-                Alert.alert('Erro no upload', (e as Error).message);
+                Alert.alert(t('Erro no upload'), (e as Error).message);
               } finally {
                 setUploading(false);
               }
@@ -183,13 +190,13 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
             ) : (
               <>
                 <Ionicons name="cloud-upload" size={26} color={colors.primary} />
-                <Text style={{ color: colors.textMuted, marginTop: 4 }}>Enviar imagem</Text>
+                <Text style={{ color: colors.textMuted, marginTop: 4 }}>{t('Enviar imagem')}</Text>
               </>
             )}
           </Pressable>
           {str ? (
             <Text onPress={() => onChange('')} style={{ color: colors.danger, marginTop: 6, fontSize: 12 }}>
-              Remover imagem
+              {t('Remover imagem')}
             </Text>
           ) : null}
         </View>
@@ -198,7 +205,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
     default:
       return (
         <Input
-          label={`${field.label}${field.required ? ' *' : ''}`}
+          label={`${t(field.label)}${field.required ? ' *' : ''}`}
           value={str}
           onChangeText={onChange}
           placeholder={field.placeholder}

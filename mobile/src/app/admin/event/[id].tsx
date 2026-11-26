@@ -14,6 +14,7 @@ import { formatDateTime, formatKm } from '@/lib/format';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { EventMetrics } from '@/lib/types';
 import { alpha, colors, radius } from '@/theme';
+import { t } from '@/i18n';
 
 export default function AdminEvent() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,7 +38,7 @@ export default function AdminEvent() {
   const kpis = [
     { label: 'Inscritos', value: m.registrations, icon: 'people', color: c },
     { label: 'Kits retirados', value: `${m.kits_picked_up}/${m.registrations}`, icon: 'cube', color: colors.success },
-    { label: 'Leads', value: m.leads_total, icon: 'magnet', color: colors.cyan, sub: `${m.leads_new} novos` },
+    { label: 'Leads', value: m.leads_total, icon: 'magnet', color: colors.cyan, sub: t('{n} novos', { n: m.leads_new }) },
     { label: 'Conversão', value: m.leads_total ? `${Math.round((m.leads_converted / m.leads_total) * 100)}%` : '—', icon: 'trending-up', color: colors.lime },
     { label: 'Treinos', value: m.workouts, icon: 'barbell', color: colors.secondary, sub: `${formatKm(m.km_total, 0)} km` },
     { label: 'Posts Instagram', value: m.instagram_shares, icon: 'logo-instagram', color: '#E1306C' },
@@ -65,7 +66,7 @@ export default function AdminEvent() {
               </View>
               <Text style={{ color: colors.text, fontSize: 24, fontWeight: '900', marginTop: 8 }}>{k.value}</Text>
               <Text style={{ color: colors.textMuted, fontSize: 12 }}>
-                {k.label}
+                {t(k.label)}
                 {'sub' in k ? ` · ${k.sub}` : ''}
               </Text>
             </View>
@@ -75,7 +76,7 @@ export default function AdminEvent() {
 
       {m.by_distance.length ? (
         <Card delay={300} style={{ marginTop: 12 }}>
-          <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 10 }}>Inscritos por distância</Text>
+          <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 10 }}>{t('Inscritos por distância')}</Text>
           <WeeklyBars values={m.by_distance.map((d) => d.total)} labels={m.by_distance.map((d) => `${d.label} (${d.total})`)} width={width - 66} height={90} color={c} />
         </Card>
       ) : null}

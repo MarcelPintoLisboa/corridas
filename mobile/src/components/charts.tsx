@@ -4,6 +4,7 @@ import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, w
 import Svg, { Circle, Defs, LinearGradient, Path, Stop, Line, Text as SvgText } from 'react-native-svg';
 
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -92,7 +93,7 @@ export function EvolutionChart({
   if (!data.length) {
     return (
       <View style={{ height, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: colors.textDim }}>Sem dados ainda</Text>
+        <Text style={{ color: colors.textDim }}>{t('Sem dados ainda')}</Text>
       </View>
     );
   }

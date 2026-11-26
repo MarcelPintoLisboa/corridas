@@ -15,6 +15,7 @@ import { supabase, unwrap } from '@/lib/supabase';
 import type { RaceEvent } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 const statusMeta = {
   draft: { label: 'Rascunho', color: colors.warning },
@@ -42,14 +43,14 @@ export default function AdminHome() {
   if (q.loading) return <Loading />;
 
   function confirmDelete(e: RaceEvent) {
-    Alert.alert(`Excluir "${e.name}"?`, 'Inscrições, treinos, patrocinadores, publicações e leads desta corrida serão removidos. Não dá para desfazer.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('Excluir "{name}"?', { name: e.name }), t('Inscrições, treinos, patrocinadores, publicações e leads desta corrida serão removidos. Não dá para desfazer.'), [
+      { text: t('Cancelar'), style: 'cancel' },
       {
-        text: 'Excluir',
+        text: t('Excluir'),
         style: 'destructive',
         onPress: async () => {
           const { error } = await supabase.from('st_events').delete().eq('id', e.id);
-          if (error) return Alert.alert('Erro', error.message);
+          if (error) return Alert.alert(t('Erro'), error.message);
           q.reload();
         },
       },
@@ -96,7 +97,7 @@ function RowAction({ icon, label, onPress, color = colors.text }: { icon: IconNa
   return (
     <Pressable onPress={onPress} style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, opacity: pressed ? 0.6 : 1 })}>
       <Ionicons name={icon} size={17} color={color} />
-      <Text style={{ color, fontWeight: '700', fontSize: 13 }}>{label}</Text>
+      <Text style={{ color, fontWeight: '700', fontSize: 13 }}>{t(label)}</Text>
     </Pressable>
   );
 }

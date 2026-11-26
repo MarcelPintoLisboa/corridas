@@ -12,16 +12,17 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 /** Fundo animado com "blobs" de gradiente flutuando */
 export function AuthHero({ title, subtitle }: { title: string; subtitle: string }) {
-  const t = useSharedValue(0);
+  const k = useSharedValue(0);
   useEffect(() => {
-    t.value = withRepeat(withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.sin) }), -1, true);
-  }, [t]);
-  const blob1 = useAnimatedStyle(() => ({ transform: [{ translateX: -40 + t.value * 80 }, { translateY: t.value * 30 }, { scale: 1 + t.value * 0.2 }] }));
-  const blob2 = useAnimatedStyle(() => ({ transform: [{ translateX: 40 - t.value * 70 }, { translateY: -t.value * 40 }] }));
-  const icon = useAnimatedStyle(() => ({ transform: [{ translateX: -10 + t.value * 20 }, { rotate: `${-8 + t.value * 16}deg` }] }));
+    k.value = withRepeat(withTiming(1, { duration: 6000, easing: Easing.inOut(Easing.sin) }), -1, true);
+  }, [k]);
+  const blob1 = useAnimatedStyle(() => ({ transform: [{ translateX: -40 + k.value * 80 }, { translateY: k.value * 30 }, { scale: 1 + k.value * 0.2 }] }));
+  const blob2 = useAnimatedStyle(() => ({ transform: [{ translateX: 40 - k.value * 70 }, { translateY: -k.value * 40 }] }));
+  const icon = useAnimatedStyle(() => ({ transform: [{ translateX: -10 + k.value * 20 }, { rotate: `${-8 + k.value * 16}deg` }] }));
 
   return (
     <View style={s.wrap}>
@@ -37,8 +38,8 @@ export function AuthHero({ title, subtitle }: { title: string; subtitle: string 
         <Animated.Text entering={FadeInDown.delay(100).springify()} style={s.brand}>
           STREET <Text style={{ color: colors.lime }}>RUNNING</Text>
         </Animated.Text>
-        <Animated.Text entering={FadeInDown.delay(200).springify()} style={s.title}>{title}</Animated.Text>
-        <Animated.Text entering={FadeInDown.delay(300).springify()} style={s.subtitle}>{subtitle}</Animated.Text>
+        <Animated.Text entering={FadeInDown.delay(200).springify()} style={s.title}>{t(title)}</Animated.Text>
+        <Animated.Text entering={FadeInDown.delay(300).springify()} style={s.subtitle}>{t(subtitle)}</Animated.Text>
       </View>
     </View>
   );

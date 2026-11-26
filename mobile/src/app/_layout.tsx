@@ -6,6 +6,7 @@ import { Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { Loading } from '@/components/ui';
+import { LanguageProvider } from '@/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { EventProvider } from '@/providers/EventProvider';
@@ -72,12 +73,17 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <ThemeProvider value={theme}>
-        <AuthProvider>
-          <EventProvider>
-            <StatusBar style="light" />
-            <RootNavigator />
-          </EventProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          {(lang) => (
+            <AuthProvider>
+              <EventProvider>
+                <StatusBar style="light" />
+                {/* trocar o idioma remonta as telas com os textos traduzidos */}
+                <RootNavigator key={lang} />
+              </EventProvider>
+            </AuthProvider>
+          )}
+        </LanguageProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );

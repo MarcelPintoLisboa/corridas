@@ -11,6 +11,7 @@ import { formatDate, formatDuration, formatKm, formatPace } from '@/lib/format';
 import { buildHistory, type HistoryMode as Mode } from '@/lib/plan';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
+import { t } from '@/i18n';
 
 
 export default function ResultsScreen() {
@@ -60,7 +61,7 @@ export default function ResultsScreen() {
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <View>
           <Title>Evolução</Title>
-          <Muted>{event ? `Rumo à ${event.name}` : 'Seus treinos'}</Muted>
+          <Muted>{event ? t('Rumo à {name}', { name: event.name }) : t('Seus treinos')}</Muted>
         </View>
         <GradientButton small title="Treino" icon="add" onPress={() => router.push('/workout/new')} colorsPair={[accent, accent2]} />
       </View>
@@ -80,7 +81,7 @@ export default function ResultsScreen() {
           <View style={{ marginTop: 14, backgroundColor: alpha(colors.success, 0.12), borderRadius: radius.md, padding: 10, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
             <Ionicons name="trending-up" size={18} color={colors.success} />
             <Text style={{ color: colors.success, fontWeight: '700', flex: 1 }}>
-              Seu pace melhorou {formatPace(stats.delta)} /km desde o primeiro treino! 🚀
+              {t('Seu pace melhorou {pace} /km desde o primeiro treino! 🚀', { pace: formatPace(stats.delta) })}
             </Text>
           </View>
         ) : null}
@@ -94,13 +95,13 @@ export default function ResultsScreen() {
         </View>
         <EvolutionChart data={history} width={width - 66} height={190} color={accent} color2={accent2} invert={mode === 'pace'} formatY={fmtY} />
         <Muted style={{ fontSize: 12, marginTop: 6 }}>
-          {mode === 'pace' ? 'Quanto mais alto, mais rápido ⚡' : mode === 'km' ? 'Volume acumulado até a prova' : 'Distância de cada treino'}
+          {t(mode === 'pace' ? 'Quanto mais alto, mais rápido ⚡' : mode === 'km' ? 'Volume acumulado até a prova' : 'Distância de cada treino')}
         </Muted>
       </Card>
 
       <Card delay={180}>
-        <Text style={[font.h3, { color: colors.text, marginBottom: 12 }]}>Km por semana</Text>
-        <WeeklyBars values={weekly} labels={weekly.map((_, i) => (i === 7 ? 'Atual' : `-${7 - i}`))} width={width - 66} color={accent} />
+        <Text style={[font.h3, { color: colors.text, marginBottom: 12 }]}>{t('Km por semana')}</Text>
+        <WeeklyBars values={weekly} labels={weekly.map((_, i) => (i === 7 ? t('Atual') : `-${7 - i}`))} width={width - 66} color={accent} />
       </Card>
 
       <SectionHeader title="Histórico" />
@@ -114,7 +115,7 @@ export default function ResultsScreen() {
             </View>
           )}
           <View style={{ flex: 1 }}>
-            <Text style={[font.h3, { color: colors.text }]}>{w.title ?? 'Treino'}</Text>
+            <Text style={[font.h3, { color: colors.text }]}>{w.title ?? t('Treino')}</Text>
             <Muted style={{ fontSize: 12 }}>{formatDate(w.performed_at, true)}</Muted>
             <Text style={{ color: colors.text, fontWeight: '800', marginTop: 2 }}>
               {formatKm(w.distance_km, 2)} km · {formatDuration(w.duration_seconds)} · {formatPace(w.avg_pace_seconds)}/km

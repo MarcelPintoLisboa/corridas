@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { colors } from '@/theme';
+import { t } from '@/i18n';
 
 export default function EventForm() {
   const { id } = useLocalSearchParams<{ id?: string }>();
@@ -51,21 +52,21 @@ export default function EventForm() {
       await reload();
       router.back();
     } catch (e) {
-      Alert.alert('Erro', (e as Error).message);
+      Alert.alert(t('Erro'), (e as Error).message);
     } finally {
       setSaving(false);
     }
   }
 
   async function onDelete() {
-    Alert.alert('Excluir corrida?', 'Todos os dados (inscrições, treinos vinculados, leads) serão removidos.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('Excluir corrida?'), t('Todos os dados (inscrições, treinos vinculados, leads) serão removidos.'), [
+      { text: t('Cancelar'), style: 'cancel' },
       {
-        text: 'Excluir',
+        text: t('Excluir'),
         style: 'destructive',
         onPress: async () => {
           const { error } = await supabase.from('st_events').delete().eq('id', id!);
-          if (error) return Alert.alert('Erro', error.message);
+          if (error) return Alert.alert(t('Erro'), error.message);
           router.dismissTo('/admin');
         },
       },

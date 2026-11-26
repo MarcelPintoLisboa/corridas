@@ -13,6 +13,7 @@ import { pickImage, uploadImage } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, radius } from '@/theme';
+import { isEn, t } from '@/i18n';
 
 const FEELINGS = ['😫', '😕', '🙂', '😄', '🔥'];
 
@@ -22,7 +23,7 @@ export default function NewWorkout() {
   const { event, accent, accent2 } = useActiveEvent();
 
   const [title, setTitle] = useState(params.title ?? '');
-  const [km, setKm] = useState(params.km ? String(params.km).replace('.', ',') : '');
+  const [km, setKm] = useState(params.km ? (isEn() ? String(params.km) : String(params.km).replace('.', ',')) : '');
   const [time, setTime] = useState('');
   const [when, setWhen] = useState(() => { const now = new Date().toISOString(); return { date: toDateInputBR(now), time: toTimeInput(now) }; });
   const [feeling, setFeeling] = useState(3);
@@ -36,8 +37,8 @@ export default function NewWorkout() {
   const pace = distance > 0 && seconds ? seconds / distance : null;
 
   async function onSave() {
-    if (!(distance > 0)) return Alert.alert('Informe a distância em km');
-    if (!seconds) return Alert.alert('Informe o tempo', 'Formato: 45:30 ou 1:05:20');
+    if (!(distance > 0)) return Alert.alert(t('Informe a distância em km'));
+    if (!seconds) return Alert.alert(t('Informe o tempo'), t('Formato: 45:30 ou 1:05:20'));
     const performedAt = parseDateTimeBR(when.date, when.time) ?? new Date().toISOString();
     setSaving(true);
     try {
@@ -48,7 +49,7 @@ export default function NewWorkout() {
           user_id: session!.user.id,
           event_id: event?.id ?? null,
           session_id: params.sessionId || null,
-          title: title || (isRace ? 'Prova' : 'Treino'),
+          title: title || t(isRace ? 'Prova' : 'Treino'),
           distance_km: distance,
           duration_seconds: seconds,
           performed_at: performedAt,
@@ -62,7 +63,7 @@ export default function NewWorkout() {
       if (error) throw error;
       router.replace(`/workout/${data.id}?fresh=1`);
     } catch (e) {
-      Alert.alert('Erro ao salvar', (e as Error).message);
+      Alert.alert(t('Erro ao salvar'), (e as Error).message);
     } finally {
       setSaving(false);
     }
@@ -84,7 +85,7 @@ export default function NewWorkout() {
           ) : (
             <>
               <Ionicons name="camera" size={32} color={accent} />
-              <Text style={{ color: colors.text, fontWeight: '800', marginTop: 6 }}>Adicionar foto</Text>
+              <Text style={{ color: colors.text, fontWeight: '800', marginTop: 6 }}>{t('Adicionar foto')}</Text>
               <Muted style={{ fontSize: 12 }}>Vai para o fundo do seu post no Instagram</Muted>
             </>
           )}
@@ -93,7 +94,7 @@ export default function NewWorkout() {
         <Input label="Título" placeholder="Longão de domingo" value={title} onChangeText={setTitle} />
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ flex: 1 }}>
-            <Input label="Distância (km)" icon="map" placeholder="10,0" keyboardType="decimal-pad" value={km} onChangeText={setKm} />
+            <Input label="Distância (km)" icon="map" placeholder={isEn() ? '10.0' : '10,0'} keyboardType="decimal-pad" value={km} onChangeText={setKm} />
           </View>
           <View style={{ flex: 1 }}>
             <Input label="Tempo" icon="timer" placeholder="52:30" keyboardType="numbers-and-punctuation" value={time} onChangeText={setTime} />
@@ -101,7 +102,7 @@ export default function NewWorkout() {
         </View>
 
         <View style={{ backgroundColor: alpha(accent, 0.12), borderRadius: radius.md, padding: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Text style={{ color: colors.textMuted, fontWeight: '700' }}>PACE MÉDIO</Text>
+          <Text style={{ color: colors.textMuted, fontWeight: '700' }}>{t('PACE MÉDIO')}</Text>
           <Text style={{ color: accent, fontSize: 26, fontWeight: '900' }}>{formatPace(pace)} <Text style={{ fontSize: 14 }}>/km</Text></Text>
         </View>
 
@@ -118,7 +119,7 @@ export default function NewWorkout() {
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 12 }}>
           <View>
-            <Text style={{ color: colors.text, fontWeight: '700' }}>Foi uma prova oficial?</Text>
+            <Text style={{ color: colors.text, fontWeight: '700' }}>{t('Foi uma prova oficial?')}</Text>
             <Muted style={{ fontSize: 12 }}>Provas preparatórias aparecem com troféu 🏆</Muted>
           </View>
           <Switch value={isRace} onValueChange={setIsRace} trackColor={{ true: accent }} />

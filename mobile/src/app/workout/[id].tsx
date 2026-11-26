@@ -18,6 +18,7 @@ import { pickImage } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { colors } from '@/theme';
+import { t, tn } from '@/i18n';
 
 export default function WorkoutShare() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -45,9 +46,9 @@ export default function WorkoutShare() {
   const cardWidth = Math.min(width - 64, 340);
 
   const caption = [
-    `${workout.is_race ? '🏆' : '🏃'} ${workout.title ?? 'Treino'} — ${formatKm(workout.distance_km, 2)} km em ${formatDuration(workout.duration_seconds)} (${formatPace(workout.avg_pace_seconds)}/km)`,
-    event ? `Rumo à ${event.name}${daysUntil(event.event_date) > 0 ? ` — faltam ${daysUntil(event.event_date)} dias!` : ''}` : '',
-    [event?.hashtag, event?.instagram_handle, '#corrida #running #treino'].filter(Boolean).join(' '),
+    `${workout.is_race ? '🏆' : '🏃'} ${workout.title ?? t('Treino')} — ${formatKm(workout.distance_km, 2)} km ${t('em')} ${formatDuration(workout.duration_seconds)} (${formatPace(workout.avg_pace_seconds)}/km)`,
+    event ? `${t('Rumo à {name}', { name: event.name })}${daysUntil(event.event_date) > 0 ? ` — ${tn(daysUntil(event.event_date), 'falta {n} dia!', 'faltam {n} dias!')}` : ''}` : '',
+    [event?.hashtag, event?.instagram_handle, t('#corrida #running #treino')].filter(Boolean).join(' '),
   ]
     .filter(Boolean)
     .join('\n');
@@ -61,12 +62,12 @@ export default function WorkoutShare() {
     try {
       const uri = await capture();
       await Clipboard.setStringAsync(caption);
-      if (!(await Sharing.isAvailableAsync())) throw new Error('Compartilhamento indisponível neste dispositivo');
-      await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: 'Postar no Instagram' });
+      if (!(await Sharing.isAvailableAsync())) throw new Error(t('Compartilhamento indisponível neste dispositivo'));
+      await Sharing.shareAsync(uri, { mimeType: 'image/png', UTI: 'public.png', dialogTitle: t('Postar no Instagram') });
       await supabase.from('st_workouts').update({ shared_instagram: true }).eq('id', workout.id);
       q.setData({ ...q.data!, workout: { ...workout, shared_instagram: true } });
     } catch (e) {
-      Alert.alert('Ops', (e as Error).message);
+      Alert.alert(t('Ops'), (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -76,16 +77,16 @@ export default function WorkoutShare() {
     setBusy('save');
     try {
       const { status } = await requestPermissionsAsync(true);
-      if (status !== 'granted') throw new Error('Permita o acesso à galeria para salvar a imagem');
+      if (status !== 'granted') throw new Error(t('Permita o acesso à galeria para salvar a imagem'));
       const uri = await capture();
       await Asset.create(uri);
       await Clipboard.setStringAsync(caption);
-      Alert.alert('Salvo na galeria! 📸', 'A legenda foi copiada. Abra o Instagram e poste nos Stories ou no Feed.', [
-        { text: 'Depois' },
-        { text: 'Abrir Instagram', onPress: () => Linking.openURL(Platform.OS === 'ios' ? 'instagram://story-camera' : 'instagram://camera').catch(() => {}) },
+      Alert.alert(t('Salvo na galeria! 📸'), t('A legenda foi copiada. Abra o Instagram e poste nos Stories ou no Feed.'), [
+        { text: t('Depois') },
+        { text: t('Abrir Instagram'), onPress: () => Linking.openURL(Platform.OS === 'ios' ? 'instagram://story-camera' : 'instagram://camera').catch(() => {}) },
       ]);
     } catch (e) {
-      Alert.alert('Ops', (e as Error).message);
+      Alert.alert(t('Ops'), (e as Error).message);
     } finally {
       setBusy(null);
     }
@@ -94,20 +95,20 @@ export default function WorkoutShare() {
   async function onPostToFeed() {
     const { error } = await supabase.from('st_community_posts').insert({
       event_id: workout.event_id,
-      body: `${workout.is_race ? '🏆' : '🏃'} ${workout.title ?? 'Treino'}${workout.notes ? ` — ${workout.notes}` : ''}`,
+      body: `${workout.is_race ? '🏆' : '🏃'} ${workout.title ?? t('Treino')}${workout.notes ? ` — ${workout.notes}` : ''}`,
       image_url: workout.photo_url,
       workout_id: workout.id,
     });
-    if (error) return Alert.alert('Não foi possível publicar', error.message);
+    if (error) return Alert.alert(t('Não foi possível publicar'), error.message);
     setPostedToFeed(true);
-    Alert.alert('Publicado! 🎉', 'Seu treino está no mural da corrida.', [{ text: 'OK' }, { text: 'Ver mural', onPress: () => router.push('/community') }]);
+    Alert.alert(t('Publicado! 🎉'), t('Seu treino está no mural da corrida.'), [{ text: 'OK' }, { text: t('Ver mural'), onPress: () => router.push('/community') }]);
   }
 
   async function onDelete() {
-    Alert.alert('Excluir treino?', 'Essa ação não pode ser desfeita.', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('Excluir treino?'), t('Essa ação não pode ser desfeita.'), [
+      { text: t('Cancelar'), style: 'cancel' },
       {
-        text: 'Excluir',
+        text: t('Excluir'),
         style: 'destructive',
         onPress: async () => {
           await supabase.from('st_workouts').delete().eq('id', workout.id);
@@ -162,10 +163,10 @@ export default function WorkoutShare() {
 
       <SectionHeader title="Personalizar" />
       <Card animated={false}>
-        {toggles.map((t) => (
-          <View key={t.key} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
-            <Text style={{ color: colors.text, fontWeight: '600' }}>{t.label}</Text>
-            <Switch value={show[t.key]} onValueChange={(v) => setShow({ ...show, [t.key]: v })} trackColor={{ true: accent }} />
+        {toggles.map((tg) => (
+          <View key={tg.key} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
+            <Text style={{ color: colors.text, fontWeight: '600' }}>{t(tg.label)}</Text>
+            <Switch value={show[tg.key]} onValueChange={(v) => setShow({ ...show, [tg.key]: v })} trackColor={{ true: accent }} />
           </View>
         ))}
         {show.chart ? (
@@ -189,7 +190,7 @@ export default function WorkoutShare() {
       </Card>
 
       <Card animated={false}>
-        <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '700', marginBottom: 6 }}>LEGENDA (copiada automaticamente)</Text>
+        <Text style={{ color: colors.textMuted, fontSize: 12, fontWeight: '700', marginBottom: 6 }}>{t('LEGENDA (copiada automaticamente)')}</Text>
         <Text style={{ color: colors.text }}>{caption}</Text>
       </Card>
       <View style={{ height: 30 }} />

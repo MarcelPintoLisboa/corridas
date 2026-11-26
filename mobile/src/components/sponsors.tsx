@@ -8,6 +8,7 @@ import { Alert, FlatList, Linking, Pressable, Text, useWindowDimensions, View } 
 import { supabase } from '@/lib/supabase';
 import type { Sponsor } from '@/lib/types';
 import { alpha, colors, font, radius, tierColors } from '@/theme';
+import { t } from '@/i18n';
 
 const tierLabel: Record<string, string> = { master: 'MASTER', gold: 'OURO', silver: 'PRATA', support: 'APOIO' };
 
@@ -27,7 +28,7 @@ export async function copyCoupon(s: Sponsor) {
   if (!s.coupon_code) return;
   await Clipboard.setStringAsync(s.coupon_code);
   trackSponsor(s.id, 'coupon_copy');
-  Alert.alert('Cupom copiado! 🎉', `Use ${s.coupon_code} no site da ${s.name}.`);
+  Alert.alert(t('Cupom copiado! 🎉'), t('Use {code} no site da {name}.', { code: s.coupon_code ?? '', name: s.name }));
 }
 
 /** Carrossel de banners com auto-play */
@@ -77,7 +78,7 @@ export function SponsorCarousel({ sponsors, height = 170 }: { sponsors: Sponsor[
           <Pressable onPress={() => openSponsor(item)} style={{ width: itemW, height, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.surface }}>
             <Image source={item.banner_url ?? item.logo_url} style={{ width: '100%', height: '100%' }} contentFit="cover" transition={300} />
             <LinearGradient colors={['transparent', 'rgba(0,0,0,0.85)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: 14, paddingTop: 40 }}>
-              <Text style={[font.tiny, { color: tierColors[item.tier] }]}>Patrocinador {tierLabel[item.tier]}</Text>
+              <Text style={[font.tiny, { color: tierColors[item.tier] }]}>{t('Patrocinador {tier}', { tier: t(tierLabel[item.tier]) })}</Text>
               <Text style={[font.h2, { color: '#fff' }]}>{item.name}</Text>
               {item.offer_title ? <Text style={{ color: colors.lime, fontWeight: '700', marginTop: 2 }}>{item.offer_title}</Text> : null}
             </LinearGradient>
@@ -117,7 +118,7 @@ export function SponsorOfferCard({ sponsor }: { sponsor: Sponsor }) {
           </View>
         )}
         <View style={{ flex: 1 }}>
-          <Text style={[font.tiny, { color: tc, fontSize: 10 }]}>{tierLabel[sponsor.tier]}</Text>
+          <Text style={[font.tiny, { color: tc, fontSize: 10 }]}>{t(tierLabel[sponsor.tier])}</Text>
           <Text style={[font.h3, { color: colors.text }]}>{sponsor.name}</Text>
           {sponsor.description ? (
             <Text numberOfLines={2} style={{ color: colors.textMuted, fontSize: 13, marginTop: 2 }}>{sponsor.description}</Text>
@@ -133,7 +134,7 @@ export function SponsorOfferCard({ sponsor }: { sponsor: Sponsor }) {
           </View>
           {sponsor.coupon_code ? (
             <Pressable onPress={() => copyCoupon(sponsor)} style={{ backgroundColor: colors.lime, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 }}>
-              <Text style={{ color: '#000', fontWeight: '900', fontSize: 12 }}>COPIAR</Text>
+              <Text style={{ color: '#000', fontWeight: '900', fontSize: 12 }}>{t('COPIAR')}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -146,7 +147,7 @@ export function SponsorOfferCard({ sponsor }: { sponsor: Sponsor }) {
           }}
           style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: alpha(tc, 0.12), borderRadius: radius.md, padding: 12 }}>
           <Ionicons name="document-attach" size={18} color={tc} />
-          <Text style={{ color: colors.text, fontWeight: '700', flex: 1 }}>{sponsor.material_label || 'Ver material do patrocinador'}</Text>
+          <Text style={{ color: colors.text, fontWeight: '700', flex: 1 }}>{sponsor.material_label || t('Ver material do patrocinador')}</Text>
           <Ionicons name="chevron-forward" size={16} color={colors.textDim} />
         </Pressable>
       ) : null}

@@ -2,6 +2,7 @@ import { View } from 'react-native';
 
 import { Input } from '@/components/ui';
 import { maskDateBR, maskTime } from '@/lib/format';
+import { t } from '@/i18n';
 
 export interface DateTimeValue {
   date: string; // DD/MM/AAAA
@@ -26,11 +27,11 @@ export function DateTimeFields({
         <Input
           label={dateLabel}
           icon="calendar"
-          placeholder="DD/MM/AAAA"
+          placeholder={t('DD/MM/AAAA')}
           keyboardType="number-pad"
           maxLength={10}
           value={value.date}
-          onChangeText={(t) => onChange({ ...value, date: maskDateBR(t) })}
+          onChangeText={(v) => onChange({ ...value, date: maskDateBR(v) })}
         />
       </View>
       <View style={{ flex: 2 }}>
@@ -41,7 +42,7 @@ export function DateTimeFields({
           keyboardType="number-pad"
           maxLength={5}
           value={value.time}
-          onChangeText={(t) => onChange({ ...value, time: maskTime(t) })}
+          onChangeText={(v) => onChange({ ...value, time: maskTime(v) })}
         />
       </View>
     </View>

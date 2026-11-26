@@ -4,6 +4,7 @@ import { Alert } from 'react-native';
 
 import { supabase } from '@/lib/supabase';
 import type { Profile } from '@/lib/types';
+import { t } from '@/i18n';
 
 interface AuthCtx {
   session: Session | null;
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const conta = data as MinhaConta;
     if (conta.situacao === 'desativado') {
-      Alert.alert('Acesso desativado', 'Seu acesso ao Street Running foi desativado. Fale com a organização.');
+      Alert.alert(t('Acesso desativado'), t('Seu acesso ao Street Running foi desativado. Fale com a organização.'));
       await supabase.auth.signOut();
       return;
     }
@@ -109,9 +110,9 @@ export function useAuth() {
 }
 
 function translateAuthError(msg: string) {
-  if (/invalid login/i.test(msg)) return 'E-mail ou senha incorretos';
-  if (/already registered/i.test(msg)) return 'Este e-mail já possui cadastro. Use "Entrar" (mesma senha do Assistência ML, se tiver).';
-  if (/password should be/i.test(msg)) return 'A senha deve ter pelo menos 6 caracteres';
-  if (/email not confirmed/i.test(msg)) return 'Confirme seu e-mail antes de entrar';
+  if (/invalid login/i.test(msg)) return t('E-mail ou senha incorretos');
+  if (/already registered/i.test(msg)) return t('Este e-mail já possui cadastro. Use "Entrar" (mesma senha do Assistência ML, se tiver).');
+  if (/password should be/i.test(msg)) return t('A senha deve ter pelo menos 6 caracteres');
+  if (/email not confirmed/i.test(msg)) return t('Confirme seu e-mail antes de entrar');
   return msg;
 }

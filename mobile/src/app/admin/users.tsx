@@ -9,6 +9,7 @@ import { supabase, unwrap } from '@/lib/supabase';
 import type { Profile, UserRole } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors, font } from '@/theme';
+import { t } from '@/i18n';
 
 const ADMIN_GERAL = 'mapl11@hotmail.com';
 const ROLES: { value: UserRole; label: string; help: string; color: string }[] = [
@@ -42,20 +43,20 @@ export default function UsersScreen() {
 
   async function update(u: Profile, patch: Partial<Profile>) {
     const { error } = await supabase.from('st_usuarios').update(patch).eq('id', u.id);
-    if (error) return Alert.alert('Não foi possível alterar', error.message);
+    if (error) return Alert.alert(t('Não foi possível alterar'), t(error.message));
     q.setData(all.map((x) => (x.id === u.id ? { ...x, ...patch } : x)));
     if (u.user_id === session?.user.id) refreshProfile();
   }
 
   function remove(u: Profile) {
-    Alert.alert('Remover acesso?', `${u.email} deixa de acessar o Street Running.`, [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('Remover acesso?'), t('{email} deixa de acessar o Street Running.', { email: u.email ?? '' }), [
+      { text: t('Cancelar'), style: 'cancel' },
       {
-        text: 'Remover',
+        text: t('Remover'),
         style: 'destructive',
         onPress: async () => {
           const { error } = await supabase.from('st_usuarios').delete().eq('id', u.id);
-          if (error) return Alert.alert('Erro', error.message);
+          if (error) return Alert.alert(t('Erro'), t(error.message));
           q.setData(all.filter((x) => x.id !== u.id));
         },
       },
@@ -64,13 +65,13 @@ export default function UsersScreen() {
 
   async function add() {
     const email = form.email.trim().toLowerCase();
-    if (!/^\S+@\S+\.\S+$/.test(email)) return Alert.alert('Informe um e-mail válido');
+    if (!/^\S+@\S+\.\S+$/.test(email)) return Alert.alert(t('Informe um e-mail válido'));
     const { error } = await supabase.from('st_usuarios').insert({ email, full_name: form.full_name.trim(), role: isAdminGeral ? form.role : 'athlete' });
-    if (error) return Alert.alert('Não foi possível cadastrar', /duplicate|unique/i.test(error.message) ? 'Este e-mail já está cadastrado.' : error.message);
+    if (error) return Alert.alert(t('Não foi possível cadastrar'), /duplicate|unique/i.test(error.message) ? t('Este e-mail já está cadastrado.') : t(error.message));
     setAdding(false);
     setForm({ email: '', full_name: '', role: isAdminGeral ? 'admin' : 'athlete' });
     q.reload();
-    Alert.alert('Acesso cadastrado ✓', `Peça para ${email} criar a conta no app com este e-mail (ou entrar, se já tiver conta). O acesso é liberado automaticamente.`);
+    Alert.alert(t('Acesso cadastrado ✓'), t('Peça para {email} criar a conta no app com este e-mail (ou entrar, se já tiver conta). O acesso é liberado automaticamente.', { email }));
   }
 
   const count = (r: UserRole) => all.filter((u) => u.role === r && u.ativo).length;
@@ -82,10 +83,10 @@ export default function UsersScreen() {
         <Muted style={{ marginBottom: 12 }}>
           {isAdminGeral ? (
             <>
-              Cadastre aqui os <Text style={{ color: colors.text, fontWeight: '700' }}>gestores</Text> que compraram o app. Cada gestor cria as próprias corridas e associa os corredores dele.
+              {t('Cadastre aqui os')} <Text style={{ color: colors.text, fontWeight: '700' }}>{t('gestores')}</Text> {t('que compraram o app. Cada gestor cria as próprias corridas e associa os corredores dele.')}
             </>
           ) : (
-            <>Seus corredores: quem você cadastrou ou associou às suas corridas. Para colocar alguém numa corrida, use Corredores da corrida.</>
+            <>{t('Seus corredores: quem você cadastrou ou associou às suas corridas. Para colocar alguém numa corrida, use Corredores da corrida.')}</>
           )}
         </Muted>
 
@@ -114,7 +115,7 @@ export default function UsersScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={[font.h3, { color: colors.text }]}>
                     {u.full_name || '—'}
-                    {me ? ' (você)' : ''}
+                    {me ? ` (${t('você')})` : ''}
                   </Text>
                   <Muted style={{ fontSize: 12 }}>{u.email}</Muted>
                   <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
@@ -139,8 +140,8 @@ export default function UsersScreen() {
                     ))}
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 }}>
-                    <Muted style={{ fontSize: 12, flex: 1 }}>{ROLES.find((r) => r.value === u.role)?.help}</Muted>
-                    <Text style={{ color: colors.textMuted, fontSize: 12, marginRight: 6 }}>Ativo</Text>
+                    <Muted style={{ fontSize: 12, flex: 1 }}>{t(ROLES.find((r) => r.value === u.role)?.help ?? '')}</Muted>
+                    <Text style={{ color: colors.textMuted, fontSize: 12, marginRight: 6 }}>{t('Ativo')}</Text>
                     <Switch value={u.ativo} onValueChange={(v) => update(u, { ativo: v })} trackColor={{ true: colors.success }} />
                   </View>
                 </>
@@ -153,21 +154,21 @@ export default function UsersScreen() {
       <Modal visible={adding} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setAdding(false)}>
         <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: 24 }} keyboardShouldPersistTaps="handled">
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-            <Text style={[font.h2, { color: colors.text, flex: 1 }]}>Cadastrar acesso</Text>
+            <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t('Cadastrar acesso')}</Text>
             <IconButton icon="close" onPress={() => setAdding(false)} />
           </View>
           <Muted style={{ marginBottom: 16 }}>
-            A pessoa cria a conta no app com este e-mail (ou entra, se já tiver) e recebe automaticamente o papel escolhido.
+            {t('A pessoa cria a conta no app com este e-mail (ou entra, se já tiver) e recebe automaticamente o papel escolhido.')}
           </Muted>
           <Input label="E-mail *" icon="mail-outline" value={form.email} onChangeText={(v) => setForm({ ...form, email: v })} autoCapitalize="none" keyboardType="email-address" />
           <Input label="Nome" icon="person-outline" value={form.full_name} onChangeText={(v) => setForm({ ...form, full_name: v })} />
-          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, display: isAdminGeral ? 'flex' : 'none' }]}>Papel</Text>
+          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, display: isAdminGeral ? 'flex' : 'none' }]}>{t('Papel')}</Text>
           <View style={{ flexDirection: 'row', marginBottom: 6, display: isAdminGeral ? 'flex' : 'none' }}>
             {ROLES.map((r) => (
               <Chip key={r.value} label={r.label} active={form.role === r.value} color={r.color} onPress={() => setForm({ ...form, role: r.value })} />
             ))}
           </View>
-          <Muted style={{ fontSize: 12, marginBottom: 20 }}>{ROLES.find((r) => r.value === form.role)?.help}</Muted>
+          <Muted style={{ fontSize: 12, marginBottom: 20 }}>{t(ROLES.find((r) => r.value === form.role)?.help ?? '')}</Muted>
           <GradientButton title="Cadastrar" icon="checkmark" onPress={add} />
         </ScrollView>
       </Modal>
@@ -179,7 +180,7 @@ function Counter({ label, value, color }: { label: string; value: number; color:
   return (
     <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 14, padding: 10, borderWidth: 1, borderColor: colors.border }}>
       <Text style={{ color, fontWeight: '900', fontSize: 20 }}>{value}</Text>
-      <Text style={{ color: colors.textMuted, fontSize: 11 }}>{label}</Text>
+      <Text style={{ color: colors.textMuted, fontSize: 11 }}>{t(label)}</Text>
     </View>
   );
 }
