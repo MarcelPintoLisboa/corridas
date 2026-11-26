@@ -1172,5 +1172,8 @@ export const en: Record<string, string> = {
   'Prova em {date}. Obrigado por correr com a gente! Seus treinos continuam na aba Evolução.': 'Race on {date}. Thanks for running with us! Your workouts are still in the Progress tab.',
   // ------------------------------------------------------------ e-mail de boas-vindas
   'O e-mail de boas-vindas não foi enviado (configure a função st-boas-vindas no Supabase).': 'The welcome email was not sent (set up the st-boas-vindas function in Supabase).',
+  'O e-mail de boas-vindas não foi enviado: o Resend ainda está em modo de teste e só envia para o e-mail da sua conta. Verifique o domínio no Resend para enviar a todos.':
+    'The welcome email was not sent: Resend is still in test mode and only sends to your account email. Verify your domain in Resend to send to everyone.',
+  'O e-mail de boas-vindas não foi enviado: {detail}': 'The welcome email was not sent: {detail}',
   'E-mail de boas-vindas enviado para {email}.': 'Welcome email sent to {email}.',
 };

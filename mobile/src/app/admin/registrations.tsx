@@ -245,9 +245,24 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
     let mail = '';
     if (picked.email) {
       const res = await supabase.functions.invoke('st-boas-vindas', { body: { event_id: eventId, email: picked.email } });
-      mail = res.error
-        ? t('O e-mail de boas-vindas não foi enviado (configure a função st-boas-vindas no Supabase).')
-        : t('E-mail de boas-vindas enviado para {email}.', { email: picked.email });
+      if (!res.error) mail = t('E-mail de boas-vindas enviado para {email}.', { email: picked.email });
+      else {
+        // lê o motivo devolvido pela função (ex.: Resend em modo de teste só envia para o e-mail da conta)
+        let status = 0;
+        let detail = '';
+        try {
+          const ctx = (res.error as { context?: Response }).context;
+          status = ctx?.status ?? 0;
+          const body = await ctx?.json();
+          detail = body?.detail?.message ?? body?.error ?? '';
+        } catch {}
+        mail =
+          status === 404 || !status
+            ? t('O e-mail de boas-vindas não foi enviado (configure a função st-boas-vindas no Supabase).')
+            : /testing emails|verify a domain|own email/i.test(detail)
+              ? t('O e-mail de boas-vindas não foi enviado: o Resend ainda está em modo de teste e só envia para o e-mail da sua conta. Verifique o domínio no Resend para enviar a todos.')
+              : t('O e-mail de boas-vindas não foi enviado: {detail}', { detail: detail || `HTTP ${status}` });
+      }
     }
     setSaving(false);
     onDone();
