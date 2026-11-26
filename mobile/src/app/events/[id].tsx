@@ -79,7 +79,7 @@ export default function EventJoin() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen bottomInset={false}>
+      <Screen bottomInset={false} pullToRefresh={false}>
         <BackHeader title={existing ? 'Minha inscrição' : 'Vincular inscrição'} />
 
         <FadeIn>

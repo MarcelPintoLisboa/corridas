@@ -71,7 +71,7 @@ export default function NewWorkout() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen bottomInset={false}>
+      <Screen bottomInset={false} pullToRefresh={false}>
         <BackHeader title="Registrar treino" />
 
         <Pressable

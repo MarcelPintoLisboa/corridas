@@ -29,6 +29,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { t } from '@/i18n';
 import { daysUntil, initials } from '@/lib/format';
+import { useAuth } from '@/providers/AuthProvider';
+import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius, spacing } from '@/theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -42,16 +44,35 @@ export function Screen({
   padded = true,
   style,
   bottomInset = true,
+  pullToRefresh = true,
 }: {
   children: ReactNode;
   scroll?: boolean;
   refreshing?: boolean;
-  onRefresh?: () => void;
+  /** recarrega os dados próprios da tela (além da corrida e da conta, que sempre recarregam) */
+  onRefresh?: () => unknown;
   padded?: boolean;
   style?: StyleProp<ViewStyle>;
   bottomInset?: boolean;
+  /** false em formulários (puxar para baixo não recarrega nada) */
+  pullToRefresh?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  const { refreshProfile } = useAuth();
+  const { reload: reloadEvents } = useActiveEvent();
+  const [pulling, setPulling] = useState(false);
+
+  // Puxar para baixo: recarrega a tela + as corridas do usuário (nome, data, cores, capa,
+  // distância, nº de peito…) + a conta (papel/ativo) — tudo o que o admin pode ter mudado.
+  async function pull() {
+    setPulling(true);
+    try {
+      await Promise.all([Promise.resolve(onRefresh?.()), reloadEvents(), refreshProfile()]);
+    } finally {
+      setPulling(false);
+    }
+  }
+
   const content = [padded && { paddingHorizontal: spacing.md }, { paddingBottom: bottomInset ? 120 : 24 }, style];
   if (!scroll) return <View style={[styles.screen, content]}>{children}</View>;
   return (
@@ -59,9 +80,10 @@ export function Screen({
       style={styles.screen}
       contentContainerStyle={[{ paddingTop: insets.top + 8 }, content]}
       showsVerticalScrollIndicator={false}
+      alwaysBounceVertical={pullToRefresh}
       refreshControl={
-        onRefresh ? (
-          <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} tintColor={colors.text} />
+        pullToRefresh ? (
+          <RefreshControl refreshing={pulling || !!refreshing} onRefresh={pull} tintColor={colors.text} colors={[colors.primary]} progressBackgroundColor={colors.surface} />
         ) : undefined
       }>
       {children}

@@ -25,14 +25,14 @@ import { t, tn } from '@/i18n';
 
 export default function HomeScreen() {
   const { profile, isAdmin } = useAuth();
-  const { event, active, registrations, accent, accent2, loading, reload: reloadEvents } = useActiveEvent();
+  const { event, active, registrations, accent, accent2, loading } = useActiveEvent();
   const training = useTraining();
 
   const content = useAsync(async () => {
     if (!event) return null;
     const [posts, tips, sponsors] = await Promise.all([api.posts(event.id), api.tips(event.id, event.event_date), api.sponsors(event.id)]);
     return { posts, tips, sponsors };
-  }, [event?.id]);
+  }, [event?.id, event?.event_date]);
 
   const eventIds = registrations.map((r) => r.event_id);
   const allRaces = useAsync(async () => {
@@ -93,7 +93,6 @@ export default function HomeScreen() {
         content.refresh();
         allRaces.refresh();
         updates.refresh();
-        reloadEvents();
       }}>
       {header}
 

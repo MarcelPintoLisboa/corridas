@@ -75,7 +75,7 @@ export default function EventForm() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <Screen bottomInset={false}>
+      <Screen bottomInset={false} pullToRefresh={false}>
         <BackHeader title={id ? 'Personalizar corrida' : 'Nova corrida'} right={id ? <IconButton icon="trash-outline" color={colors.danger} onPress={onDelete} /> : null} />
         <FormFields fields={eventFields} values={values} onChange={setValues} />
         <GradientButton

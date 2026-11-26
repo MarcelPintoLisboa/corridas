@@ -82,7 +82,7 @@ export default function ImportKits() {
   }
 
   return (
-    <Screen bottomInset={false}>
+    <Screen bottomInset={false} pullToRefresh={false}>
       <BackHeader title="Importar compras de kit" />
       <Muted style={{ marginBottom: 12 }}>
         {t('Exporte a planilha da sua plataforma de vendas e cole abaixo (CSV separado por ; ou ,). O participante usa o código do pedido para vincular a inscrição no app.')}
