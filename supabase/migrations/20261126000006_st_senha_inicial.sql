@@ -9,8 +9,14 @@
 --   • Se o e-mail já tem login (ex.: conta de outro app do mesmo Supabase),
 --     a senha atual é mantida e apenas o acesso é liberado.
 --
+--   • Quem recebe senha provisória precisa criar a própria senha no
+--     primeiro acesso (coluna trocar_senha).
+--
 -- Rode no SQL Editor depois do 0004. Pode rodar de novo.
 -- =====================================================================
+
+alter table public.st_usuarios add column if not exists trocar_senha boolean not null default false;
+comment on column public.st_usuarios.trocar_senha is 'true = entrou com senha provisória e precisa criar a própria senha';
 
 create or replace function public.st_criar_usuario(
   p_email text,
@@ -63,8 +69,8 @@ begin
     v_status := 'ja_tinha_conta';  -- não mexe na senha de quem já tem login
   end if;
 
-  insert into public.st_usuarios (email, full_name, role, criado_por, user_id)
-  values (v_email, v_name, v_role, auth.uid(), v_uid)
+  insert into public.st_usuarios (email, full_name, role, criado_por, user_id, trocar_senha)
+  values (v_email, v_name, v_role, auth.uid(), v_uid, v_status = 'criado')
   returning * into v_u;
 
   return json_build_object('status', v_status, 'usuario_id', v_u.id, 'role', v_u.role);
@@ -73,3 +79,11 @@ $fn$;
 
 revoke all on function public.st_criar_usuario(text, text, public.st_papel, text) from public, anon;
 grant execute on function public.st_criar_usuario(text, text, public.st_papel, text) to authenticated;
+
+-- chamado pelo app depois que a pessoa cria a própria senha
+create or replace function public.st_senha_trocada()
+returns void language sql security definer set search_path = public as $$
+  update public.st_usuarios set trocar_senha = false where user_id = auth.uid();
+$$;
+revoke all on function public.st_senha_trocada() from public, anon;
+grant execute on function public.st_senha_trocada() to authenticated;

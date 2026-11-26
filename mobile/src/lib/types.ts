@@ -22,6 +22,8 @@ export interface Profile {
   city: string | null;
   instagram: string | null;
   role: UserRole;
+  /** cadastrado com senha provisória: precisa criar a própria senha no 1º acesso */
+  trocar_senha?: boolean;
 }
 
 export interface RaceEvent {

@@ -2,9 +2,10 @@ import { DarkTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-ro
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { ForcePasswordChange } from '@/components/ForcePasswordChange';
 import { Loading } from '@/components/ui';
 import { LanguageProvider } from '@/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -20,7 +21,7 @@ const theme = {
 };
 
 function RootNavigator() {
-  const { session, loading } = useAuth();
+  const { session, loading, profile } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -53,6 +54,7 @@ function RootNavigator() {
   const modal = { presentation: 'modal' as const, headerShown: false };
 
   return (
+    <View style={{ flex: 1 }}>
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg }, animation: 'slide_from_right' }}>
       <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
       <Stack.Screen name="(auth)" options={{ animation: 'fade' }} />
@@ -66,6 +68,13 @@ function RootNavigator() {
       <Stack.Screen name="updates" />
       <Stack.Screen name="admin" />
     </Stack>
+    {/* 1º acesso com senha provisória: cobre o app até a pessoa criar a própria senha */}
+    {session && profile?.trocar_senha ? (
+      <View style={StyleSheet.absoluteFill}>
+        <ForcePasswordChange />
+      </View>
+    ) : null}
+    </View>
   );
 }
 

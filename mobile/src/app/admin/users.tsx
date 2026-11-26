@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Alert, Linking, Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
 import { Avatar, Badge, Card, Chip, EmptyState, GradientButton, IconButton, Input, Loading, Muted, Screen } from '@/components/ui';
@@ -28,6 +28,8 @@ export default function UsersScreen() {
   const emptyForm = () => ({ email: '', full_name: '', password: generatePassword(), role: (isAdminGeral ? 'admin' : 'athlete') as UserRole });
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  // acesso recém-criado: mostra os dados e as opções de envio
+  const [created, setCreated] = useState<{ email: string; password: string; name: string } | null>(null);
   const q = useAsync(async () => unwrap(await supabase.from('st_usuarios').select('*').order('criado_em', { ascending: false })) as Profile[], []);
 
   if (!isAdmin) {
@@ -97,11 +99,9 @@ export default function UsersScreen() {
         t('{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Street Running foi liberado.', { email }),
       );
     }
-    const credentials = `Street Running\n${t('E-mail')}: ${email}\n${t('Senha')}: ${password}`;
-    Alert.alert(t('Acesso criado ✓'), `${t('Envie para a pessoa entrar no app:')}\n\n${t('E-mail')}: ${email}\n${t('Senha')}: ${password}`, [
-      { text: 'OK' },
-      { text: t('Copiar dados'), onPress: () => Clipboard.setStringAsync(credentials).catch(() => {}) },
-    ]);
+    const access = { email, password, name: form.full_name.trim() };
+    // espera o modal de cadastro fechar (o iOS não abre dois modais ao mesmo tempo)
+    setTimeout(() => setCreated(access), 450);
   }
 
   const count = (r: UserRole) => all.filter((u) => u.role === r && u.ativo).length;
@@ -223,7 +223,73 @@ export default function UsersScreen() {
           <GradientButton title="Cadastrar" icon="checkmark" onPress={add} loading={saving} />
         </ScrollView>
       </Modal>
+
+      <Modal visible={!!created} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setCreated(null)}>
+        {created ? <CreatedAccess access={created} onClose={() => setCreated(null)} /> : null}
+      </Modal>
     </View>
+  );
+}
+
+/** Dados do acesso recém-criado + envio por e-mail, WhatsApp ou cópia */
+function CreatedAccess({ access, onClose }: { access: { email: string; password: string; name: string }; onClose: () => void }) {
+  const first = access.name.split(' ')[0];
+  const message = t(
+    'Olá{name}! Seu acesso ao Street Running foi criado.\n\nE-mail: {email}\nSenha provisória: {password}\n\nBaixe o app, entre com esses dados e crie a sua própria senha no primeiro acesso.',
+    { name: first ? ` ${first}` : '', email: access.email, password: access.password },
+  );
+  const subject = t('Seu acesso ao Street Running');
+
+  async function open(url: string, fallback?: string) {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      if (fallback) await Linking.openURL(fallback).catch(() => Alert.alert(t('Não foi possível abrir')));
+      else Alert.alert(t('Não foi possível abrir'), t('Nenhum app de e-mail configurado neste aparelho. Use Copiar dados.'));
+    }
+  }
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, paddingTop: 24, paddingBottom: 40 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t('Acesso criado ✓')}</Text>
+        <IconButton icon="close" onPress={onClose} />
+      </View>
+      <Muted style={{ marginBottom: 16 }}>{t('Envie os dados para a pessoa. No primeiro acesso, o app pede para ela criar a própria senha.')}</Muted>
+      <Card animated={false}>
+        <Text style={[font.tiny, { color: colors.textMuted }]}>{t('E-mail')}</Text>
+        <Text style={{ color: colors.text, fontWeight: '800', fontSize: 16, marginBottom: 10 }} selectable>{access.email}</Text>
+        <Text style={[font.tiny, { color: colors.textMuted }]}>{t('Senha provisória')}</Text>
+        <Text style={{ color: colors.lime, fontWeight: '900', fontSize: 22, letterSpacing: 1 }} selectable>{access.password}</Text>
+      </Card>
+      <GradientButton
+        title="Enviar por e-mail"
+        icon="mail"
+        onPress={() => open(`mailto:${access.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`)}
+        style={{ marginTop: 8 }}
+      />
+      <GradientButton
+        title="Enviar por WhatsApp"
+        icon="logo-whatsapp"
+        colorsPair={['#25D366', '#128C7E']}
+        onPress={() => open(`whatsapp://send?text=${encodeURIComponent(message)}`, `https://wa.me/?text=${encodeURIComponent(message)}`)}
+        style={{ marginTop: 10 }}
+      />
+      <GradientButton
+        title="Copiar dados"
+        icon="copy"
+        variant="ghost"
+        onPress={() => {
+          Clipboard.setStringAsync(message)
+            .then(() => Alert.alert(t('Copiado ✓')))
+            .catch(() => {});
+        }}
+        style={{ marginTop: 10 }}
+      />
+      <Text onPress={onClose} style={{ color: colors.textMuted, textAlign: 'center', marginTop: 20 }}>
+        {t('Concluir')}
+      </Text>
+    </ScrollView>
   );
 }
 
