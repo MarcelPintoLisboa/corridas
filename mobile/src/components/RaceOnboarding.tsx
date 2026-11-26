@@ -5,6 +5,7 @@ import { Text, View } from 'react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { alpha, colors, font, radius } from '@/theme';
 
+import { ClosedRaces } from './ClosedRaces';
 import { FadeIn, Muted, SectionHeader, type IconName } from './ui';
 import { t } from '@/i18n';
 
@@ -23,6 +24,7 @@ export function RaceOnboarding() {
   const email = profile?.email ?? session?.user.email;
   return (
     <View>
+      <ClosedRaces />
       <FadeIn>
         <LinearGradient colors={[colors.primary, colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.xl, padding: 20 }}>
           <Ionicons name="hourglass-outline" size={28} color="#fff" />

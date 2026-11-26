@@ -214,15 +214,18 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
 
     default:
       return (
-        <Input
-          label={`${t(field.label)}${field.required ? ' *' : ''}`}
-          value={str}
-          onChangeText={onChange}
-          placeholder={field.placeholder}
-          multiline={field.type === 'multiline'}
-          keyboardType={field.type === 'number' ? 'decimal-pad' : field.type === 'url' ? 'url' : 'default'}
-          autoCapitalize={field.type === 'url' ? 'none' : 'sentences'}
-        />
+        <View>
+          <Input
+            label={`${t(field.label)}${field.required ? ' *' : ''}`}
+            value={str}
+            onChangeText={onChange}
+            placeholder={field.placeholder}
+            multiline={field.type === 'multiline'}
+            keyboardType={field.type === 'number' ? 'decimal-pad' : field.type === 'url' ? 'url' : 'default'}
+            autoCapitalize={field.type === 'url' ? 'none' : 'sentences'}
+          />
+          {field.help ? <Text style={{ color: colors.textDim, fontSize: 12, marginTop: -10, marginBottom: 14 }}>{t(field.help)}</Text> : null}
+        </View>
       );
   }
 }

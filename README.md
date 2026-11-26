@@ -25,6 +25,7 @@ supabase/
   migrations/20261126000007_st_sessao_detalhada.sql ← sessões de treino com etapas, aquecimento e esteira
   migrations/20261126000008_st_relogio.sql ← treinos importados do relógio (Apple Saúde / Health Connect)
   migrations/20261126000009_st_anamnese.sql ← anamnese do corredor + plano de treino pessoal gerado automaticamente
+  migrations/20261126000010_st_encerramento.sql ← corrida fecha para os corredores 24 h após a largada
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -50,8 +51,9 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 9. Cole também `supabase/migrations/20261126000007_st_sessao_detalhada.sql` e clique em **Run**. As sessões dos planos de treino ganham faixa de duração, aquecimento, etapas (aquecimento, tiros, recuperação…) e instruções para esteira, que o corredor vê na tela de detalhe do treino.
 10. Cole também `supabase/migrations/20261126000008_st_relogio.sql` e clique em **Run**. Cada corredor pode importar as corridas do próprio relógio (Apple Watch pelo app Saúde no iPhone; Galaxy Watch, Pixel Watch, Garmin etc. pelo Health Connect no Android), com distância, tempo, pace, frequência cardíaca e calorias. No iPhone, o acesso ao Saúde exige o app assinado com conta de desenvolvedor Apple (ou instalado pela App Store).
 11. Cole também `supabase/migrations/20261126000009_st_anamnese.sql` e clique em **Run**. O corredor responde a anamnese na aba **Treino** (objetivo, triagem de saúde, rotina, experiência e, se quiser, dados do relógio) e o app gera um plano de treino só dele até o dia da prova. Se a triagem apontar risco, o plano fica bloqueado. O gestor vê as respostas em **Corredores da corrida**.
+12. Cole também `supabase/migrations/20261126000010_st_encerramento.sql` e clique em **Run**. 24 horas depois da largada (prazo ajustável por corrida em **Personalizar corrida**) a corrida fecha para os corredores: eles deixam de ver o conteúdo e os Stories dela, mas os treinos continuam deles. O gestor segue vendo tudo, e a corrida passa para **Finalizada**.
 
-> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009. Se rodar o 0001 de novo, rode os outros depois dele.
+> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 → 0010. Se rodar o 0001 de novo, rode os outros depois dele.
 
 Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 

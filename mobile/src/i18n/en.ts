@@ -1164,4 +1164,10 @@ export const en: Record<string, string> = {
     'Arrive early, warm up with an easy jog and short strides. Nothing new today: same shoes, clothes and breakfast as in training.',
   '10 min de trote bem leve + mobilidade dinâmica + 3 acelerações progressivas de 80 m.': '10 min very easy jog + dynamic mobility + 3 progressive 80 m strides.',
   'Na esteira, use 1% de inclinação. As velocidades em km/h aparecem na aba Esteira.': 'On the treadmill, use a 1% incline. Speeds in km/h are shown in the Treadmill tab.',
+  // ------------------------------------------------------------ encerramento da corrida
+  'Acesso dos corredores após a largada (horas)': 'Runner access after the start (hours)',
+  'Depois desse prazo a corrida fecha para os corredores (os treinos continuam deles). Vazio = nunca fecha.': 'After this period the race closes for runners (their workouts stay with them). Empty = never closes.',
+  'Rode o arquivo supabase/migrations/20261126000010_st_encerramento.sql no SQL Editor do Supabase.': 'Run the file supabase/migrations/20261126000010_st_encerramento.sql in the Supabase SQL Editor.',
+  '{name} foi encerrada 🏁': '{name} has ended 🏁',
+  'Prova em {date}. Obrigado por correr com a gente! Seus treinos continuam na aba Evolução.': 'Race on {date}. Thanks for running with us! Your workouts are still in the Progress tab.',
 };

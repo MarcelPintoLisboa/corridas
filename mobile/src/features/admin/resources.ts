@@ -236,6 +236,7 @@ export const eventFields: Field[] = [
   { key: 'primary_color', label: 'Cor principal', type: 'color', default: '#FF4D2E' },
   { key: 'secondary_color', label: 'Cor secundária', type: 'color', default: '#7B2FF7' },
   { key: 'event_date', label: 'Data da corrida', timeLabel: 'Hora da largada', type: 'datetime', required: true },
+  { key: 'acesso_horas_apos', label: 'Acesso dos corredores após a largada (horas)', type: 'number', default: 24, help: 'Depois desse prazo a corrida fecha para os corredores (os treinos continuam deles). Vazio = nunca fecha.' },
   { key: 'location_name', label: 'Local', type: 'text' },
   { key: 'address', label: 'Endereço', type: 'text' },
   { key: 'city', label: 'Cidade', type: 'text' },

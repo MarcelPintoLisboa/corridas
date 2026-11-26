@@ -52,7 +52,8 @@ export default function EventForm() {
       await reload();
       router.back();
     } catch (e) {
-      Alert.alert(t('Erro'), (e as Error).message);
+      const msg = (e as Error).message;
+      Alert.alert(t('Erro'), /acesso_horas_apos/i.test(msg) ? t('Rode o arquivo supabase/migrations/20261126000010_st_encerramento.sql no SQL Editor do Supabase.') : msg);
     } finally {
       setSaving(false);
     }
