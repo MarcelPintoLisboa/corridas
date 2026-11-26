@@ -68,6 +68,7 @@ function RootNavigator() {
       <Stack.Screen name="updates" />
       <Stack.Screen name="session/[id]" />
       <Stack.Screen name="health-import" />
+      <Stack.Screen name="strava-conectado" options={{ animation: 'none' }} />
       <Stack.Screen name="anamnese" options={modal} />
       <Stack.Screen name="admin" />
     </Stack>

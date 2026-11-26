@@ -154,8 +154,8 @@ export interface Workout {
   notes: string | null;
   is_race: boolean;
   shared_instagram: boolean;
-  /** manual | apple_health | health_connect */
-  source?: 'manual' | 'apple_health' | 'health_connect';
+  /** manual | apple_health | health_connect | strava */
+  source?: 'manual' | 'apple_health' | 'health_connect' | 'strava';
   external_id?: string | null;
   max_hr?: number | null;
   calories?: number | null;

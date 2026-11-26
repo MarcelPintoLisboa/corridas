@@ -1176,4 +1176,29 @@ export const en: Record<string, string> = {
     'The welcome email was not sent: Resend is still in test mode and only sends to your account email. Verify your domain in Resend to send to everyone.',
   'O e-mail de boas-vindas não foi enviado: {detail}': 'The welcome email was not sent: {detail}',
   'E-mail de boas-vindas enviado para {email}.': 'Welcome email sent to {email}.',
+
+  // ------------------------------------------------------------------ Strava
+  Strava: 'Strava',
+  'Conectado como {name}': 'Connected as {name}',
+  'Conectar Strava': 'Connect Strava',
+  'Usar Strava': 'Use Strava',
+  Desconectar: 'Disconnect',
+  'Desconectar o Strava?': 'Disconnect Strava?',
+  'Os treinos já importados continuam no app.': 'Workouts you already imported stay in the app.',
+  'Corridas do Apple Watch, Garmin, Coros, Polar e outros relógios que sincronizam com o Strava.': 'Runs from Apple Watch, Garmin, Coros, Polar and other watches that sync with Strava.',
+  'No Apple Watch: instale o Strava no iPhone e ative a sincronização com o app Saúde (ou grave a corrida pelo Strava no relógio)':
+    'Apple Watch: install Strava on your iPhone and turn on syncing with the Health app (or record the run with Strava on the watch)',
+  'Grave uma corrida no relógio, espere ela aparecer no Strava e puxe esta tela para baixo para atualizar.': 'Record a run on your watch, wait for it to show up on Strava, then pull this screen down to refresh.',
+  'Instalado pelo Sideloadly, o iPhone não libera o Apple Saúde para o app. Use o Strava: o Apple Watch sincroniza com ele e o app importa as corridas.':
+    'When installed with Sideloadly, the iPhone does not give the app access to Apple Health. Use Strava instead: Apple Watch syncs with it and the app imports your runs.',
+  'Já registrado (mesmo horário).': 'Already logged (same time).',
+  'Publique a função st-strava no Supabase (veja o README).': 'Deploy the st-strava function in Supabase (see the README).',
+  'Rode o arquivo supabase/migrations/20261126000011_st_strava.sql no SQL Editor do Supabase.': 'Run supabase/migrations/20261126000011_st_strava.sql in the Supabase SQL Editor.',
+  'Login expirado. Tente de novo.': 'Login expired. Please try again.',
+  'Marque a permissão de ver suas atividades para importar as corridas.': 'Allow access to your activities so your runs can be imported.',
+  'O acesso ao Strava foi revogado. Conecte de novo.': 'Strava access was revoked. Please connect again.',
+  'O Strava limitou as consultas agora. Tente de novo em 15 minutos.': 'Strava is rate-limiting requests right now. Try again in 15 minutes.',
+  'Entre no app novamente.': 'Please sign in to the app again.',
+  'Strava não conectado': 'Strava not connected',
+  'Configure os segredos STRAVA_CLIENT_ID e STRAVA_CLIENT_SECRET no Supabase.': 'Set the STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET secrets in Supabase.',
 };

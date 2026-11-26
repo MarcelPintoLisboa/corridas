@@ -23,6 +23,7 @@ import {
 } from '@/lib/anamnese';
 import { formatKm, formatPace, maskDateBR, parseDateTimeBR, toDateInputBR } from '@/lib/format';
 import { health, type HealthSummary } from '@/lib/health';
+import { strava } from '@/lib/strava';
 import { generatePlan } from '@/lib/planGenerator';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
@@ -39,7 +40,7 @@ export default function AnamneseScreen() {
   const [data, setData] = useState<Answers>({});
   const [healthSum, setHealthSum] = useState<HealthSummary | null>(null);
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState<'connect' | 'save' | null>(null);
+  const [busy, setBusy] = useState<'connect' | 'strava' | 'save' | null>(null);
   const [loaded, setLoaded] = useState(false);
   const scroll = useRef<ScrollViewInstance>(null);
 
@@ -91,6 +92,20 @@ export default function AnamneseScreen() {
     if (key === 'warningWhen' && value === 'Agora') go(5);
   }
 
+  async function connectStrava() {
+    setBusy('strava');
+    try {
+      const s = await strava.status();
+      if (!s.connected && !(await strava.connect())) return;
+      setHealthSum(await strava.summary(30));
+      setRoute('connected');
+    } catch (e) {
+      Alert.alert(t('Não foi possível conectar'), `${(e as Error).message}\n\n${t('Você pode continuar sem conectar e informar seu histórico manualmente.')}`);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function connect() {
     setBusy('connect');
     try {
@@ -104,7 +119,14 @@ export default function AnamneseScreen() {
       setHealthSum(sum);
       setRoute('connected');
     } catch (e) {
-      Alert.alert(t('Não foi possível conectar'), `${(e as Error).message}\n\n${t('Você pode continuar sem conectar e informar seu histórico manualmente.')}`);
+      const msg = (e as Error).message ?? '';
+      if (Platform.OS === 'ios' && /entitlement|not authorized|authorization/i.test(msg)) {
+        // instalação sem HealthKit (Sideloadly): oferece o Strava
+        Alert.alert(t('Não foi possível conectar'), t('Instalado pelo Sideloadly, o iPhone não libera o Apple Saúde para o app. Use o Strava: o Apple Watch sincroniza com ele e o app importa as corridas.'), [
+          { text: t('Cancelar'), style: 'cancel' },
+          { text: t('Usar Strava'), onPress: () => connectStrava() },
+        ]);
+      } else Alert.alert(t('Não foi possível conectar'), `${msg}\n\n${t('Você pode continuar sem conectar e informar seu histórico manualmente.')}`);
     } finally {
       setBusy(null);
     }
@@ -173,6 +195,7 @@ export default function AnamneseScreen() {
         </View>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 20 }}>
           <Btn label={Platform.OS === 'ios' ? 'Conectar ao app Saúde' : 'Conectar ao Health Connect'} primary onPress={connect} loading={busy === 'connect'} />
+          <Btn label="Conectar Strava" onPress={connectStrava} loading={busy === 'strava'} />
           <Btn label="Continuar sem conectar" onPress={() => { setRoute('manual'); go(1); }} />
         </View>
       </>

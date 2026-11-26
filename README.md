@@ -26,6 +26,7 @@ supabase/
   migrations/20261126000008_st_relogio.sql ← treinos importados do relógio (Apple Saúde / Health Connect)
   migrations/20261126000009_st_anamnese.sql ← anamnese do corredor + plano de treino pessoal gerado automaticamente
   migrations/20261126000010_st_encerramento.sql ← corrida fecha para os corredores 24 h após a largada
+  migrations/20261126000011_st_strava.sql      ← importar corridas pelo Strava (Apple Watch sem conta paga)
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -52,6 +53,7 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 10. Cole também `supabase/migrations/20261126000008_st_relogio.sql` e clique em **Run**. Cada corredor pode importar as corridas do próprio relógio (Apple Watch pelo app Saúde no iPhone; Galaxy Watch, Pixel Watch, Garmin etc. pelo Health Connect no Android), com distância, tempo, pace, frequência cardíaca e calorias. No iPhone, o acesso ao Saúde exige o app assinado com conta de desenvolvedor Apple (ou instalado pela App Store).
 11. Cole também `supabase/migrations/20261126000009_st_anamnese.sql` e clique em **Run**. O corredor responde a anamnese na aba **Treino** (objetivo, triagem de saúde, rotina, experiência e, se quiser, dados do relógio) e o app gera um plano de treino só dele até o dia da prova. Se a triagem apontar risco, o plano fica bloqueado. O gestor vê as respostas em **Corredores da corrida**.
 12. Cole também `supabase/migrations/20261126000010_st_encerramento.sql` e clique em **Run**. 24 horas depois da largada (prazo ajustável por corrida em **Personalizar corrida**) a corrida fecha para os corredores: eles deixam de ver o conteúdo e os Stories dela, mas os treinos continuam deles. O gestor segue vendo tudo, e a corrida passa para **Finalizada**.
+13. Cole também `supabase/migrations/20261126000011_st_strava.sql` e clique em **Run**. Ela guarda a conexão de cada corredor com o Strava (veja a seção "Strava").
 
 > Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008 → 0009 → 0010. Se rodar o 0001 de novo, rode os outros depois dele.
 
@@ -152,6 +154,27 @@ Toda execução publica uma **GitHub Release** com o APK e o IPA para baixar dir
 
 ### Alternativa: EAS Build (nuvem da Expo)
 O script `npm run setup:ios` / `setup:android`, em `mobile/`, gera os builds pela EAS, com login na Expo e na Apple. Ele é opcional e o workflow não depende dele.
+
+## Strava: corridas do Apple Watch sem conta de desenvolvedor (opcional)
+
+Instalado pelo Sideloadly com Apple ID gratuito, o iPhone não libera o Apple Saúde (HealthKit) para o app.
+A alternativa é o Strava: o Apple Watch (e Garmin, Coros, Polar…) sincroniza com o Strava e o app importa as corridas de lá.
+Funciona no iPhone e no Android, em qualquer forma de instalação.
+
+1. Em [strava.com/settings/api](https://www.strava.com/settings/api), crie o app da API:
+   - **Application Name**: Street Running · **Category**: Training · **Website**: qualquer site seu
+   - **Authorization Callback Domain**: `eoowbybfrbmjxcjfniuu.supabase.co`
+   Anote o **Client ID** e o **Client Secret**.
+2. No Supabase, em **Edge Functions → Secrets**, cadastre `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET`.
+3. Publique a função `supabase/functions/st-strava` **sem verificação de JWT** (o Strava chama o retorno do login sem token):
+   `npx supabase functions deploy st-strava --project-ref eoowbybfrbmjxcjfniuu --no-verify-jwt`
+4. Rode a migração `20261126000011_st_strava.sql`.
+5. No app: **Evolução → Importar do relógio → Strava → Conectar Strava** (ou na anamnese, **Conectar Strava**).
+
+No Apple Watch, o corredor precisa ter o app do Strava no iPhone com a sincronização do Saúde ativada
+(Strava → Configurações → Aplicativos, serviços e dispositivos → Saúde) ou gravar a corrida pelo Strava no relógio.
+Limite do Strava: um app novo conecta só 1 atleta (você). Em strava.com/settings/api dá para subir para 10 sem revisão;
+acima disso, envie o app para a revisão do Strava (formulário do programa de API ou developers@strava.com), que pode levar semanas.
 
 ## E-mail de boas-vindas (opcional)
 

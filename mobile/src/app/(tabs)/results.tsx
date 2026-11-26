@@ -122,7 +122,7 @@ export default function ResultsScreen() {
             <Text style={[font.h3, { color: colors.text }]}>{w.title ?? t('Treino')}</Text>
             <Muted style={{ fontSize: 12 }}>
               {formatDate(w.performed_at, true)}
-              {w.source && w.source !== 'manual' ? ` · ⌚ ${t(w.source === 'apple_health' ? 'Apple Watch / Saúde' : 'Relógio')}` : ''}
+              {w.source && w.source !== 'manual' ? ` · ⌚ ${(w.source === 'strava' ? 'Strava' : t(w.source === 'apple_health' ? 'Apple Watch / Saúde' : 'Relógio'))}` : ''}
             </Muted>
             <Text style={{ color: colors.text, fontWeight: '800', marginTop: 2 }}>
               {formatKm(w.distance_km, 2)} km · {formatDuration(w.duration_seconds)} · {formatPace(w.avg_pace_seconds)}/km

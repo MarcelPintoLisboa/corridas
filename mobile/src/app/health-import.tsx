@@ -5,58 +5,101 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, Text, View } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
-import { Card, EmptyState, GradientButton, Muted, Screen } from '@/components/ui';
+import { Card, Chip, EmptyState, GradientButton, Muted, Screen } from '@/components/ui';
 import { useTraining } from '@/hooks/useTraining';
 import { t, tn } from '@/i18n';
 import { formatDate, formatDuration, formatKm, formatPace, formatTime } from '@/lib/format';
 import { health, type HealthRun, type HealthStatus } from '@/lib/health';
 import { isSameDay, type ScheduledSession } from '@/lib/plan';
+import { strava } from '@/lib/strava';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
 
 const CONNECTED_KEY = 'health-connected';
+const SOURCE_KEY = 'import-source';
 const DAYS = 60;
+const STRAVA = '#FC4C02';
 
-/** Importa as corridas gravadas no relógio (Apple Saúde / Health Connect) para os treinos do corredor */
+type Source = 'device' | 'strava';
+
+/** Importa as corridas do relógio (Apple Saúde / Health Connect ou Strava) para os treinos do corredor */
 export default function HealthImportScreen() {
   const { session } = useAuth();
   const uid = session?.user.id;
   const { event, accent, accent2 } = useActiveEvent();
   const training = useTraining();
+  const [src, setSrc] = useState<Source | null>(null);
   const [status, setStatus] = useState<HealthStatus | null>(null);
   const [connected, setConnected] = useState(false);
+  const [athlete, setAthlete] = useState<string | null>(null);
   const [runs, setRuns] = useState<HealthRun[] | null>(null);
   const [imported, setImported] = useState<Set<string>>(new Set());
+  /** horários dos treinos já registrados (evita duplicar a mesma corrida vinda de outra fonte) */
+  const [existingTimes, setExistingTimes] = useState<number[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function load() {
+  const key = (r: HealthRun) => `${r.source}:${r.externalId}`;
+  const color = src === 'strava' ? STRAVA : accent;
+
+  async function load(source: Source = src!) {
     setLoading(true);
     try {
+      const since = new Date(Date.now() - (DAYS + 1) * 86400_000).toISOString();
       const [list, existing] = await Promise.all([
-        health.listRuns(DAYS),
-        supabase.from('st_workouts').select('external_id').eq('user_id', uid!).not('external_id', 'is', null),
+        source === 'strava' ? strava.listRuns(DAYS) : health.listRuns(DAYS),
+        supabase.from('st_workouts').select('source,external_id,performed_at').eq('user_id', uid!).gte('performed_at', since),
       ]);
+      const rows = (existing.data ?? []) as { source: string | null; external_id: string | null; performed_at: string }[];
       setRuns(list);
-      setImported(new Set(((existing.data ?? []) as { external_id: string }[]).map((w) => w.external_id)));
+      setImported(new Set(rows.filter((w) => w.external_id).map((w) => `${w.source}:${w.external_id}`)));
+      setExistingTimes(rows.map((w) => new Date(w.performed_at).getTime()));
     } catch (e) {
-      Alert.alert(t('Não foi possível ler os treinos'), (e as Error).message);
+      if ((e as { code?: string }).code === 'not_connected') {
+        setConnected(false);
+        setRuns(null);
+      } else Alert.alert(t('Não foi possível ler os treinos'), (e as Error).message);
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => {
-    (async () => {
+  async function select(source: Source) {
+    setSrc(source);
+    setRuns(null);
+    setConnected(false);
+    setStatus(null);
+    AsyncStorage.setItem(SOURCE_KEY, source).catch(() => {});
+    if (source === 'strava') {
+      setStatus('available');
+      try {
+        const s = await strava.status();
+        setAthlete(s.athlete);
+        if (s.connected) {
+          setConnected(true);
+          await load('strava');
+        }
+      } catch (e) {
+        Alert.alert('Strava', (e as Error).message);
+      }
+    } else {
       const s = await health.status();
       setStatus(s);
       const was = await AsyncStorage.getItem(CONNECTED_KEY).catch(() => null);
       if (s === 'available' && was === '1') {
         setConnected(true);
-        await load();
+        await load('device');
       }
+    }
+  }
+
+  useEffect(() => {
+    (async () => {
+      const saved = (await AsyncStorage.getItem(SOURCE_KEY).catch(() => null)) as Source | null;
+      // no iPhone o padrão é o Strava: instalado pelo Sideloadly, o app não recebe acesso ao Apple Saúde
+      await select(saved ?? (Platform.OS === 'ios' ? 'strava' : 'device'));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -64,9 +107,16 @@ export default function HealthImportScreen() {
   async function connect() {
     setBusy('connect');
     try {
+      if (src === 'strava') {
+        if (!(await strava.connect())) return;
+        const s = await strava.status();
+        setAthlete(s.athlete);
+        setConnected(true);
+        await load('strava');
+        return;
+      }
       const ok = await health.requestAccess();
       if (!ok) {
-        setBusy(null);
         return Alert.alert(t('Permissão necessária'), t('Permita a leitura dos treinos para importar suas corridas.'), [
           { text: t('Cancelar'), style: 'cancel' },
           { text: t('Abrir ajustes'), onPress: () => health.openSettings() },
@@ -74,25 +124,44 @@ export default function HealthImportScreen() {
       }
       await AsyncStorage.setItem(CONNECTED_KEY, '1').catch(() => {});
       setConnected(true);
-      await load();
+      await load('device');
     } catch (e) {
       const msg = (e as Error).message ?? '';
-      Alert.alert(
-        t('Não foi possível conectar'),
-        // mostra também o erro original do iOS (ajuda a diagnosticar a instalação)
-        Platform.OS === 'ios' && /entitlement|not authorized|authorization/i.test(msg)
-          ? `${t('Esta instalação do app não tem acesso ao Apple Saúde. A integração funciona quando o app é instalado assinado com uma conta de desenvolvedor Apple (ou pela App Store).')}\n\n${t('Detalhe')}: ${msg}`
-          : msg || t('Erro desconhecido'),
-      );
+      if (src === 'device' && Platform.OS === 'ios' && /entitlement|not authorized|authorization/i.test(msg)) {
+        // instalação sem HealthKit (Sideloadly): oferece o Strava
+        Alert.alert(t('Não foi possível conectar'), t('Instalado pelo Sideloadly, o iPhone não libera o Apple Saúde para o app. Use o Strava: o Apple Watch sincroniza com ele e o app importa as corridas.'), [
+          { text: t('Cancelar'), style: 'cancel' },
+          { text: t('Usar Strava'), onPress: () => select('strava') },
+        ]);
+      } else Alert.alert(t('Não foi possível conectar'), msg || t('Erro desconhecido'));
     } finally {
       setBusy(null);
     }
+  }
+
+  function disconnect() {
+    Alert.alert(t('Desconectar o Strava?'), t('Os treinos já importados continuam no app.'), [
+      { text: t('Cancelar'), style: 'cancel' },
+      {
+        text: t('Desconectar'),
+        style: 'destructive',
+        onPress: async () => {
+          await strava.disconnect().catch(() => {});
+          setConnected(false);
+          setRuns(null);
+          setAthlete(null);
+        },
+      },
+    ]);
   }
 
   /** treino do plano no mesmo dia (para ligar a corrida à sessão) */
   function matchSession(r: HealthRun): ScheduledSession | undefined {
     return training.scheduled.find((s) => s.type !== 'rest' && !s.workout && isSameDay(s.date, r.start));
   }
+
+  /** a mesma corrida já foi registrada por outra fonte (mesmo horário, ±15 min) */
+  const duplicate = (r: HealthRun) => !imported.has(key(r)) && existingTimes.some((ms) => Math.abs(ms - r.start.getTime()) < 15 * 60_000);
 
   async function importRun(r: HealthRun) {
     const s = matchSession(r);
@@ -115,19 +184,22 @@ export default function HealthImportScreen() {
     if (error) {
       if (/duplicate|unique/i.test(error.message)) return true; // já importado antes
       throw new Error(
-        /column|schema cache|source_valida/i.test(error.message)
-          ? t('Rode o arquivo supabase/migrations/20261126000008_st_relogio.sql no SQL Editor do Supabase.')
-          : error.message,
+        /source_valida/i.test(error.message) && r.source === 'strava'
+          ? t('Rode o arquivo supabase/migrations/20261126000011_st_strava.sql no SQL Editor do Supabase.')
+          : /column|schema cache|source_valida/i.test(error.message)
+            ? t('Rode o arquivo supabase/migrations/20261126000008_st_relogio.sql no SQL Editor do Supabase.')
+            : error.message,
       );
     }
     return true;
   }
 
   async function importOne(r: HealthRun) {
-    setBusy(r.externalId);
+    setBusy(key(r));
     try {
       await importRun(r);
-      setImported(new Set([...imported, r.externalId]));
+      setImported(new Set([...imported, key(r)]));
+      setExistingTimes([...existingTimes, r.start.getTime()]);
       training.reload();
     } catch (e) {
       Alert.alert(t('Não foi possível importar'), (e as Error).message);
@@ -136,15 +208,17 @@ export default function HealthImportScreen() {
     }
   }
 
+  const importable = (r: HealthRun) => !imported.has(key(r)) && !duplicate(r) && r.distanceKm >= 0.05;
+
   async function importAll() {
-    const pending = (runs ?? []).filter((r) => !imported.has(r.externalId) && r.distanceKm >= 0.05);
+    const pending = (runs ?? []).filter(importable);
     if (!pending.length) return;
     setBusy('all');
     const done = new Set(imported);
     try {
       for (const r of pending) {
         await importRun(r);
-        done.add(r.externalId);
+        done.add(key(r));
       }
       Alert.alert(t('Treinos importados ✓'), tn(pending.length, '{n} corrida importada.', '{n} corridas importadas.'), [
         { text: 'OK' },
@@ -159,29 +233,48 @@ export default function HealthImportScreen() {
     }
   }
 
-  const pendingCount = (runs ?? []).filter((r) => !imported.has(r.externalId) && r.distanceKm >= 0.05).length;
-  const sourceIcon = Platform.OS === 'ios' ? 'watch' : 'fitness';
+  const pendingCount = (runs ?? []).filter(importable).length;
+  const deviceName = t(health.name);
 
   return (
-    <Screen bottomInset={false} onRefresh={connected ? load : undefined} refreshing={loading && !!runs}>
+    <Screen bottomInset={false} onRefresh={connected ? () => load() : undefined} refreshing={loading && !!runs}>
       <BackHeader title="Importar do relógio" />
 
-      {/* Cabeçalho */}
-      <Card animated={false} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: alpha(accent, 0.18), alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name={sourceIcon} size={26} color={accent} />
+      {/* Fonte */}
+      {Platform.OS !== 'web' ? (
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+          <Chip label={deviceName} active={src === 'device'} onPress={() => select('device')} color={accent} />
+          <Chip label="Strava" active={src === 'strava'} onPress={() => select('strava')} color={STRAVA} />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[font.h3, { color: colors.text }]}>{t(health.name)}</Text>
-          <Muted style={{ fontSize: 13 }}>
-            {Platform.OS === 'ios'
-              ? t('Corridas gravadas no Apple Watch ou no iPhone (e em apps que salvam no Saúde).')
-              : t('Corridas do Galaxy Watch, Pixel Watch, Garmin e outros apps que salvam no Health Connect.')}
-          </Muted>
-        </View>
-      </Card>
+      ) : null}
 
-      {status === null ? <ActivityIndicator color={accent} style={{ marginTop: 30 }} /> : null}
+      {/* Cabeçalho */}
+      {src ? (
+        <Card animated={false} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: alpha(color, 0.18), alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name={src === 'strava' ? 'pulse' : Platform.OS === 'ios' ? 'watch' : 'fitness'} size={26} color={color} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[font.h3, { color: colors.text }]}>{src === 'strava' ? 'Strava' : deviceName}</Text>
+            <Muted style={{ fontSize: 13 }}>
+              {src === 'strava'
+                ? connected && athlete
+                  ? t('Conectado como {name}', { name: athlete })
+                  : t('Corridas do Apple Watch, Garmin, Coros, Polar e outros relógios que sincronizam com o Strava.')
+                : Platform.OS === 'ios'
+                  ? t('Corridas gravadas no Apple Watch ou no iPhone (e em apps que salvam no Saúde).')
+                  : t('Corridas do Galaxy Watch, Pixel Watch, Garmin e outros apps que salvam no Health Connect.')}
+            </Muted>
+          </View>
+          {src === 'strava' && connected ? (
+            <Pressable onPress={disconnect} hitSlop={10}>
+              <Ionicons name="log-out-outline" size={22} color={colors.textMuted} />
+            </Pressable>
+          ) : null}
+        </Card>
+      ) : null}
+
+      {status === null ? <ActivityIndicator color={color} style={{ marginTop: 30 }} /> : null}
 
       {status === 'unavailable' ? (
         <EmptyState
@@ -200,19 +293,33 @@ export default function HealthImportScreen() {
 
       {status === 'available' && !connected ? (
         <View style={{ marginTop: 10 }}>
-          {[
-            { icon: 'stats-chart', text: 'Distância, tempo e pace de cada corrida' },
-            { icon: 'heart', text: 'Frequência cardíaca média e máxima' },
-            { icon: 'flame', text: 'Calorias gastas' },
-            { icon: 'link', text: 'Ligação automática com o treino do plano do mesmo dia' },
-          ].map((b) => (
+          {(src === 'strava'
+            ? [
+                { icon: 'watch', text: 'No Apple Watch: instale o Strava no iPhone e ative a sincronização com o app Saúde (ou grave a corrida pelo Strava no relógio)' },
+                { icon: 'stats-chart', text: 'Distância, tempo e pace de cada corrida' },
+                { icon: 'heart', text: 'Frequência cardíaca média e máxima' },
+                { icon: 'link', text: 'Ligação automática com o treino do plano do mesmo dia' },
+              ]
+            : [
+                { icon: 'stats-chart', text: 'Distância, tempo e pace de cada corrida' },
+                { icon: 'heart', text: 'Frequência cardíaca média e máxima' },
+                { icon: 'flame', text: 'Calorias gastas' },
+                { icon: 'link', text: 'Ligação automática com o treino do plano do mesmo dia' },
+              ]
+          ).map((b) => (
             <View key={b.text} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-              <Ionicons name={b.icon as 'heart'} size={18} color={accent} />
+              <Ionicons name={b.icon as 'heart'} size={18} color={color} />
               <Text style={{ color: colors.text, flex: 1 }}>{t(b.text)}</Text>
             </View>
           ))}
           <Muted style={{ fontSize: 12, marginTop: 4, marginBottom: 16 }}>{t('O app só lê suas corridas. Nada é gravado no seu relógio, e só você vê os seus treinos.')}</Muted>
-          <GradientButton title={t('Conectar {name}', { name: t(health.name) })} icon="link" onPress={connect} loading={busy === 'connect'} colorsPair={[accent, accent2]} />
+          <GradientButton
+            title={t('Conectar {name}', { name: src === 'strava' ? 'Strava' : deviceName })}
+            icon="link"
+            onPress={connect}
+            loading={busy === 'connect'}
+            colorsPair={src === 'strava' ? [STRAVA, '#E03E00'] : [accent, accent2]}
+          />
         </View>
       ) : null}
 
@@ -220,7 +327,7 @@ export default function HealthImportScreen() {
         <>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, marginBottom: 10 }}>
             <Text style={[font.h2, { color: colors.text }]}>{t('Últimos {n} dias', { n: DAYS })}</Text>
-            {loading ? <ActivityIndicator color={accent} /> : null}
+            {loading ? <ActivityIndicator color={color} /> : null}
           </View>
 
           {runs && pendingCount > 1 ? (
@@ -228,15 +335,20 @@ export default function HealthImportScreen() {
           ) : null}
 
           {runs && !runs.length ? (
-            <EmptyState icon="walk-outline" title="Nenhuma corrida encontrada" message="Grave uma corrida no relógio (atividade Corrida) e puxe esta tela para baixo para atualizar." />
+            <EmptyState
+              icon="walk-outline"
+              title="Nenhuma corrida encontrada"
+              message={src === 'strava' ? 'Grave uma corrida no relógio, espere ela aparecer no Strava e puxe esta tela para baixo para atualizar.' : 'Grave uma corrida no relógio (atividade Corrida) e puxe esta tela para baixo para atualizar.'}
+            />
           ) : null}
 
           {(runs ?? []).map((r) => {
-            const done = imported.has(r.externalId);
-            const s = done ? undefined : matchSession(r);
+            const done = imported.has(key(r));
+            const dup = duplicate(r);
+            const s = done || dup ? undefined : matchSession(r);
             const tooShort = r.distanceKm < 0.05;
             return (
-              <Card key={r.externalId} animated={false} style={done ? { opacity: 0.6 } : undefined}>
+              <Card key={key(r)} animated={false} style={done || dup ? { opacity: 0.6 } : undefined}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <Text style={{ color: colors.textMuted, fontWeight: '700', fontSize: 12, flex: 1 }}>
                     {formatDate(r.start, true)} · {formatTime(r.start)}
@@ -262,14 +374,16 @@ export default function HealthImportScreen() {
                 <View style={{ marginTop: 10 }}>
                   {done ? (
                     <Text style={{ color: colors.success, fontWeight: '800' }}>{t('Importado ✓')}</Text>
+                  ) : dup ? (
+                    <Muted style={{ fontSize: 12 }}>{t('Já registrado (mesmo horário).')}</Muted>
                   ) : tooShort ? (
                     <Muted style={{ fontSize: 12 }}>{t('Sem distância registrada — não dá para importar.')}</Muted>
                   ) : (
                     <Pressable
                       onPress={() => importOne(r)}
                       disabled={!!busy}
-                      style={({ pressed }) => ({ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: accent, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 9, opacity: pressed || (busy && busy !== r.externalId) ? 0.6 : 1 })}>
-                      {busy === r.externalId ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="cloud-download" size={16} color="#fff" />}
+                      style={({ pressed }) => ({ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: accent, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 9, opacity: pressed || (busy && busy !== key(r)) ? 0.6 : 1 })}>
+                      {busy === key(r) ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="cloud-download" size={16} color="#fff" />}
                       <Text style={{ color: '#fff', fontWeight: '800' }}>{t('Importar')}</Text>
                     </Pressable>
                   )}

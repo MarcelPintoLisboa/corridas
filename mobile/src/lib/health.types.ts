@@ -1,7 +1,7 @@
 /** Corrida lida do relógio (Apple Saúde / Health Connect), já normalizada */
 export interface HealthRun {
   externalId: string;
-  source: 'apple_health' | 'health_connect';
+  source: 'apple_health' | 'health_connect' | 'strava';
   start: Date;
   end: Date;
   distanceKm: number;
