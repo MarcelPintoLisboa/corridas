@@ -66,12 +66,16 @@ export const api = {
     return rows.filter((t) => t.days_before_race == null || days <= t.days_before_race);
   },
 
-  /** Plano do participante: mesma distância + nível; cai para qualquer plano da distância */
-  async planFor(reg: Pick<Registration, 'event_id' | 'distance_id' | 'level'>) {
-    let q = supabase.from('st_training_plans').select('*').eq('event_id', reg.event_id);
-    if (reg.distance_id) q = q.eq('distance_id', reg.distance_id);
-    const plans = unwrap(await q) as TrainingPlan[];
-    const plan = plans.find((p) => p.level === reg.level) ?? plans[0];
+  /**
+   * Plano do participante: o plano pessoal (gerado pela anamnese) tem prioridade;
+   * senão, o plano geral da mesma distância + nível (ou qualquer um da distância).
+   */
+  async planFor(reg: Pick<Registration, 'event_id' | 'distance_id' | 'level' | 'user_id'>) {
+    const all = unwrap(await supabase.from('st_training_plans').select('*').eq('event_id', reg.event_id)) as TrainingPlan[];
+    const personal = all.find((p) => p.user_id === reg.user_id);
+    // sem a coluna user_id (migração 0009 não rodada) todos são gerais
+    const general = all.filter((p) => !p.user_id && (!reg.distance_id || p.distance_id === reg.distance_id));
+    const plan = personal ?? general.find((p) => p.level === reg.level) ?? general[0];
     if (!plan) return null;
     const sessions = unwrap(
       await supabase.from('st_training_sessions').select('*').eq('plan_id', plan.id).order('week').order('day_of_week'),

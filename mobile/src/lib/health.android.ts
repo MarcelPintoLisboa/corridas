@@ -10,9 +10,9 @@ import {
   requestPermission,
 } from 'react-native-health-connect';
 
-import type { HealthProvider, HealthRun } from './health.types';
+import { summarize, type HealthProvider, type HealthRun } from './health.types';
 
-export type { HealthRun, HealthStatus, HealthProvider } from './health.types';
+export type { HealthRun, HealthStatus, HealthProvider, HealthSummary } from './health.types';
 
 const RUN_TYPES: number[] = [ExerciseType.RUNNING, ExerciseType.RUNNING_TREADMILL];
 
@@ -44,6 +44,8 @@ export const health: HealthProvider = {
       { accessType: 'read', recordType: 'Distance' },
       { accessType: 'read', recordType: 'HeartRate' },
       { accessType: 'read', recordType: 'TotalCaloriesBurned' },
+      { accessType: 'read', recordType: 'RestingHeartRate' },
+      { accessType: 'read', recordType: 'Vo2Max' },
     ]);
     return granted.some((p) => 'recordType' in p && p.recordType === 'ExerciseSession');
   },
@@ -81,6 +83,23 @@ export const health: HealthProvider = {
       });
     }
     return runs.sort((a, b) => b.start.getTime() - a.start.getTime());
+  },
+
+  async summary(days) {
+    const endTime = new Date().toISOString();
+    const startTime = new Date(Date.now() - days * 86_400_000).toISOString();
+    const range = { operator: 'between' as const, startTime, endTime };
+    const [runs, rhr, vo2] = await Promise.all([
+      this.listRuns(days),
+      readRecords('RestingHeartRate', { timeRangeFilter: range }).catch(() => null),
+      readRecords('Vo2Max', { timeRangeFilter: range }).catch(() => null),
+    ]);
+    const lastRhr = rhr?.records.length ? rhr.records[rhr.records.length - 1].beatsPerMinute : null;
+    const lastVo2 = vo2?.records.length ? vo2.records[vo2.records.length - 1].vo2MillilitersPerMinuteKilogram : null;
+    return summarize(runs, days, {
+      restingHr: lastRhr ? Math.round(lastRhr) : null,
+      vo2max: lastVo2 ? Math.round(lastVo2 * 10) / 10 : null,
+    });
   },
 
   openSettings() {

@@ -101,6 +101,8 @@ export interface TrainingPlan {
   coach_name: string | null;
   coach_avatar_url: string | null;
   weeks: number;
+  /** preenchido = plano pessoal (anamnese) deste corredor */
+  user_id?: string | null;
 }
 
 export interface TrainingSession {

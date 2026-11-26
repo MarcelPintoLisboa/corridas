@@ -28,7 +28,8 @@ export default function CrudScreen() {
   const q = useAsync(async () => {
     let query = supabase.from(cfg.table).select('*').eq(cfg.parentKey, parentId);
     for (const o of cfg.order) query = query.order(o.column, { ascending: o.ascending });
-    const rows = unwrap(await query) as Row[];
+    // planos pessoais (anamnese) não aparecem na lista de planos gerais da corrida
+    const rows = (unwrap(await query) as Row[]).filter((r) => cfg.table !== 'st_training_plans' || !r.user_id);
     const options = cfg.loadOptions ? await cfg.loadOptions(parentId) : {};
     return { rows, options };
   }, [resource, parentId]);

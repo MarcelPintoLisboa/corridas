@@ -1,5 +1,6 @@
 import {
   WorkoutActivityType,
+  getMostRecentQuantitySample,
   isHealthDataAvailable,
   queryWorkoutSamples,
   requestAuthorization,
@@ -7,15 +8,17 @@ import {
 } from '@kingstinct/react-native-healthkit';
 import { Linking } from 'react-native';
 
-import type { HealthProvider, HealthRun } from './health.types';
+import { summarize, type HealthProvider, type HealthRun } from './health.types';
 
-export type { HealthRun, HealthStatus, HealthProvider } from './health.types';
+export type { HealthRun, HealthStatus, HealthProvider, HealthSummary } from './health.types';
 
 const READ: ObjectTypeIdentifier[] = [
   'HKWorkoutTypeIdentifier',
   'HKQuantityTypeIdentifierDistanceWalkingRunning',
   'HKQuantityTypeIdentifierHeartRate',
   'HKQuantityTypeIdentifierActiveEnergyBurned',
+  'HKQuantityTypeIdentifierRestingHeartRate',
+  'HKQuantityTypeIdentifierVO2Max',
 ];
 
 /** quantidade de distância → km (o Saúde pode devolver m, km ou mi) */
@@ -91,6 +94,18 @@ export const health: HealthProvider = {
       }
     }
     return runs;
+  },
+
+  async summary(days) {
+    const [runs, rhr, vo2] = await Promise.all([
+      this.listRuns(days),
+      getMostRecentQuantitySample('HKQuantityTypeIdentifierRestingHeartRate', 'count/min').catch(() => undefined),
+      getMostRecentQuantitySample('HKQuantityTypeIdentifierVO2Max', 'ml/(kg*min)').catch(() => undefined),
+    ]);
+    return summarize(runs, days, {
+      restingHr: rhr?.quantity ? Math.round(rhr.quantity) : null,
+      vo2max: vo2?.quantity ? Math.round(vo2.quantity * 10) / 10 : null,
+    });
   },
 
   openSettings() {

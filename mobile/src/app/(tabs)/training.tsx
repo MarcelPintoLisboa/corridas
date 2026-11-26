@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn as RFadeIn, FadeOut } from 'react-native-reanimated';
 
+import { AnamneseCard } from '@/components/AnamneseCard';
 import { SessionCard } from '@/components/SessionCard';
 import { Avatar, Badge, Card, Chip, EmptyState, Loading, Muted, Screen, SectionHeader, Title } from '@/components/ui';
 import { useTraining } from '@/hooks/useTraining';
@@ -34,9 +35,11 @@ export default function TrainingScreen() {
 
   if (!plan) {
     return (
-      <Screen>
+      <Screen refreshing={refreshing} onRefresh={refresh}>
         <Title>Treino</Title>
-        <EmptyState icon="time" title="Plano em preparação" message="Os treinadores da prova ainda estão montando o plano para sua distância. Volte em breve!" />
+        <View style={{ height: 12 }} />
+        <AnamneseCard />
+        <EmptyState icon="time" title="Plano em preparação" message="Responda a anamnese para gerar agora um plano só seu, ou aguarde o plano dos treinadores da prova." />
       </Screen>
     );
   }
@@ -51,12 +54,13 @@ export default function TrainingScreen() {
     <Screen refreshing={refreshing} onRefresh={refresh}>
       <Title>Seu plano</Title>
       <Muted style={{ marginBottom: 16 }}>{t('Personalizado para {name}', { name: event.name })}</Muted>
+      <AnamneseCard compact={!!plan.user_id} />
 
       <Card animated={false} style={{ padding: 0, overflow: 'hidden' }}>
         <LinearGradient colors={[alpha(accent, 0.35), alpha(accent2, 0.25)]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 16 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <Badge label={active.distance?.label ?? 'Distância'} color={colors.lime} />
-            <Badge label={levelLabel[active.level]} color="#fff" />
+            <Badge label={plan.user_id ? t('Plano pessoal') : levelLabel[active.level]} color="#fff" />
             <Badge label={tn(plan.weeks, '{n} semana', '{n} semanas')} color={colors.cyan} />
           </View>
           <Text style={[font.h2, { color: '#fff' }]}>{plan.name}</Text>

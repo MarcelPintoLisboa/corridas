@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
@@ -22,6 +22,7 @@ interface Row {
   kit_picked_up: boolean;
   profile: { full_name: string | null; email: string | null; phone: string | null; role: string } | null;
   distance: { label: string } | null;
+  anamnese?: string | null;
 }
 
 interface Pending {
@@ -64,7 +65,10 @@ export default function RegistrationsScreen() {
         }[])
       : [];
     const byId = new Map(users.map((u) => [u.user_id, u]));
-    return { rows: regs.map((r) => ({ ...r, profile: byId.get(r.user_id) ?? null })) as Row[], pending, distances };
+    // anamneses (sem a migração 0009 a consulta falha e simplesmente não mostra o selo)
+    const anam = await supabase.from('st_anamneses').select('user_id,safety_state').eq('event_id', eventId);
+    const anamBy = new Map(((anam.data ?? []) as { user_id: string; safety_state: string }[]).map((a) => [a.user_id, a.safety_state]));
+    return { rows: regs.map((r) => ({ ...r, profile: byId.get(r.user_id) ?? null, anamnese: anamBy.get(r.user_id) ?? null })) as Row[], pending, distances };
   }, [eventId]);
 
   if (q.loading || !q.data) return <Loading />;
@@ -152,6 +156,12 @@ export default function RegistrationsScreen() {
                   {r.profile?.role === 'admin' ? <Badge label="Admin" color={colors.lime} /> : null}
                   {r.distance ? <Badge label={r.distance.label} color={colors.primary} /> : null}
                   <Badge label={levelLabel[r.level]} color={colors.textMuted} />
+                  <Pressable onPress={() => router.push(`/admin/anamnese?eventId=${eventId}&userId=${r.user_id}`)} hitSlop={6}>
+                    <Badge
+                      label={t(r.anamnese === 'eligible' ? 'Anamnese ✓' : r.anamnese === 'urgency' ? 'Triagem: urgência' : r.anamnese ? 'Triagem: avaliar' : 'Sem anamnese')}
+                      color={r.anamnese === 'eligible' ? colors.success : r.anamnese === 'urgency' ? colors.danger : r.anamnese ? colors.warning : colors.textDim}
+                    />
+                  </Pressable>
                   {r.shirt_size ? <Badge label={`${t('Cam.')} ${r.shirt_size}`} color={colors.cyan} /> : null}
                 </View>
               </View>
