@@ -1,20 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from 'react-native';
 
+import { RaceSwitcher } from '@/components/RaceSwitcher';
 import { Avatar, Card, EmptyState, Loading, Muted, Screen, Title } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { formatDate, formatDuration, formatKm, formatPace, formatTime } from '@/lib/format';
 import { supabase, unwrap } from '@/lib/supabase';
-import type { CommunityPost, Workout } from '@/lib/types';
+import type { CommunityComment, CommunityPost, Workout } from '@/lib/types';
 import { pickImage, uploadImage } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { alpha, colors, font, radius } from '@/theme';
 
-/** Mural interno da corrida: os corredores inscritos publicam treinos, fotos e recados */
+/** Mural interno da corrida: só os corredores associados à MESMA corrida veem, publicam fotos/treinos e comentam */
 export default function CommunityScreen() {
   const { session, isAdmin } = useAuth();
   const { event, accent } = useActiveEvent();
@@ -22,12 +23,18 @@ export default function CommunityScreen() {
 
   const q = useAsync(async () => {
     if (!event) return null;
-    const [posts, likes, lastWorkout] = await Promise.all([
+    const [posts, likes, lastWorkout, comments] = await Promise.all([
       supabase.from('st_community_posts').select('*').eq('event_id', event.id).order('created_at', { ascending: false }).limit(100).then(unwrap),
       supabase.from('st_community_likes').select('post_id,user_id').then(unwrap),
       supabase.from('st_workouts').select('*').eq('user_id', uid!).eq('event_id', event.id).order('performed_at', { ascending: false }).limit(1).then(unwrap),
+      supabase
+        .from('st_community_comments')
+        .select('*')
+        .eq('event_id', event.id)
+        .order('created_at', { ascending: true })
+        .then((r) => (r.error ? [] : (r.data as CommunityComment[]))),
     ]);
-    return { posts: posts as CommunityPost[], likes: likes as { post_id: string; user_id: string }[], lastWorkout: (lastWorkout as Workout[])[0] ?? null };
+    return { posts: posts as CommunityPost[], likes: likes as { post_id: string; user_id: string }[], lastWorkout: (lastWorkout as Workout[])[0] ?? null, comments };
   }, [event?.id]);
 
   const { reload } = q;
@@ -42,12 +49,12 @@ export default function CommunityScreen() {
     return (
       <Screen>
         <Title>Comunidade</Title>
-        <EmptyState icon="people" title="Entre em uma corrida" message="Inscreva-se para trocar treinos e fotos com os outros corredores." action="Ver corridas" onAction={() => router.push('/events')} />
+        <EmptyState icon="people" title="Nenhuma corrida ainda" message="Quando o organizador associar você a uma corrida, o mural dos corredores dela aparece aqui." />
       </Screen>
     );
   }
   if (q.loading || !q.data) return <Loading />;
-  const { posts, likes, lastWorkout } = q.data;
+  const { posts, likes, lastWorkout, comments } = q.data;
 
   async function toggleLike(p: CommunityPost) {
     const liked = likes.some((l) => l.post_id === p.id && l.user_id === uid);
@@ -66,7 +73,8 @@ export default function CommunityScreen() {
   return (
     <Screen refreshing={q.refreshing} onRefresh={q.refresh}>
       <Title>Comunidade</Title>
-      <Muted style={{ marginBottom: 14 }}>Mural dos corredores da {event.name}</Muted>
+      <Muted style={{ marginBottom: 12 }}>Mural dos corredores da {event.name}. Só quem está nesta corrida vê.</Muted>
+      <RaceSwitcher />
 
       <Composer eventId={event.id} accent={accent} lastWorkout={lastWorkout} onPosted={q.reload} />
 
@@ -98,10 +106,20 @@ export default function CommunityScreen() {
                 <Metric label="PACE" value={`${formatPace(p.workout_pace)}/km`} />
               </View>
             ) : null}
-            <Pressable onPress={() => toggleLike(p)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, padding: 14 }}>
-              <Ionicons name={liked ? 'heart' : 'heart-outline'} size={22} color={liked ? colors.danger : colors.textMuted} />
-              <Text style={{ color: colors.textMuted, fontWeight: '700' }}>{count || ''}</Text>
-            </Pressable>
+            <Comments
+              post={p}
+              accent={accent}
+              uid={uid}
+              canModerate={isAdmin}
+              comments={comments.filter((c) => c.post_id === p.id)}
+              onChanged={q.reload}
+              likeButton={
+                <Pressable onPress={() => toggleLike(p)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} hitSlop={8}>
+                  <Ionicons name={liked ? 'heart' : 'heart-outline'} size={22} color={liked ? colors.danger : colors.textMuted} />
+                  <Text style={{ color: colors.textMuted, fontWeight: '700' }}>{count || ''}</Text>
+                </Pressable>
+              }
+            />
           </Card>
         );
       })}
@@ -191,5 +209,98 @@ function Composer({ eventId, accent, lastWorkout, onPosted }: { eventId: string;
         </Pressable>
       </View>
     </Card>
+  );
+}
+
+function Comments({ post, comments, accent, uid, canModerate, onChanged, likeButton }: {
+  post: CommunityPost;
+  comments: CommunityComment[];
+  accent: string;
+  uid: string | undefined;
+  canModerate: boolean;
+  onChanged: () => void;
+  likeButton: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const shown = open ? comments : comments.slice(-2);
+
+  async function send() {
+    if (!text.trim()) return;
+    setBusy(true);
+    const { error } = await supabase.from('st_community_comments').insert({ post_id: post.id, body: text.trim() });
+    setBusy(false);
+    if (error) return Alert.alert('Não foi possível comentar', error.message);
+    setText('');
+    setOpen(true);
+    onChanged();
+  }
+
+  function remove(c: CommunityComment) {
+    Alert.alert('Apagar comentário?', undefined, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Apagar',
+        style: 'destructive',
+        onPress: async () => {
+          await supabase.from('st_community_comments').delete().eq('id', c.id);
+          onChanged();
+        },
+      },
+    ]);
+  }
+
+  return (
+    <View style={{ padding: 14, paddingTop: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+        {likeButton}
+        <Pressable onPress={() => setOpen(!open)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} hitSlop={8}>
+          <Ionicons name="chatbubble-outline" size={20} color={colors.textMuted} />
+          <Text style={{ color: colors.textMuted, fontWeight: '700' }}>{comments.length || ''}</Text>
+        </Pressable>
+      </View>
+
+      {comments.length > 2 && !open ? (
+        <Text onPress={() => setOpen(true)} style={{ color: colors.textMuted, marginTop: 10, fontWeight: '600' }}>
+          Ver os {comments.length} comentários
+        </Text>
+      ) : null}
+      {shown.map((c) => (
+        <View key={c.id} style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+          <Avatar uri={c.author_avatar} name={c.author_name} size={28} />
+          <View style={{ flex: 1, backgroundColor: colors.bgElevated, borderRadius: radius.md, paddingHorizontal: 10, paddingVertical: 7 }}>
+            <Text style={{ color: colors.text, fontWeight: '800', fontSize: 13 }}>
+              {c.author_name ?? 'Corredor'}{' '}
+              <Text style={{ color: colors.textDim, fontWeight: '400', fontSize: 11 }}>
+                · {formatDate(c.created_at, true)} {formatTime(c.created_at)}
+              </Text>
+            </Text>
+            <Text style={{ color: colors.text, fontSize: 14, marginTop: 2 }}>{c.body}</Text>
+          </View>
+          {c.user_id === uid || canModerate ? (
+            <Pressable onPress={() => remove(c)} hitSlop={8} style={{ paddingTop: 6 }}>
+              <Ionicons name="close" size={16} color={colors.textDim} />
+            </Pressable>
+          ) : null}
+        </View>
+      ))}
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 10 }}>
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="Escreva um comentário…"
+          placeholderTextColor={colors.textDim}
+          maxLength={1000}
+          onSubmitEditing={send}
+          returnKeyType="send"
+          style={{ flex: 1, color: colors.text, backgroundColor: colors.bgElevated, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8, fontSize: 14 }}
+        />
+        <Pressable onPress={send} disabled={busy || !text.trim()} hitSlop={8} style={{ opacity: busy || !text.trim() ? 0.4 : 1 }}>
+          {busy ? <ActivityIndicator color={accent} /> : <Ionicons name="send" size={20} color={accent} />}
+        </Pressable>
+      </View>
+    </View>
   );
 }

@@ -8,6 +8,8 @@ import type { RaceEvent, Workout } from '@/lib/types';
 
 import { EvolutionChart, type ChartPoint } from './charts';
 
+const APP_LOGO = require('../../assets/images/logo.png');
+
 export type ShareMetric = 'distance' | 'time' | 'pace' | 'chart';
 
 export type ShareCardRef = ComponentRef<typeof View>;
@@ -46,7 +48,10 @@ export function ShareCard({ ref, workout, event, history, photoUri, width, athle
 
       {/* Topo: evento */}
       <View style={{ padding: 20 * s, flexDirection: 'row', alignItems: 'center', gap: 10 * s }}>
-        {event?.logo_url ? <Image source={event.logo_url} style={{ width: 40 * s, height: 40 * s, borderRadius: 10 * s }} /> : null}
+        {/* ícone da corrida cadastrado no admin (sem ícone: logo do Street Running) */}
+        <View style={{ width: 58 * s, height: 58 * s, borderRadius: 16 * s, backgroundColor: '#fff', padding: 4 * s, shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 }}>
+          <Image source={event?.logo_url ? { uri: event.logo_url } : APP_LOGO} style={{ width: '100%', height: '100%', borderRadius: 12 * s }} contentFit="contain" cachePolicy="memory-disk" />
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16 * s }} numberOfLines={1}>
             {event?.name ?? 'Meu treino'}

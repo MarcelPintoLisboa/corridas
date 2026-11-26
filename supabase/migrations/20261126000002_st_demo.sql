@@ -23,6 +23,10 @@ begin
   if not public.st_is_admin() then
     raise exception 'Somente administradores podem limpar o modelo';
   end if;
+  -- o modelo usa IDs fixos: só quem o criou (ou o admin geral) pode recriar/apagar
+  if exists (select 1 from public.st_events where id = any(v_ids) and not public.st_can_manage_event(id)) then
+    raise exception 'O modelo de demonstração está em uso por outro gestor';
+  end if;
   -- treinos não saem em cascata (event_id vira null), então removemos antes
   delete from public.st_workouts where event_id = any(v_ids);
   delete from public.st_events where id = any(v_ids);

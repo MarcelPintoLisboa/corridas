@@ -40,7 +40,7 @@ export default function EventScreen() {
     return (
       <Screen>
         <Title>Corrida</Title>
-        <EmptyState icon="flag" title="Nenhuma corrida" message="Vincule sua inscrição para ver kits, locais e horários." action="Encontrar corrida" onAction={() => router.push('/events')} />
+        <EmptyState icon="flag" title="Nenhuma corrida ainda" message="Quando o organizador associar você a uma corrida, ela aparece aqui." />
       </Screen>
     );
   }

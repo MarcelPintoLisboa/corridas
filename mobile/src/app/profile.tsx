@@ -60,7 +60,7 @@ export default function ProfileScreen() {
       <Input label="Instagram" value={instagram} onChangeText={setInstagram} icon="logo-instagram" autoCapitalize="none" placeholder="@seuperfil" />
       <GradientButton title="Salvar" icon="checkmark" onPress={() => save()} loading={saving} />
 
-      <SectionHeader title="Minhas corridas" action="+ Adicionar" onAction={() => router.push('/events')} />
+      <SectionHeader title="Minhas corridas" />
       <Card animated={false}>
         {registrations.length === 0 ? <Muted>Nenhuma corrida vinculada.</Muted> : null}
         {registrations.map((r) => (
@@ -71,7 +71,6 @@ export default function ProfileScreen() {
             title={r.event?.name ?? ''}
             subtitle={`${r.distance?.label ?? ''} · ${r.event ? formatDate(r.event.event_date) : ''}`}
             onPress={() => setActiveEventId(r.event_id)}
-            right={<Text onPress={() => router.push(`/events/${r.event_id}`)} style={{ color: colors.textMuted, fontWeight: '700' }}>Editar</Text>}
           />
         ))}
       </Card>

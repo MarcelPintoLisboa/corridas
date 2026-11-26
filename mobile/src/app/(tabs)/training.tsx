@@ -26,7 +26,7 @@ export default function TrainingScreen() {
     return (
       <Screen>
         <Title>Treino</Title>
-        <EmptyState icon="barbell" title="Sem corrida vinculada" message="Cadastre-se em uma corrida para receber seu plano de treino." action="Encontrar corrida" onAction={() => router.push('/events')} />
+        <EmptyState icon="barbell" title="Sem corrida ainda" message="Quando o organizador associar você a uma corrida, ela aparece aqui. O plano de treino vem junto." />
       </Screen>
     );
   }

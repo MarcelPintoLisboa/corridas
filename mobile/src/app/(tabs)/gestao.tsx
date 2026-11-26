@@ -89,7 +89,7 @@ export default function GestaoScreen() {
         <Title>Administração</Title>
         <Badge label={isAdminGeral ? 'Admin geral' : 'Admin'} color={colors.lime} />
       </View>
-      <Muted style={{ marginBottom: 14 }}>Tudo o que só o administrador vê: corridas, conteúdo, inscritos, leads e acessos.</Muted>
+      <Muted style={{ marginBottom: 14 }}>{isAdminGeral ? 'Você vê todas as corridas de todos os gestores.' : 'Suas corridas, o conteúdo delas e os corredores associados.'}</Muted>
 
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
         <Stat icon="flag" label="Corridas" value={events.length} color={colors.primary} />
@@ -155,7 +155,7 @@ export default function GestaoScreen() {
       <SectionHeader title="Geral" />
       <Card animated={false}>
         <ListRow icon="flag" color={colors.primary} title="Corridas de rua" subtitle="Criar, editar e excluir corridas" onPress={() => router.push('/admin')} />
-        <ListRow icon="key" color={colors.warning} title="Controle de acesso" subtitle="Administradores e corredores, ativar ou desativar" onPress={() => router.push('/admin/users')} />
+        <ListRow icon="key" color={colors.warning} title={isAdminGeral ? 'Controle de acesso' : 'Meus corredores'} subtitle={isAdminGeral ? 'Gestores e corredores, ativar ou desativar' : 'Corredores que você cadastrou ou associou'} onPress={() => router.push('/admin/users')} />
         <ListRow icon="person-circle" color={colors.textMuted} title="Meu perfil" onPress={() => router.push('/profile')} />
       </Card>
     </Screen>

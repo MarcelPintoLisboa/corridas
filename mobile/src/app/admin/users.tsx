@@ -12,17 +12,17 @@ import { colors, font } from '@/theme';
 
 const ADMIN_GERAL = 'mapl11@hotmail.com';
 const ROLES: { value: UserRole; label: string; help: string; color: string }[] = [
-  { value: 'athlete', label: 'Corredor', help: 'Inscreve-se nas corridas, registra treinos e publica no mural', color: colors.surfaceAlt },
-  { value: 'admin', label: 'Administrador', help: 'Organiza as corridas e gerencia todo o conteúdo e os acessos', color: colors.lime },
+  { value: 'athlete', label: 'Corredor', help: 'Vê as corridas em que foi associado, registra treinos e participa do mural', color: colors.surfaceAlt },
+  { value: 'admin', label: 'Gestor', help: 'Cria as próprias corridas, publica o conteúdo e associa os corredores', color: colors.lime },
 ];
 
-/** Controle de acesso (st_usuarios) — somente administradores */
+/** Controle de acesso (st_usuarios): o admin geral vê todos e cria gestores; o gestor vê só os próprios corredores */
 export default function UsersScreen() {
-  const { isAdmin, session, refreshProfile } = useAuth();
+  const { isAdmin, isAdminGeral, session, refreshProfile } = useAuth();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | UserRole | 'inativos'>('all');
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ email: '', full_name: '', role: 'admin' as UserRole });
+  const [form, setForm] = useState({ email: '', full_name: '', role: (isAdminGeral ? 'admin' : 'athlete') as UserRole });
   const q = useAsync(async () => unwrap(await supabase.from('st_usuarios').select('*').order('criado_em', { ascending: false })) as Profile[], []);
 
   if (!isAdmin) {
@@ -65,10 +65,10 @@ export default function UsersScreen() {
   async function add() {
     const email = form.email.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(email)) return Alert.alert('Informe um e-mail válido');
-    const { error } = await supabase.from('st_usuarios').insert({ email, full_name: form.full_name.trim(), role: form.role });
+    const { error } = await supabase.from('st_usuarios').insert({ email, full_name: form.full_name.trim(), role: isAdminGeral ? form.role : 'athlete' });
     if (error) return Alert.alert('Não foi possível cadastrar', /duplicate|unique/i.test(error.message) ? 'Este e-mail já está cadastrado.' : error.message);
     setAdding(false);
-    setForm({ email: '', full_name: '', role: 'admin' });
+    setForm({ email: '', full_name: '', role: isAdminGeral ? 'admin' : 'athlete' });
     q.reload();
     Alert.alert('Acesso cadastrado ✓', `Peça para ${email} criar a conta no app com este e-mail (ou entrar, se já tiver conta). O acesso é liberado automaticamente.`);
   }
@@ -78,13 +78,19 @@ export default function UsersScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Screen refreshing={q.refreshing} onRefresh={q.refresh} bottomInset={false}>
-        <BackHeader title="Controle de acesso" right={<IconButton icon="person-add" bg={colors.primary} onPress={() => setAdding(true)} />} />
+        <BackHeader title={isAdminGeral ? 'Controle de acesso' : 'Meus corredores'} right={<IconButton icon="person-add" bg={colors.primary} onPress={() => setAdding(true)} />} />
         <Muted style={{ marginBottom: 12 }}>
-          Quem cria conta no app entra como <Text style={{ color: colors.text, fontWeight: '700' }}>Corredor</Text>. Cadastre aqui os administradores que vão organizar as corridas.
+          {isAdminGeral ? (
+            <>
+              Cadastre aqui os <Text style={{ color: colors.text, fontWeight: '700' }}>gestores</Text> que compraram o app. Cada gestor cria as próprias corridas e associa os corredores dele.
+            </>
+          ) : (
+            <>Seus corredores: quem você cadastrou ou associou às suas corridas. Para colocar alguém numa corrida, use Corredores da corrida.</>
+          )}
         </Muted>
 
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-          <Counter label="Administradores" value={count('admin')} color={colors.lime} />
+          {isAdminGeral ? <Counter label="Gestores" value={count('admin')} color={colors.lime} /> : null}
           <Counter label="Corredores" value={count('athlete')} color={colors.text} />
           <Counter label="Desativados" value={all.filter((u) => !u.ativo).length} color={colors.danger} />
         </View>
@@ -92,7 +98,7 @@ export default function UsersScreen() {
         <Input icon="search" placeholder="Buscar por nome ou e-mail" value={search} onChangeText={setSearch} autoCapitalize="none" />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
           <Chip label="Todos" active={filter === 'all'} onPress={() => setFilter('all')} />
-          <Chip label="Administradores" active={filter === 'admin'} color={colors.lime} onPress={() => setFilter('admin')} />
+          {isAdminGeral ? <Chip label="Gestores" active={filter === 'admin'} color={colors.lime} onPress={() => setFilter('admin')} /> : null}
           <Chip label="Corredores" active={filter === 'athlete'} onPress={() => setFilter('athlete')} />
           <Chip label="Desativados" active={filter === 'inativos'} color={colors.danger} onPress={() => setFilter('inativos')} />
         </ScrollView>
@@ -127,7 +133,7 @@ export default function UsersScreen() {
                 <Muted style={{ fontSize: 12 }}>Administrador geral: sempre tem acesso total.</Muted>
               ) : (
                 <>
-                  <View style={{ flexDirection: 'row' }}>
+                  <View style={{ flexDirection: 'row', display: isAdminGeral ? 'flex' : 'none' }}>
                     {ROLES.map((r) => (
                       <Chip key={r.value} label={r.label} active={u.role === r.value} color={r.color} onPress={() => u.role !== r.value && update(u, { role: r.value })} />
                     ))}
@@ -155,8 +161,8 @@ export default function UsersScreen() {
           </Muted>
           <Input label="E-mail *" icon="mail-outline" value={form.email} onChangeText={(v) => setForm({ ...form, email: v })} autoCapitalize="none" keyboardType="email-address" />
           <Input label="Nome" icon="person-outline" value={form.full_name} onChangeText={(v) => setForm({ ...form, full_name: v })} />
-          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8 }]}>Papel</Text>
-          <View style={{ flexDirection: 'row', marginBottom: 6 }}>
+          <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, display: isAdminGeral ? 'flex' : 'none' }]}>Papel</Text>
+          <View style={{ flexDirection: 'row', marginBottom: 6, display: isAdminGeral ? 'flex' : 'none' }}>
             {ROLES.map((r) => (
               <Chip key={r.value} label={r.label} active={form.role === r.value} color={r.color} onPress={() => setForm({ ...form, role: r.value })} />
             ))}

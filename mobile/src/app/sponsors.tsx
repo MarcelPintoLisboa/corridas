@@ -1,4 +1,3 @@
-import { router } from 'expo-router';
 import { Text } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
@@ -18,7 +17,7 @@ export default function SponsorsScreen() {
     return (
       <Screen bottomInset={false}>
         <BackHeader title="Parceiros" />
-        <EmptyState icon="gift" title="Ofertas exclusivas" message="Inscreva-se em uma corrida para ver os patrocinadores e cupons." action="Ver corridas" onAction={() => router.push('/events')} />
+        <EmptyState icon="gift" title="Ofertas exclusivas" message="Quando o organizador associar você a uma corrida, ela aparece aqui. Os patrocinadores e cupons vêm junto." />
       </Screen>
     );
   }

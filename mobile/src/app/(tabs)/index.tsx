@@ -10,9 +10,11 @@ import { SessionCard } from '@/components/SessionCard';
 import { SponsorCarousel } from '@/components/sponsors';
 import { Avatar, Card, Countdown, FadeIn, IconButton, Loading, Muted, PulseBadge, Screen, SectionHeader, Stat } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
+import { supabase, unwrap } from '@/lib/supabase';
+import type { KitPickup, Post, Registration } from '@/lib/types';
 import { useTraining } from '@/hooks/useTraining';
 import { api } from '@/lib/api';
-import { formatDate, formatKm, tipCategoryLabel } from '@/lib/format';
+import { daysUntil, formatDate, formatKm, formatTime, tipCategoryLabel } from '@/lib/format';
 import { isSameDay, planProgress } from '@/lib/plan';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
@@ -28,6 +30,24 @@ export default function HomeScreen() {
     const [posts, tips, sponsors] = await Promise.all([api.posts(event.id), api.tips(event.id, event.event_date), api.sponsors(event.id)]);
     return { posts, tips, sponsors };
   }, [event?.id]);
+
+  const eventIds = registrations.map((r) => r.event_id);
+  const allRaces = useAsync(async () => {
+    if (!eventIds.length) return { posts: [] as Post[], pickups: [] as KitPickup[] };
+    const [posts, pickups] = await Promise.all([
+      supabase
+        .from('st_posts')
+        .select('*')
+        .in('event_id', eventIds)
+        .eq('published', true)
+        .order('pinned', { ascending: false })
+        .order('published_at', { ascending: false })
+        .limit(6)
+        .then(unwrap),
+      supabase.from('st_kit_pickups').select('*').in('event_id', eventIds).gte('ends_at', new Date().toISOString()).order('starts_at').limit(4).then(unwrap),
+    ]);
+    return { posts: posts as Post[], pickups: pickups as KitPickup[] };
+  }, [eventIds.join(',')]);
 
   if (loading) return <Loading />;
 
@@ -65,11 +85,15 @@ export default function HomeScreen() {
       onRefresh={() => {
         training.refresh();
         content.refresh();
+        allRaces.refresh();
         reloadEvents();
       }}>
       {header}
 
+      {registrations.length > 1 ? <MyRaces registrations={registrations} activeId={active.event_id} /> : null}
+
       {/* HERO da corrida — customizado pelo organizador */}
+      {registrations.length === 1 ? (
       <FadeIn>
         <Pressable onPress={() => router.push('/event')} style={{ borderRadius: radius.xl, overflow: 'hidden', height: 280, marginBottom: 12 }}>
           {event.cover_image_url ? (
@@ -91,8 +115,13 @@ export default function HomeScreen() {
           </LinearGradient>
         </Pressable>
       </FadeIn>
+      ) : null}
 
-      {registrations.length > 1 ? <EventSwitcher /> : null}
+      <RaceNews posts={allRaces.data?.posts ?? []} pickups={allRaces.data?.pickups ?? []} registrations={registrations} />
+
+      {registrations.length > 1 ? (
+        <SectionHeader title={`Em foco: ${event.name}`} />
+      ) : null}
 
       {/* Progresso */}
       <Card delay={100} style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
@@ -116,27 +145,6 @@ export default function HomeScreen() {
           <FadeIn delay={150}>
             <SessionCard s={next} />
           </FadeIn>
-        </>
-      ) : null}
-
-      {/* Publicações do organizador */}
-      {content.data?.posts.length ? (
-        <>
-          <SectionHeader title="Novidades da prova" action="Todas" onAction={() => router.push('/event')} />
-          {content.data.posts.slice(0, 3).map((p, i) => (
-            <Card key={p.id} delay={200 + i * 60} style={p.type === 'alert' ? { borderColor: colors.warning } : undefined} onPress={() => router.push('/event')}>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                {p.image_url ? <Image source={p.image_url} style={{ width: 64, height: 64, borderRadius: 12 }} /> : null}
-                <View style={{ flex: 1 }}>
-                  <Text style={[font.tiny, { color: p.type === 'alert' ? colors.warning : accent, fontSize: 10 }]}>
-                    {p.pinned ? '📌 ' : ''}{({ news: 'Notícia', alert: 'Aviso', promo: 'Promoção', schedule: 'Programação' } as const)[p.type]}
-                  </Text>
-                  <Text style={[font.h3, { color: colors.text }]}>{p.title}</Text>
-                  {p.body ? <Muted numberOfLines={2} style={{ fontSize: 13 }}>{p.body}</Muted> : null}
-                </View>
-              </View>
-            </Card>
-          ))}
         </>
       ) : null}
 
@@ -178,30 +186,123 @@ export default function HomeScreen() {
   );
 }
 
-function EventSwitcher() {
-  const { registrations, active, setActiveEventId } = useActiveEvent();
+
+const POST_LABEL = { news: 'Notícia', alert: 'Aviso', promo: 'Promoção', schedule: 'Programação' } as const;
+
+/** Todas as corridas em que a pessoa está associada */
+function MyRaces({ registrations, activeId }: { registrations: Registration[]; activeId: string }) {
+  const { setActiveEventId } = useActiveEvent();
   return (
-    <FlatList
-      horizontal
-      data={registrations}
-      keyExtractor={(r) => r.id}
-      showsHorizontalScrollIndicator={false}
-      style={{ marginBottom: 12 }}
-      contentContainerStyle={{ gap: 8 }}
-      ListFooterComponent={
-        <Pressable onPress={() => router.push('/events')} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, borderWidth: 1.5, borderColor: colors.border, borderStyle: 'dashed', marginLeft: 8 }}>
-          <Text style={{ color: colors.textMuted, fontWeight: '700' }}>+ Corrida</Text>
-        </Pressable>
-      }
-      renderItem={({ item }) => {
-        const on = item.event_id === active?.event_id;
-        const c = item.event?.primary_color ?? colors.primary;
-        return (
-          <Pressable onPress={() => setActiveEventId(item.event_id)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, backgroundColor: on ? c : colors.surface, borderWidth: 1.5, borderColor: on ? c : colors.border }}>
-            <Text style={{ color: on ? '#fff' : colors.textMuted, fontWeight: '700' }}>{item.event?.name}</Text>
-          </Pressable>
-        );
-      }}
-    />
+    <>
+      <SectionHeader title={`Minhas corridas (${registrations.length})`} />
+      <FlatList
+        horizontal
+        data={registrations}
+        keyExtractor={(r) => r.id}
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 6, flexGrow: 0 }}
+        contentContainerStyle={{ gap: 12 }}
+        renderItem={({ item }) => {
+          const e = item.event!;
+          const on = item.event_id === activeId;
+          const days = daysUntil(e.event_date);
+          return (
+            <Pressable
+              onPress={() => setActiveEventId(item.event_id)}
+              onLongPress={() => {
+                setActiveEventId(item.event_id);
+                router.push('/event');
+              }}
+              style={{ width: 260, height: 190, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 2, borderColor: on ? e.primary_color : 'transparent' }}>
+              {e.cover_image_url ? <Image source={e.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" /> : null}
+              <LinearGradient colors={[alpha(e.secondary_color, 0.45), alpha(e.primary_color, 0.95)]} style={{ flex: 1, padding: 14, justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={{ backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 4 }}>
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>{days > 0 ? `Faltam ${days} dias` : days === 0 ? 'É hoje!' : 'Realizada'}</Text>
+                  </View>
+                  {on ? <Ionicons name="checkmark-circle" size={22} color="#fff" /> : null}
+                </View>
+                <View>
+                  <Text style={[font.tiny, { color: 'rgba(255,255,255,0.85)' }]}>
+                    {formatDate(e.event_date, true)} · {formatTime(e.event_date)}
+                  </Text>
+                  <Text style={[font.h2, { color: '#fff' }]} numberOfLines={2}>{e.name}</Text>
+                  <Text style={{ color: 'rgba(255,255,255,0.9)', fontSize: 12, marginTop: 2 }}>
+                    {item.distance?.label ?? 'Distância a definir'} · {item.kit_picked_up ? 'Kit retirado ✓' : 'Kit pendente'}
+                  </Text>
+                </View>
+              </LinearGradient>
+            </Pressable>
+          );
+        }}
+      />
+      <Muted style={{ fontSize: 11, marginBottom: 4 }}>Toque para focar a corrida · segure para abrir os detalhes</Muted>
+    </>
+  );
+}
+
+/** Publicações e retiradas de kit de TODAS as corridas associadas */
+function RaceNews({ posts, pickups, registrations }: { posts: Post[]; pickups: KitPickup[]; registrations: Registration[] }) {
+  const { setActiveEventId } = useActiveEvent();
+  const byId = new Map(registrations.map((r) => [r.event_id, r.event!]));
+  const multi = registrations.length > 1;
+  const open = (eventId: string) => {
+    setActiveEventId(eventId);
+    router.push('/event');
+  };
+  if (!posts.length && !pickups.length) return null;
+  return (
+    <>
+      {pickups.length ? (
+        <>
+          <SectionHeader title="Retirada de kits" />
+          {pickups.map((p, i) => {
+            const e = byId.get(p.event_id);
+            return (
+              <Card key={p.id} delay={i * 50} onPress={() => open(p.event_id)}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: alpha(e?.primary_color ?? colors.primary, 0.18), alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="cube" size={20} color={e?.primary_color ?? colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    {multi && e ? <Text style={[font.tiny, { color: e.primary_color, fontSize: 10 }]}>{e.name}</Text> : null}
+                    <Text style={{ color: colors.text, fontWeight: '800' }}>{p.location_name}</Text>
+                    <Muted style={{ fontSize: 12 }}>
+                      {formatDate(p.starts_at, true)} · {formatTime(p.starts_at)} às {formatTime(p.ends_at)}
+                    </Muted>
+                  </View>
+                </View>
+              </Card>
+            );
+          })}
+        </>
+      ) : null}
+
+      {posts.length ? (
+        <>
+          <SectionHeader title={multi ? 'Novidades das suas corridas' : 'Novidades da prova'} />
+          {posts.map((p, i) => {
+            const e = byId.get(p.event_id);
+            const c = p.type === 'alert' ? colors.warning : (e?.primary_color ?? colors.primary);
+            return (
+              <Card key={p.id} delay={i * 60} style={p.type === 'alert' ? { borderColor: colors.warning } : undefined} onPress={() => open(p.event_id)}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  {p.image_url ? <Image source={p.image_url} style={{ width: 64, height: 64, borderRadius: 12 }} /> : null}
+                  <View style={{ flex: 1 }}>
+                    <Text style={[font.tiny, { color: c, fontSize: 10 }]}>
+                      {p.pinned ? '📌 ' : ''}
+                      {POST_LABEL[p.type]}
+                      {multi && e ? ` · ${e.name}` : ''}
+                    </Text>
+                    <Text style={[font.h3, { color: colors.text }]}>{p.title}</Text>
+                    {p.body ? <Muted numberOfLines={2} style={{ fontSize: 13 }}>{p.body}</Muted> : null}
+                  </View>
+                </View>
+              </Card>
+            );
+          })}
+        </>
+      ) : null}
+    </>
   );
 }

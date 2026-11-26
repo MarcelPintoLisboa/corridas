@@ -199,7 +199,9 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
   onDone: () => void;
 }) {
   const [search, setSearch] = useState('');
-  const [picked, setPicked] = useState<Profile | null>(null);
+  const [picked, setPicked] = useState<(Pick<Profile, 'id' | 'email' | 'full_name' | 'avatar_url'> & { byEmail?: boolean }) | null>(null);
+  const [newEmail, setNewEmail] = useState('');
+  const [newName, setNewName] = useState('');
   const [distanceId, setDistanceId] = useState<string | null>(null);
   const [level, setLevel] = useState<(typeof LEVELS)[number]>('beginner');
   const [saving, setSaving] = useState(false);
@@ -211,6 +213,8 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
   function close() {
     setPicked(null);
     setSearch('');
+    setNewEmail('');
+    setNewName('');
     setDistanceId(null);
     setLevel('beginner');
     onClose();
@@ -219,10 +223,12 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
   async function save() {
     if (!picked) return;
     setSaving(true);
-    const { data, error } = await supabase.rpc('st_associar_corredor', { p_event_id: eventId, p_usuario_id: picked.id, p_distance_id: distanceId, p_level: level });
+    const { data, error } = picked.byEmail
+      ? await supabase.rpc('st_associar_corredor_email', { p_event_id: eventId, p_email: picked.email, p_full_name: picked.full_name, p_distance_id: distanceId, p_level: level })
+      : await supabase.rpc('st_associar_corredor', { p_event_id: eventId, p_usuario_id: picked.id, p_distance_id: distanceId, p_level: level });
     setSaving(false);
     if (error) {
-      return Alert.alert('Não foi possível associar', /function|schema cache/i.test(error.message) ? 'Rode o arquivo supabase/migrations/20261126000003_st_corredores.sql no SQL Editor do Supabase.' : error.message);
+      return Alert.alert('Não foi possível associar', /function|schema cache/i.test(error.message) ? 'Rode os arquivos supabase/migrations/20261126000003_st_corredores.sql e 20261126000004_st_gestores.sql no SQL Editor do Supabase.' : error.message);
     }
     onDone();
     Alert.alert(
@@ -243,10 +249,28 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
           <Text style={[font.h2, { color: colors.text, flex: 1 }]}>Associar corredor</Text>
           <IconButton icon="close" onPress={close} />
         </View>
-        <Muted style={{ marginBottom: 14 }}>Escolha uma pessoa do controle de acesso. Administradores também podem correr.</Muted>
+        <Muted style={{ marginBottom: 14 }}>Informe o e-mail do corredor ou escolha alguém que você já cadastrou. Gestores também podem correr.</Muted>
 
         {!picked ? (
           <>
+            <Card animated={false}>
+              <Text style={{ color: colors.text, fontWeight: '800', marginBottom: 8 }}>Pelo e-mail</Text>
+              <Input icon="mail-outline" placeholder="email@docorredor.com" value={newEmail} onChangeText={setNewEmail} autoCapitalize="none" keyboardType="email-address" />
+              <Input icon="person-outline" placeholder="Nome (opcional)" value={newName} onChangeText={setNewName} />
+              <GradientButton
+                small
+                title="Continuar"
+                icon="arrow-forward"
+                disabled={!/^\S+@\S+\.\S+$/.test(newEmail.trim())}
+                onPress={() => {
+                  const email = newEmail.trim().toLowerCase();
+                  if (enrolledEmails.has(email)) return Alert.alert('Já está na corrida', `${email} já está associado a esta corrida.`);
+                  setPicked({ id: '', email, full_name: newName.trim() || null, avatar_url: null, byEmail: true });
+                }}
+              />
+              <Muted style={{ fontSize: 11, marginTop: 8 }}>Se a pessoa ainda não tem conta, ela entra no app com este e-mail e já encontra a corrida.</Muted>
+            </Card>
+            <Text style={[font.tiny, { color: colors.textMuted, marginTop: 10, marginBottom: 8 }]}>Ou escolha alguém já cadastrado</Text>
             <Input icon="search" placeholder="Buscar por nome ou e-mail" value={search} onChangeText={setSearch} autoCapitalize="none" />
             {users.loading ? <Loading /> : null}
             {!users.loading && !list.length ? <EmptyState icon="people" title="Ninguém encontrado" message="Cadastre a pessoa em Controle de acesso." /> : null}

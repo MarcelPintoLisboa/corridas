@@ -232,3 +232,14 @@ export interface EventMetrics {
   sponsor_clicks: number;
   by_distance: { label: string; total: number }[];
 }
+
+export interface CommunityComment {
+  id: string;
+  post_id: string;
+  event_id: string;
+  user_id: string;
+  author_name: string | null;
+  author_avatar: string | null;
+  body: string;
+  created_at: string;
+}
