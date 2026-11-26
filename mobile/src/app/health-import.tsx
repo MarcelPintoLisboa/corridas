@@ -79,9 +79,10 @@ export default function HealthImportScreen() {
       const msg = (e as Error).message ?? '';
       Alert.alert(
         t('Não foi possível conectar'),
+        // mostra também o erro original do iOS (ajuda a diagnosticar a instalação)
         Platform.OS === 'ios' && /entitlement|not authorized|authorization/i.test(msg)
-          ? t('Esta instalação do app não tem acesso ao Apple Saúde. A integração funciona quando o app é instalado assinado com uma conta de desenvolvedor Apple (ou pela App Store).')
-          : msg,
+          ? `${t('Esta instalação do app não tem acesso ao Apple Saúde. A integração funciona quando o app é instalado assinado com uma conta de desenvolvedor Apple (ou pela App Store).')}\n\n${t('Detalhe')}: ${msg}`
+          : msg || t('Erro desconhecido'),
       );
     } finally {
       setBusy(null);

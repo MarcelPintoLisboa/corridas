@@ -7,7 +7,7 @@ export const en: Record<string, string> = {
   'Início': 'Home',
   'Treino': 'Workout',
   'Evolução': 'Progress',
-  'Comunidade': 'Community',
+  'Stories': 'Stories',
   'Corrida': 'Race',
   'Admin': 'Admin',
   'Olá,': 'Hi,',
@@ -171,7 +171,7 @@ export const en: Record<string, string> = {
   'Foto, distância, tempo, pace e gráfico da sua evolução': 'Photo, distance, time, pace and your progress chart',
   'Retirada do kit': 'Kit pickup',
   'Locais, datas, horários e documentos': 'Places, dates, times and documents',
-  'Comunidade da corrida': 'Race community',
+  'Stories da corrida': 'Race stories',
   'Fotos e comentários com quem vai correr com você': "Photos and comments with the people you'll run with",
   'Ofertas dos patrocinadores': 'Sponsor offers',
   'Cupons e materiais exclusivos': 'Exclusive coupons and materials',
@@ -418,8 +418,8 @@ export const en: Record<string, string> = {
   'Apaga só as corridas de demonstração e tudo ligado a elas. Corridas cadastradas por você continuam.': 'Deletes only the demo races and everything linked to them. Races you created stay.',
   'Modelo preenchido ✓': 'Demo model filled ✓',
   'Modelo apagado ✓': 'Demo model cleared ✓',
-  'Criamos 2 corridas completas e inscrevemos você na Night Run (10K) com treinos das últimas semanas. Veja também as abas Início, Treino, Evolução, Comunidade e Corrida.':
-    'We created 2 complete races and registered you in the Night Run (10K) with workouts from the last few weeks. Also check the Home, Workout, Progress, Community and Race tabs.',
+  'Criamos 2 corridas completas e inscrevemos você na Night Run (10K) com treinos das últimas semanas. Veja também as abas Início, Treino, Evolução, Stories e Corrida.':
+    'We created 2 complete races and registered you in the Night Run (10K) with workouts from the last few weeks. Also check the Home, Workout, Progress, Stories and Race tabs.',
   'As corridas de demonstração e tudo ligado a elas foram removidos. Suas corridas não foram alteradas.': 'The demo races and everything linked to them were removed. Your races were not changed.',
   'Rode o arquivo supabase/migrations/20261126000002_st_demo.sql no SQL Editor do Supabase.': 'Run the file supabase/migrations/20261126000002_st_demo.sql in the Supabase SQL Editor.',
   'Nenhuma corrida cadastrada': 'No races yet',
@@ -887,6 +887,8 @@ export const en: Record<string, string> = {
   '{n} corridas importadas.': '{n} runs imported.',
   'Ver evolução': 'View progress',
   'Correu com relógio?': 'Ran with a watch?',
+  Detalhe: 'Details',
+  'Erro desconhecido': 'Unknown error',
   'Importe do Apple Watch / Saúde sem digitar nada': 'Import from Apple Watch / Health without typing anything',
   'Importe do Health Connect sem digitar nada': 'Import from Health Connect without typing anything',
 };

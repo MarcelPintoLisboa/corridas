@@ -49,7 +49,7 @@ export default function CommunityScreen() {
   if (!event) {
     return (
       <Screen>
-        <Title>Comunidade</Title>
+        <Title>Stories</Title>
         <EmptyState icon="people" title="Nenhuma corrida ainda" message="Quando o organizador associar você a uma corrida, o mural dos corredores dela aparece aqui." />
       </Screen>
     );
@@ -73,7 +73,7 @@ export default function CommunityScreen() {
 
   return (
     <Screen refreshing={q.refreshing} onRefresh={q.refresh}>
-      <Title>Comunidade</Title>
+      <Title>Stories</Title>
       <Muted style={{ marginBottom: 12 }}>{t('Mural dos corredores da {name}. Só quem está nesta corrida vê.', { name: event.name })}</Muted>
       <RaceSwitcher />
 

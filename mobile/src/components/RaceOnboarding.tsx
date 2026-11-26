@@ -13,7 +13,7 @@ const BENEFITS: { icon: IconName; color: string; title: string; text: string }[]
   { icon: 'nutrition', color: colors.success, title: 'Dicas e alimentação', text: 'O que comer e como se preparar semana a semana' },
   { icon: 'logo-instagram', color: '#E1306C', title: 'Post pronto para o Instagram', text: 'Foto, distância, tempo, pace e gráfico da sua evolução' },
   { icon: 'cube', color: colors.cyan, title: 'Retirada do kit', text: 'Locais, datas, horários e documentos' },
-  { icon: 'chatbubbles', color: colors.secondary, title: 'Comunidade da corrida', text: 'Fotos e comentários com quem vai correr com você' },
+  { icon: 'chatbubbles', color: colors.secondary, title: 'Stories da corrida', text: 'Fotos e comentários com quem vai correr com você' },
   { icon: 'gift', color: colors.lime, title: 'Ofertas dos patrocinadores', text: 'Cupons e materiais exclusivos' },
 ];
 

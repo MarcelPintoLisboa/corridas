@@ -57,7 +57,7 @@ export default function GestaoScreen() {
     Alert.alert(
       t(kind === 'fill' ? 'Modelo preenchido ✓' : 'Modelo apagado ✓'),
       t(kind === 'fill'
-        ? 'Criamos 2 corridas completas e inscrevemos você na Night Run (10K) com treinos das últimas semanas. Veja também as abas Início, Treino, Evolução, Comunidade e Corrida.'
+        ? 'Criamos 2 corridas completas e inscrevemos você na Night Run (10K) com treinos das últimas semanas. Veja também as abas Início, Treino, Evolução, Stories e Corrida.'
         : 'As corridas de demonstração e tudo ligado a elas foram removidos. Suas corridas não foram alteradas.'),
     );
   }

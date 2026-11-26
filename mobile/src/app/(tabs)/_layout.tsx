@@ -17,7 +17,7 @@ const TABS: { name: string; label: string; icon: IconName; iconActive: IconName;
   { name: 'index', label: 'Início', icon: 'home-outline', iconActive: 'home' },
   { name: 'training', label: 'Treino', icon: 'barbell-outline', iconActive: 'barbell' },
   { name: 'results', label: 'Evolução', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
-  { name: 'community', label: 'Comunidade', icon: 'people-outline', iconActive: 'people' },
+  { name: 'community', label: 'Stories', icon: 'people-outline', iconActive: 'people' },
   { name: 'event', label: 'Corrida', icon: 'flag-outline', iconActive: 'flag' },
   // menu exclusivo do administrador (escondido para corredores)
   { name: 'gestao', label: 'Admin', icon: 'construct-outline', iconActive: 'construct', adminOnly: true },
