@@ -152,6 +152,11 @@ export interface Workout {
   notes: string | null;
   is_race: boolean;
   shared_instagram: boolean;
+  /** manual | apple_health | health_connect */
+  source?: 'manual' | 'apple_health' | 'health_connect';
+  external_id?: string | null;
+  max_hr?: number | null;
+  calories?: number | null;
 }
 
 export interface Tip {

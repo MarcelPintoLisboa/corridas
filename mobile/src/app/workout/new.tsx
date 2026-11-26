@@ -74,6 +74,19 @@ export default function NewWorkout() {
       <Screen bottomInset={false} pullToRefresh={false}>
         <BackHeader title="Registrar treino" />
 
+        {Platform.OS !== 'web' ? (
+          <Pressable
+            onPress={() => router.replace('/health-import')}
+            style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: alpha(accent, 0.12), borderRadius: radius.md, padding: 12, marginBottom: 14, opacity: pressed ? 0.7 : 1 })}>
+            <Ionicons name="watch" size={22} color={accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: colors.text, fontWeight: '800' }}>{t('Correu com relógio?')}</Text>
+              <Muted style={{ fontSize: 12 }}>{t(Platform.OS === 'ios' ? 'Importe do Apple Watch / Saúde sem digitar nada' : 'Importe do Health Connect sem digitar nada')}</Muted>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textDim} />
+          </Pressable>
+        ) : null}
+
         <Pressable
           onPress={async () => {
             const a = await pickImage([9, 16]);

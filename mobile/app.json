@@ -13,7 +13,11 @@
       "bundleIdentifier": "com.streetrunning.app",
       "supportsTablet": false,
       "infoPlist": {
-        "LSApplicationQueriesSchemes": ["instagram", "instagram-stories", "whatsapp"],
+        "LSApplicationQueriesSchemes": [
+          "instagram",
+          "instagram-stories",
+          "whatsapp"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -24,7 +28,13 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_HEART_RATE",
+        "android.permission.health.READ_TOTAL_CALORIES_BURNED"
+      ]
     },
     "web": {
       "output": "single",
@@ -54,11 +64,30 @@
           "photosPermission": "Permite salvar a arte do seu treino na galeria.",
           "savePhotosPermission": "Permite salvar a arte do seu treino na galeria.",
           "isAccessMediaLocationEnabled": false,
-          "granularPermissions": ["photo"]
+          "granularPermissions": [
+            "photo"
+          ]
         }
       ],
       "expo-sharing",
-      "./plugins/withReleaseSigning"
+      "./plugins/withReleaseSigning",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "O Street Running lê seus treinos de corrida do app Saúde (gravados pelo Apple Watch ou iPhone) para registrar distância, tempo, pace e frequência cardíaca no seu plano.",
+          "NSHealthUpdateUsageDescription": "O Street Running não grava dados no app Saúde.",
+          "background": false
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false,

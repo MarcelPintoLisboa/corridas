@@ -23,6 +23,7 @@ supabase/
   migrations/20261126000005_st_atualizacoes.sql ← feed de atualizações das corridas no Início
   migrations/20261126000006_st_senha_inicial.sql ← cadastro de usuário com senha inicial
   migrations/20261126000007_st_sessao_detalhada.sql ← sessões de treino com etapas, aquecimento e esteira
+  migrations/20261126000008_st_relogio.sql ← treinos importados do relógio (Apple Saúde / Health Connect)
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -46,8 +47,9 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 7. Cole também `supabase/migrations/20261126000005_st_atualizacoes.sql` e clique em **Run**. Tudo o que o gestor adicionar ou alterar numa corrida (publicações, patrocinadores, kits, distâncias, dicas, planos e dados da corrida) aparece no **Início** dos corredores associados, com a marcação **Novo**.
 8. Cole também `supabase/migrations/20261126000006_st_senha_inicial.sql` e clique em **Run**. Assim o administrador cadastra gestores e corredores já com uma **senha inicial** (digitada ou gerada), e a pessoa entra direto no app com e-mail + senha.
 9. Cole também `supabase/migrations/20261126000007_st_sessao_detalhada.sql` e clique em **Run**. As sessões dos planos de treino ganham faixa de duração, aquecimento, etapas (aquecimento, tiros, recuperação…) e instruções para esteira, que o corredor vê na tela de detalhe do treino.
+10. Cole também `supabase/migrations/20261126000008_st_relogio.sql` e clique em **Run**. Cada corredor pode importar as corridas do próprio relógio (Apple Watch pelo app Saúde no iPhone; Galaxy Watch, Pixel Watch, Garmin etc. pelo Health Connect no Android), com distância, tempo, pace, frequência cardíaca e calorias. No iPhone, o acesso ao Saúde exige o app assinado com conta de desenvolvedor Apple (ou instalado pela App Store).
 
-> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007. Se rodar o 0001 de novo, rode os outros depois dele.
+> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005 → 0006 → 0007 → 0008. Se rodar o 0001 de novo, rode os outros depois dele.
 
 Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 

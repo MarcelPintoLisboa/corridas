@@ -67,6 +67,7 @@ function RootNavigator() {
       <Stack.Screen name="profile" />
       <Stack.Screen name="updates" />
       <Stack.Screen name="session/[id]" />
+      <Stack.Screen name="health-import" />
       <Stack.Screen name="admin" />
     </Stack>
     {/* 1º acesso com senha provisória: cobre o app até a pessoa criar a própria senha */}

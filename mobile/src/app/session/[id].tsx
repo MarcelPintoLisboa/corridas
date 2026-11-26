@@ -54,7 +54,9 @@ export default function SessionScreen() {
     { icon: 'flame', label: 'Aquecimento', onPress: () => setShowWarmup(!showWarmup), on: showWarmup },
     { icon: 'add-circle', label: 'Registrar', onPress: () => logWorkout() },
     { icon: 'bulb', label: 'Dicas', onPress: () => router.push('/tips') },
-    { icon: 'calendar', label: 'Plano', onPress: () => router.push('/training') },
+    s.workout
+      ? { icon: 'calendar', label: 'Plano', onPress: () => router.push('/training') }
+      : { icon: 'watch', label: 'Relógio', onPress: () => router.push('/health-import') },
   ];
 
   function logWorkout() {

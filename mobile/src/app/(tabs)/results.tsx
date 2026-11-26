@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, useWindowDimensions, View } from 'react-native';
 
 import { EvolutionChart, WeeklyBars } from '@/components/charts';
-import { Card, Chip, EmptyState, GradientButton, Loading, Muted, Screen, SectionHeader, Stat, Title } from '@/components/ui';
+import { Card, Chip, EmptyState, GradientButton, IconButton, Loading, Muted, Screen, SectionHeader, Stat, Title } from '@/components/ui';
 import { useTraining } from '@/hooks/useTraining';
 import { formatDate, formatDuration, formatKm, formatPace } from '@/lib/format';
 import { buildHistory, type HistoryMode as Mode } from '@/lib/plan';
@@ -49,6 +49,7 @@ export default function ResultsScreen() {
       <Screen>
         <Title>Evolução</Title>
         <EmptyState icon="stats-chart" title="Comece a registrar" message="Registre seus treinos para acompanhar a evolução do pace e gerar posts incríveis para o Instagram." action="Registrar primeiro treino" onAction={() => router.push('/workout/new')} />
+        <GradientButton title="Importar do relógio" icon="watch" variant="ghost" colorsPair={[accent, accent2]} onPress={() => router.push('/health-import')} style={{ marginTop: 12 }} />
       </Screen>
     );
   }
@@ -63,7 +64,10 @@ export default function ResultsScreen() {
           <Title>Evolução</Title>
           <Muted>{event ? t('Rumo à {name}', { name: event.name }) : t('Seus treinos')}</Muted>
         </View>
-        <GradientButton small title="Treino" icon="add" onPress={() => router.push('/workout/new')} colorsPair={[accent, accent2]} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <IconButton icon="watch" color={accent} onPress={() => router.push('/health-import')} />
+          <GradientButton small title="Treino" icon="add" onPress={() => router.push('/workout/new')} colorsPair={[accent, accent2]} />
+        </View>
       </View>
 
       <Card delay={50} style={{ marginTop: 16 }}>
@@ -116,9 +120,13 @@ export default function ResultsScreen() {
           )}
           <View style={{ flex: 1 }}>
             <Text style={[font.h3, { color: colors.text }]}>{w.title ?? t('Treino')}</Text>
-            <Muted style={{ fontSize: 12 }}>{formatDate(w.performed_at, true)}</Muted>
+            <Muted style={{ fontSize: 12 }}>
+              {formatDate(w.performed_at, true)}
+              {w.source && w.source !== 'manual' ? ` · ⌚ ${t(w.source === 'apple_health' ? 'Apple Watch / Saúde' : 'Relógio')}` : ''}
+            </Muted>
             <Text style={{ color: colors.text, fontWeight: '800', marginTop: 2 }}>
               {formatKm(w.distance_km, 2)} km · {formatDuration(w.duration_seconds)} · {formatPace(w.avg_pace_seconds)}/km
+              {w.avg_hr ? <Text style={{ color: colors.danger }}>{`  ♥ ${w.avg_hr}`}</Text> : null}
             </Text>
           </View>
           <Pressable onPress={() => router.push(`/workout/${w.id}`)} hitSlop={10}>
