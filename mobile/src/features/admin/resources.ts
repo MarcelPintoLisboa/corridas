@@ -183,14 +183,25 @@ export const resources: Record<string, Resource> = {
       { key: 'day_of_week', label: 'Dia', type: 'select', required: true, options: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map((l, i) => ({ label: l, value: String(i + 1) })) },
       { key: 'title', label: 'Título', type: 'text', required: true },
       { key: 'type', label: 'Tipo', type: 'select', required: true, default: 'easy', options: Object.entries(sessionTypeMeta).map(([value, v]) => ({ value, label: v.label })) },
-      { key: 'distance_km', label: 'Distância (km)', type: 'number' },
-      { key: 'duration_min', label: 'Duração (min)', type: 'number' },
-      { key: 'target_pace', label: 'Pace alvo', type: 'text', placeholder: '5:30-6:00 /km' },
-      { key: 'description', label: 'Instruções', type: 'multiline' },
+      { key: 'description', label: 'Resumo (aparece abaixo do título)', type: 'multiline', placeholder: 'Corrida leve' },
+      { key: 'distance_km', label: 'Distância total (km)', type: 'number' },
+      { key: 'duration_min', label: 'Duração mínima (min)', type: 'number' },
+      { key: 'duration_max_min', label: 'Duração máxima (min)', type: 'number', help: 'Com a mínima, mostra a faixa (ex.: 35–40 min)' },
+      { key: 'target_pace', label: 'Pace alvo', type: 'text', placeholder: '5:30-6:00' },
+      { key: 'warmup', label: 'Aquecimento', type: 'multiline', placeholder: 'Vazio = aquecimento padrão do tipo de treino' },
+      { key: 'steps', label: 'Etapas do treino', type: 'steps' },
+      { key: 'treadmill_notes', label: 'Instruções para esteira', type: 'multiline', placeholder: 'Ex.: inclinação de 1% para simular a rua' },
     ],
     display: (r) => ({
       title: `${t('S')}${r.week} · ${t(['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][r.day_of_week - 1])} — ${r.title}`,
-      subtitle: [sessionTypeMeta[r.type]?.label, r.distance_km ? `${r.distance_km} km` : null, r.target_pace].filter(Boolean).join(' · '),
+      subtitle: [
+        sessionTypeMeta[r.type]?.label,
+        r.distance_km ? `${r.distance_km} km` : null,
+        r.target_pace,
+        Array.isArray(r.steps) && r.steps.length ? t('{n} etapas', { n: r.steps.length }) : null,
+      ]
+        .filter(Boolean)
+        .join(' · '),
     }),
   },
 

@@ -114,6 +114,25 @@ export interface TrainingSession {
   duration_min: number | null;
   target_pace: string | null;
   description: string | null;
+  /** faixa de duração: duration_min – duration_max_min */
+  duration_max_min?: number | null;
+  warmup?: string | null;
+  steps?: SessionStep[] | null;
+  treadmill_notes?: string | null;
+}
+
+export type StepKind = 'warmup' | 'run' | 'interval' | 'recovery' | 'walk' | 'cooldown' | 'strength';
+
+/** Etapa de uma sessão (configurada pelo gestor) */
+export interface SessionStep {
+  kind: StepKind;
+  title: string;
+  distance_km?: number | null;
+  duration_min?: number | null;
+  /** "5:30" ou "5:30-6:00" (min/km) */
+  pace?: string | null;
+  repeat?: number | null;
+  note?: string | null;
 }
 
 export interface Workout {

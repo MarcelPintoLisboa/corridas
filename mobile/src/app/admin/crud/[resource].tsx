@@ -55,7 +55,13 @@ export default function CrudScreen() {
       setOpen(false);
       q.reload();
     } catch (e) {
-      Alert.alert(t('Erro'), t((e as Error).message));
+      const msg = (e as Error).message;
+      // colunas novas ainda não criadas no banco
+      if (/column .* (does not exist|of relation)|schema cache/i.test(msg) && resource === 'sessions') {
+        Alert.alert(t('Erro'), t('Rode o arquivo supabase/migrations/20261126000007_st_sessao_detalhada.sql no SQL Editor do Supabase.'));
+      } else {
+        Alert.alert(t('Erro'), t(msg));
+      }
     } finally {
       setSaving(false);
     }

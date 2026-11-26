@@ -18,13 +18,8 @@ export function SessionCard({ s, compact }: { s: ScheduledSession; compact?: boo
 
   return (
     <Pressable
-      onPress={() =>
-        s.workout
-          ? router.push(`/workout/${s.workout.id}`)
-          : canLog
-            ? router.push({ pathname: '/workout/new', params: { sessionId: s.id, title: s.title, km: s.distance_km ?? '' } })
-            : undefined
-      }
+      // abre o detalhe da sessão (etapas, aquecimento, esteira, registrar)
+      onPress={() => router.push(`/session/${s.id}`)}
       style={({ pressed }) => ({
         flexDirection: 'row',
         gap: 12,

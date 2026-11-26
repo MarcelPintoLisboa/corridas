@@ -784,4 +784,63 @@ export const en: Record<string, string> = {
   'Somente administradores podem limpar o modelo': 'Only administrators can clear the demo model',
   'Somente administradores podem preencher o modelo': 'Only administrators can fill the demo model',
   'Você não gerencia esta corrida': "You don't manage this race",
+
+  // ------------------------------------------------------------ sessão detalhada (corredor)
+  'Treino não encontrado': 'Workout not found',
+  'O plano pode ter sido alterado pela organização. Puxe a tela do plano para atualizar.': 'The organizers may have changed the plan. Pull down on the plan screen to refresh.',
+  'Treino realizado ✓': 'Workout done ✓',
+  'Bora! Registre quando terminar para acompanhar sua evolução.': "Let's go! Log it when you finish to track your progress.",
+  'Disponível em {n} dia': 'Available in {n} day',
+  'Disponível em {n} dias': 'Available in {n} days',
+  'Treino pendente': 'Pending workout',
+  'Ainda dá para registrar se você fez este treino.': 'You can still log it if you did this workout.',
+  Aquecimento: 'Warm-up',
+  Registrar: 'Log',
+  Plano: 'Plan',
+  'Dia de descanso 😴': 'Rest day 😴',
+  'O descanso faz parte do treino: é quando o corpo se adapta e fica mais forte. Hidrate-se e durma bem.':
+    "Rest is part of training: it's when your body adapts and gets stronger. Stay hydrated and sleep well.",
+  'AO AR LIVRE': 'OUTDOOR',
+  ESTEIRA: 'TREADMILL',
+  'Treino na esteira': 'Treadmill workout',
+  'Velocidades convertidas do pace da rua. Use 1% de inclinação para compensar a falta de vento.': 'Speeds converted from the outdoor pace. Use a 1% incline to make up for the lack of wind resistance.',
+  'Ver post do treino': 'View workout post',
+  'Registrar este treino': 'Log this workout',
+  Caminhada: 'Walk',
+  Desaquecimento: 'Cool-down',
+  Fortalecimento: 'Strength',
+  Tiro: 'Interval',
+  '5 min de mobilidade articular (tornozelos, quadril e ombros) e 2 séries leves de cada exercício antes da carga.':
+    '5 min of joint mobility (ankles, hips and shoulders) and 2 light sets of each exercise before adding load.',
+  '10 min de trote bem leve + mobilidade dinâmica (balanço de pernas, skipping, anfersen) + 3 acelerações progressivas de 80 m.':
+    '10 min of very easy jogging + dynamic mobility (leg swings, high knees, butt kicks) + 3 progressive 80 m strides.',
+  '5 min de caminhada rápida + mobilidade dinâmica (balanço de pernas, giro de quadril, panturrilha) e comece a correr bem devagar.':
+    '5 min of brisk walking + dynamic mobility (leg swings, hip circles, calves), then start running very slowly.',
+
+  // ------------------------------------------------------------ sessão detalhada (admin)
+  'Resumo (aparece abaixo do título)': 'Summary (shown below the title)',
+  'Corrida leve': 'Easy run',
+  'Distância total (km)': 'Total distance (km)',
+  'Duração mínima (min)': 'Min duration (min)',
+  'Duração máxima (min)': 'Max duration (min)',
+  'Com a mínima, mostra a faixa (ex.: 35–40 min)': 'Together with the minimum, shows a range (e.g. 35–40 min)',
+  'Vazio = aquecimento padrão do tipo de treino': 'Empty = default warm-up for the workout type',
+  'Etapas do treino': 'Workout steps',
+  'Instruções para esteira': 'Treadmill instructions',
+  'Ex.: inclinação de 1% para simular a rua': 'e.g. 1% incline to simulate the road',
+  '{n} etapas': '{n} steps',
+  'Rode o arquivo supabase/migrations/20261126000007_st_sessao_detalhada.sql no SQL Editor do Supabase.':
+    'Run the file supabase/migrations/20261126000007_st_sessao_detalhada.sql in the Supabase SQL Editor.',
+  'Monte o treino em etapas (ex.: aquecimento, 6 tiros de 400 m, recuperação, desaquecimento). Sem etapas, o corredor vê o resumo da sessão.':
+    'Build the workout in steps (e.g. warm-up, 6 × 400 m intervals, recovery, cool-down). Without steps, the runner sees the session summary.',
+  'Título (ex.: 3,5 km em ritmo de conversa)': 'Title (e.g. 3.5 km at conversational pace)',
+  'Repetir (×)': 'Repeat (×)',
+  'Km (0,4 = 400 m)': 'Km (0.4 = 400 m)',
+  Minutos: 'Minutes',
+  'Pace (ex.: 6:00 ou 5:30-6:00)': 'Pace (e.g. 6:00 or 5:30-6:00)',
+  'Na esteira: {speed}': 'On the treadmill: {speed}',
+  'Orientação (ex.: este é um limite, não uma meta)': 'Guidance (e.g. this is a limit, not a target)',
+  Repetições: 'Repetitions',
+  'Etapa {n}: "{field}" deve ser um número': 'Step {n}: "{field}" must be a number',
+  'Etapa {n}: use o pace no formato 5:30 ou 5:30-6:00': 'Step {n}: use the pace format 5:30 or 5:30-6:00',
 };

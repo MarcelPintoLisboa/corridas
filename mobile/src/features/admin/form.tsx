@@ -10,7 +10,9 @@ import { pickAndUpload } from '@/lib/upload';
 import { alpha, colors, font, radius } from '@/theme';
 import { t } from '@/i18n';
 
-export type FieldType = 'text' | 'multiline' | 'number' | 'bool' | 'datetime' | 'select' | 'image' | 'color' | 'url' | 'tags';
+import { StepsEditor, fromStepDrafts, toStepDrafts, type StepDraft } from './StepsEditor';
+
+export type FieldType = 'text' | 'multiline' | 'number' | 'bool' | 'datetime' | 'select' | 'image' | 'color' | 'url' | 'tags' | 'steps';
 
 export interface Option {
   label: string;
@@ -47,6 +49,7 @@ export function toFormValues(fields: Field[], row: Record<string, unknown> | nul
   for (const f of fields) {
     const raw = row?.[f.key] ?? f.default ?? null;
     if (f.type === 'datetime') v[f.key] = { date: toDateInputBR(raw as string | null), time: toTimeInput(raw as string | null) } satisfies DateTimeValue;
+    else if (f.type === 'steps') v[f.key] = toStepDrafts(raw);
     else if (f.type === 'bool') v[f.key] = Boolean(raw);
     else if (f.type === 'tags') v[f.key] = Array.isArray(raw) ? raw.join(', ') : '';
     else v[f.key] = raw == null ? '' : String(raw);
@@ -70,6 +73,10 @@ export function serialize(fields: Field[], values: FormValues) {
       const iso = parseDateTimeBR(dt.date, dt.time);
       if (!iso) throw new Error(t('"{field}": use a data DD/MM/AAAA e a hora HH:mm', { field: t(f.label) }));
       out[f.key] = iso;
+      continue;
+    }
+    if (f.type === 'steps') {
+      out[f.key] = fromStepDrafts((val as StepDraft[] | undefined) ?? []);
       continue;
     }
     if (f.required && (str === '' || str == null)) throw new Error(t('Preencha "{field}"', { field: t(f.label) }));
@@ -119,6 +126,9 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
   const str = (value as string) ?? '';
 
   switch (field.type) {
+    case 'steps':
+      return <StepsEditor label={field.label} value={(value as StepDraft[]) ?? []} onChange={onChange} />;
+
     case 'datetime':
       return (
         <DateTimeFields
