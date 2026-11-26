@@ -20,6 +20,21 @@ export default function ProfileScreen() {
   const [city, setCity] = useState(profile?.city ?? '');
   const [instagram, setInstagram] = useState(profile?.instagram ?? '');
   const [saving, setSaving] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+
+  async function changePassword() {
+    if (newPassword.length < 6) return Alert.alert(t('A senha deve ter pelo menos 6 caracteres'));
+    if (newPassword !== confirmPassword) return Alert.alert(t('As senhas não conferem'));
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) return Alert.alert(t('Não foi possível alterar a senha'), error.message);
+    setNewPassword('');
+    setConfirmPassword('');
+    Alert.alert(t('Senha alterada ✓'));
+  }
 
   async function save(extra: Record<string, unknown> = {}) {
     if (!profile) return;
@@ -60,6 +75,11 @@ export default function ProfileScreen() {
       <Input label="Cidade" value={city} onChangeText={setCity} icon="location-outline" />
       <Input label="Instagram" value={instagram} onChangeText={setInstagram} icon="logo-instagram" autoCapitalize="none" placeholder="@seuperfil" />
       <GradientButton title="Salvar" icon="checkmark" onPress={() => save()} loading={saving} />
+
+      <SectionHeader title="Alterar senha" />
+      <Input label="Nova senha" value={newPassword} onChangeText={setNewPassword} icon="key-outline" secureTextEntry autoCapitalize="none" placeholder="mínimo 6 caracteres" />
+      <Input label="Confirmar nova senha" value={confirmPassword} onChangeText={setConfirmPassword} icon="key-outline" secureTextEntry autoCapitalize="none" />
+      <GradientButton title="Alterar senha" icon="lock-closed" variant="ghost" onPress={changePassword} loading={changingPassword} />
 
       <SectionHeader title="Minhas corridas" />
       <Card animated={false}>

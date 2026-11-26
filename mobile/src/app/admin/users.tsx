@@ -1,10 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
 import { Avatar, Badge, Card, Chip, EmptyState, GradientButton, IconButton, Input, Loading, Muted, Screen } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
+import { generatePassword } from '@/lib/password';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { Profile, UserRole } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
@@ -23,7 +25,9 @@ export default function UsersScreen() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | UserRole | 'inativos'>('all');
   const [adding, setAdding] = useState(false);
-  const [form, setForm] = useState({ email: '', full_name: '', role: (isAdminGeral ? 'admin' : 'athlete') as UserRole });
+  const emptyForm = () => ({ email: '', full_name: '', password: generatePassword(), role: (isAdminGeral ? 'admin' : 'athlete') as UserRole });
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
   const q = useAsync(async () => unwrap(await supabase.from('st_usuarios').select('*').order('criado_em', { ascending: false })) as Profile[], []);
 
   if (!isAdmin) {
@@ -65,13 +69,39 @@ export default function UsersScreen() {
 
   async function add() {
     const email = form.email.trim().toLowerCase();
+    const password = form.password.trim();
     if (!/^\S+@\S+\.\S+$/.test(email)) return Alert.alert(t('Informe um e-mail válido'));
-    const { error } = await supabase.from('st_usuarios').insert({ email, full_name: form.full_name.trim(), role: isAdminGeral ? form.role : 'athlete' });
-    if (error) return Alert.alert(t('Não foi possível cadastrar'), /duplicate|unique/i.test(error.message) ? t('Este e-mail já está cadastrado.') : t(error.message));
+    if (password.length < 6) return Alert.alert(t('A senha deve ter pelo menos 6 caracteres'));
+    setSaving(true);
+    const { data, error } = await supabase.rpc('st_criar_usuario', {
+      p_email: email,
+      p_full_name: form.full_name.trim(),
+      p_role: isAdminGeral ? form.role : 'athlete',
+      p_password: password,
+    });
+    setSaving(false);
+    if (error) {
+      const msg = /function|schema cache/i.test(error.message)
+        ? t('Rode o arquivo supabase/migrations/20261126000006_st_senha_inicial.sql no SQL Editor do Supabase.')
+        : /duplicate|unique/i.test(error.message)
+          ? t('Este e-mail já está cadastrado.')
+          : t(error.message);
+      return Alert.alert(t('Não foi possível cadastrar'), msg);
+    }
     setAdding(false);
-    setForm({ email: '', full_name: '', role: isAdminGeral ? 'admin' : 'athlete' });
+    setForm(emptyForm());
     q.reload();
-    Alert.alert(t('Acesso cadastrado ✓'), t('Peça para {email} criar a conta no app com este e-mail (ou entrar, se já tiver conta). O acesso é liberado automaticamente.', { email }));
+    if ((data as { status: string }).status === 'ja_tinha_conta') {
+      return Alert.alert(
+        t('Acesso liberado ✓'),
+        t('{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Street Running foi liberado.', { email }),
+      );
+    }
+    const credentials = `Street Running\n${t('E-mail')}: ${email}\n${t('Senha')}: ${password}`;
+    Alert.alert(t('Acesso criado ✓'), `${t('Envie para a pessoa entrar no app:')}\n\n${t('E-mail')}: ${email}\n${t('Senha')}: ${password}`, [
+      { text: 'OK' },
+      { text: t('Copiar dados'), onPress: () => Clipboard.setStringAsync(credentials).catch(() => {}) },
+    ]);
   }
 
   const count = (r: UserRole) => all.filter((u) => u.role === r && u.ativo).length;
@@ -158,10 +188,31 @@ export default function UsersScreen() {
             <IconButton icon="close" onPress={() => setAdding(false)} />
           </View>
           <Muted style={{ marginBottom: 16 }}>
-            {t('A pessoa cria a conta no app com este e-mail (ou entra, se já tiver) e recebe automaticamente o papel escolhido.')}
+            {t('A pessoa entra no app com este e-mail e a senha inicial, já com o papel escolhido. Depois ela pode trocar a senha em Meu perfil.')}
           </Muted>
           <Input label="E-mail *" icon="mail-outline" value={form.email} onChangeText={(v) => setForm({ ...form, email: v })} autoCapitalize="none" keyboardType="email-address" />
           <Input label="Nome" icon="person-outline" value={form.full_name} onChangeText={(v) => setForm({ ...form, full_name: v })} />
+          <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Input
+                label="Senha inicial *"
+                icon="key-outline"
+                value={form.password}
+                onChangeText={(v) => setForm({ ...form, password: v })}
+                placeholder="mínimo 6 caracteres"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+            <Pressable
+              onPress={() => setForm({ ...form, password: generatePassword() })}
+              accessibilityLabel={t('Gerar senha aleatória')}
+              style={({ pressed }) => ({ marginBottom: 16, height: 52, paddingHorizontal: 14, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.border, opacity: pressed ? 0.7 : 1 })}>
+              <Ionicons name="shuffle" size={18} color={colors.lime} />
+              <Text style={{ color: colors.text, fontWeight: '800' }}>{t('Gerar')}</Text>
+            </Pressable>
+          </View>
+          <Muted style={{ fontSize: 12, marginTop: -8, marginBottom: 14 }}>{t('Digite uma senha ou toque em Gerar para criar uma aleatória.')}</Muted>
           <Text style={[font.tiny, { color: colors.textMuted, marginBottom: 8, display: isAdminGeral ? 'flex' : 'none' }]}>{t('Papel')}</Text>
           <View style={{ flexDirection: 'row', marginBottom: 6, display: isAdminGeral ? 'flex' : 'none' }}>
             {ROLES.map((r) => (
@@ -169,7 +220,7 @@ export default function UsersScreen() {
             ))}
           </View>
           <Muted style={{ fontSize: 12, marginBottom: 20 }}>{t(ROLES.find((r) => r.value === form.role)?.help ?? '')}</Muted>
-          <GradientButton title="Cadastrar" icon="checkmark" onPress={add} />
+          <GradientButton title="Cadastrar" icon="checkmark" onPress={add} loading={saving} />
         </ScrollView>
       </Modal>
     </View>

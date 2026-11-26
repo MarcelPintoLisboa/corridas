@@ -21,6 +21,7 @@ supabase/
   migrations/20261126000003_st_corredores.sql ← associar corredores à corrida (admin)
   migrations/20261126000004_st_gestores.sql   ← gestores (cada um com as suas corridas), comentários no mural
   migrations/20261126000005_st_atualizacoes.sql ← feed de atualizações das corridas no Início
+  migrations/20261126000006_st_senha_inicial.sql ← cadastro de usuário com senha inicial
   st_reset.sql                             ← apaga todos os dados do app (recomeçar do zero)
 mobile/                                    ← app Expo (SDK 58, expo-router)
   src/app/(auth)      login e cadastro
@@ -42,8 +43,9 @@ Todas as tabelas, funções e tipos do app começam com **`st_`**. O app usa o m
 6. Cole também `supabase/migrations/20261126000004_st_gestores.sql` e clique em **Run**. Ele ativa o modelo de venda: o administrador geral cadastra **gestores**; cada gestor cria as próprias corridas, associa os corredores pelo e-mail e não vê as corridas de outros gestores. O corredor vê só as corridas em que foi associado, e o mural (fotos e comentários) é só entre os corredores da mesma corrida.
 
 7. Cole também `supabase/migrations/20261126000005_st_atualizacoes.sql` e clique em **Run**. Tudo o que o gestor adicionar ou alterar numa corrida (publicações, patrocinadores, kits, distâncias, dicas, planos e dados da corrida) aparece no **Início** dos corredores associados, com a marcação **Novo**.
+8. Cole também `supabase/migrations/20261126000006_st_senha_inicial.sql` e clique em **Run**. Assim o administrador cadastra gestores e corredores já com uma **senha inicial** (digitada ou gerada), e a pessoa entra direto no app com e-mail + senha.
 
-> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005. Se rodar o 0001 de novo, rode os outros depois dele.
+> Rode os arquivos sempre nesta ordem: 0001 → 0002 → 0003 → 0004 → 0005 → 0006. Se rodar o 0001 de novo, rode os outros depois dele.
 
 Para apagar todos os dados e recomeçar do zero, rode `supabase/st_reset.sql`. Ele mantém só o administrador geral e não altera nada do assistencia-ml.
 

@@ -562,6 +562,27 @@ export const en: Record<string, string> = {
   'A pessoa cria a conta no app com este e-mail (ou entra, se já tiver) e recebe automaticamente o papel escolhido.':
     'The person creates an account in the app with this email (or signs in, if they already have one) and automatically gets the chosen role.',
   'E-mail *': 'Email *',
+  'A pessoa entra no app com este e-mail e a senha inicial, já com o papel escolhido. Depois ela pode trocar a senha em Meu perfil.':
+    'The person signs in to the app with this email and the initial password, already with the chosen role. They can change the password later in My profile.',
+  'Senha inicial *': 'Initial password *',
+  Gerar: 'Generate',
+  'Gerar senha aleatória': 'Generate random password',
+  'Digite uma senha ou toque em Gerar para criar uma aleatória.': 'Type a password or tap Generate to create a random one.',
+  'Rode o arquivo supabase/migrations/20261126000006_st_senha_inicial.sql no SQL Editor do Supabase.':
+    'Run the file supabase/migrations/20261126000006_st_senha_inicial.sql in the Supabase SQL Editor.',
+  'Acesso liberado ✓': 'Access granted ✓',
+  '{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Street Running foi liberado.':
+    '{email} already had a login on this server, so they keep the password they already use. Street Running access was granted.',
+  'Acesso criado ✓': 'User created ✓',
+  'Envie para a pessoa entrar no app:': 'Send this so they can sign in to the app:',
+  'Copiar dados': 'Copy details',
+  'Somente administradores cadastram usuários': 'Only administrators can add users',
+  'Alterar senha': 'Change password',
+  'Nova senha': 'New password',
+  'Confirmar nova senha': 'Confirm new password',
+  'As senhas não conferem': "Passwords don't match",
+  'Não foi possível alterar a senha': "Couldn't change the password",
+  'Senha alterada ✓': 'Password changed ✓',
   Papel: 'Role',
   Cadastrar: 'Add',
   'Não foi possível alterar': "Couldn't update",
