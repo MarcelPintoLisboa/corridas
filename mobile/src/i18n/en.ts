@@ -1170,4 +1170,7 @@ export const en: Record<string, string> = {
   'Rode o arquivo supabase/migrations/20261126000010_st_encerramento.sql no SQL Editor do Supabase.': 'Run the file supabase/migrations/20261126000010_st_encerramento.sql in the Supabase SQL Editor.',
   '{name} foi encerrada 🏁': '{name} has ended 🏁',
   'Prova em {date}. Obrigado por correr com a gente! Seus treinos continuam na aba Evolução.': 'Race on {date}. Thanks for running with us! Your workouts are still in the Progress tab.',
+  // ------------------------------------------------------------ e-mail de boas-vindas
+  'O e-mail de boas-vindas não foi enviado (configure a função st-boas-vindas no Supabase).': 'The welcome email was not sent (set up the st-boas-vindas function in Supabase).',
+  'E-mail de boas-vindas enviado para {email}.': 'Welcome email sent to {email}.',
 };

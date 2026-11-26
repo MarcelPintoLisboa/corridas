@@ -153,6 +153,19 @@ Toda execução publica uma **GitHub Release** com o APK e o IPA para baixar dir
 ### Alternativa: EAS Build (nuvem da Expo)
 O script `npm run setup:ios` / `setup:android`, em `mobile/`, gera os builds pela EAS, com login na Expo e na Apple. Ele é opcional e o workflow não depende dele.
 
+## E-mail de boas-vindas (opcional)
+
+Quando o gestor associa um corredor a uma corrida, o app chama a Edge Function `st-boas-vindas`, que envia um e-mail com o logo, o nome, as cores, a data e o local da corrida. Sem configurar, a associação funciona normalmente e o app só avisa que o e-mail não saiu.
+
+1. Crie uma conta grátis em [resend.com](https://resend.com), adicione e verifique o **seu domínio** (ex.: `streetrunning.com.br`) e crie uma **API key**.
+   Sem domínio verificado, o Resend só envia para o e-mail da própria conta (bom para testar).
+2. No Supabase, em **Edge Functions → Secrets**, cadastre:
+   - `RESEND_API_KEY` = a chave do Resend
+   - `EMAIL_FROM` = o remetente no domínio verificado (ex.: `corridas@streetrunning.com.br`)
+3. Em **Edge Functions → Deploy a new function → Via editor**, use o nome `st-boas-vindas` e cole os arquivos de `supabase/functions/st-boas-vindas/` (`index.ts` e `template.ts`).
+   Ou pelo terminal: `npx supabase login` e depois `npx supabase functions deploy st-boas-vindas --project-ref eoowbybfrbmjxcjfniuu`.
+4. Associe um corredor em **Admin → Corredores da corrida**. O alerta confirma se o e-mail foi enviado.
+
 ## Sobre a postagem no Instagram
 
 O app gera a arte no formato Stories (1080×1920). Ela traz foto, distância, tempo, pace e o gráfico da evolução, que acumula o histórico de treinos até a data da prova. A legenda com as hashtags da corrida é **copiada automaticamente**. Depois, o compartilhamento nativo abre o Instagram com a imagem pronta, ou a imagem é salva na galeria.

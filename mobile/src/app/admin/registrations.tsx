@@ -237,16 +237,26 @@ function AssociateModal({ visible, eventId, distances, enrolledEmails, onClose, 
     const { data, error } = picked.byEmail
       ? await supabase.rpc('st_associar_corredor_email', { p_event_id: eventId, p_email: picked.email, p_full_name: picked.full_name, p_distance_id: distanceId, p_level: level })
       : await supabase.rpc('st_associar_corredor', { p_event_id: eventId, p_usuario_id: picked.id, p_distance_id: distanceId, p_level: level });
-    setSaving(false);
     if (error) {
+      setSaving(false);
       return Alert.alert(t('Não foi possível associar'), /function|schema cache/i.test(error.message) ? t('Rode os arquivos supabase/migrations/20261126000003_st_corredores.sql e 20261126000004_st_gestores.sql no SQL Editor do Supabase.') : t(error.message));
     }
+    // e-mail de boas-vindas (Edge Function st-boas-vindas); se não estiver configurada, só avisa
+    let mail = '';
+    if (picked.email) {
+      const res = await supabase.functions.invoke('st-boas-vindas', { body: { event_id: eventId, email: picked.email } });
+      mail = res.error
+        ? t('O e-mail de boas-vindas não foi enviado (configure a função st-boas-vindas no Supabase).')
+        : t('E-mail de boas-vindas enviado para {email}.', { email: picked.email });
+    }
+    setSaving(false);
     onDone();
     Alert.alert(
       t(data === 'pendente' ? 'Associado — aguardando 1º acesso' : 'Corredor associado ✓'),
-      data === 'pendente'
+      (data === 'pendente'
         ? t('{email} ainda não entrou no app. A inscrição é feita automaticamente no primeiro acesso.', { email: picked.email ?? '' })
-        : t('{name} já vê os treinos, o mural e as informações desta corrida.', { name: picked.full_name || picked.email || '' }),
+        : t('{name} já vê os treinos, o mural e as informações desta corrida.', { name: picked.full_name || picked.email || '' })) +
+        (mail ? `\n\n${mail}` : ''),
     );
     close();
   }
