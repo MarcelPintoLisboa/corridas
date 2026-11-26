@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const conta = data as MinhaConta;
     if (conta.situacao === 'desativado') {
-      Alert.alert(t('Acesso desativado'), t('Seu acesso ao Street Running foi desativado. Fale com a organização.'));
+      Alert.alert(t('Acesso desativado'), t('Seu acesso ao Corre+ foi desativado. Fale com a organização.'));
       await supabase.auth.signOut();
       return;
     }

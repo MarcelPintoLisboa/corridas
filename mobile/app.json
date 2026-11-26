@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Street Running",
+    "name": "Corre+",
     "slug": "street-running",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -24,7 +24,7 @@
     "android": {
       "package": "com.streetrunning.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FFFFFF",
+        "backgroundColor": "#0A0A12",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png"
       },
@@ -47,9 +47,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFFFFF",
+          "backgroundColor": "#0A0A12",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 240
+          "imageWidth": 280
         }
       ],
       [
@@ -76,8 +76,8 @@
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "O Street Running lê seus treinos de corrida do app Saúde (gravados pelo Apple Watch ou iPhone) para registrar distância, tempo, pace e frequência cardíaca no seu plano.",
-          "NSHealthUpdateUsageDescription": "O Street Running não grava dados no app Saúde.",
+          "NSHealthShareUsageDescription": "O Corre+ lê seus treinos de corrida do app Saúde (gravados pelo Apple Watch ou iPhone) para registrar distância, tempo, pace e frequência cardíaca no seu plano.",
+          "NSHealthUpdateUsageDescription": "O Corre+ não grava dados no app Saúde.",
           "background": false
         }
       ],

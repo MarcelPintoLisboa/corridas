@@ -310,7 +310,7 @@ export const en: Record<string, string> = {
   'A senha deve ter pelo menos 6 caracteres': 'Password must be at least 6 characters',
   'Confirme seu e-mail antes de entrar': 'Confirm your email before signing in',
   'Acesso desativado': 'Access disabled',
-  'Seu acesso ao Street Running foi desativado. Fale com a organização.': 'Your Street Running access was disabled. Please contact the organizers.',
+  'Seu acesso ao Corre+ foi desativado. Fale com a organização.': 'Your Corre+ access was disabled. Please contact the organizers.',
   'Meu perfil': 'My profile',
   'Trocar foto': 'Change photo',
   Nome: 'Name',
@@ -571,16 +571,16 @@ export const en: Record<string, string> = {
   'Rode o arquivo supabase/migrations/20261126000006_st_senha_inicial.sql no SQL Editor do Supabase.':
     'Run the file supabase/migrations/20261126000006_st_senha_inicial.sql in the Supabase SQL Editor.',
   'Acesso liberado ✓': 'Access granted ✓',
-  '{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Street Running foi liberado.':
-    '{email} already had a login on this server, so they keep the password they already use. Street Running access was granted.',
+  '{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Corre+ foi liberado.':
+    '{email} already had a login on this server, so they keep the password they already use. Corre+ access was granted.',
   'Acesso criado ✓': 'User created ✓',
   'Envie para a pessoa entrar no app:': 'Send this so they can sign in to the app:',
   'Copiar dados': 'Copy details',
   'Editar cadastro': 'Edit details',
   'O e-mail é o login da pessoa e não pode ser alterado depois do primeiro acesso.': "The email is the person's login and can't be changed after their first sign-in.",
-  'Olá{name}! Seu acesso ao Street Running foi criado.\n\nE-mail: {email}\nSenha provisória: {password}\n\nBaixe o app, entre com esses dados e crie a sua própria senha no primeiro acesso.':
-    'Hi{name}! Your Street Running access was created.\n\nEmail: {email}\nTemporary password: {password}\n\nDownload the app, sign in with these details and create your own password on first login.',
-  'Seu acesso ao Street Running': 'Your Street Running access',
+  'Olá{name}! Seu acesso ao Corre+ foi criado.\n\nE-mail: {email}\nSenha provisória: {password}\n\nBaixe o app, entre com esses dados e crie a sua própria senha no primeiro acesso.':
+    'Hi{name}! Your Corre+ access was created.\n\nEmail: {email}\nTemporary password: {password}\n\nDownload the app, sign in with these details and create your own password on first login.',
+  'Seu acesso ao Corre+': 'Your Corre+ access',
   'Nenhum app de e-mail configurado neste aparelho. Use Copiar dados.': 'No email app is set up on this device. Use Copy details.',
   'Envie os dados para a pessoa. No primeiro acesso, o app pede para ela criar a própria senha.':
     'Send these details to the person. On first login, the app asks them to create their own password.',
@@ -607,7 +607,7 @@ export const en: Record<string, string> = {
   Cadastrar: 'Add',
   'Não foi possível alterar': "Couldn't update",
   'Remover acesso?': 'Remove access?',
-  '{email} deixa de acessar o Street Running.': '{email} will lose access to Street Running.',
+  '{email} deixa de acessar o Corre+.': '{email} will lose access to Corre+.',
   'Informe um e-mail válido': 'Enter a valid email',
   'Este e-mail já está cadastrado.': 'This email is already registered.',
   'Acesso cadastrado ✓': 'User added ✓',

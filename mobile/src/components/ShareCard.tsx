@@ -49,9 +49,9 @@ export function ShareCard({ ref, workout, event, history, photoUri, width, athle
 
       {/* Topo: evento */}
       <View style={{ padding: 20 * s, flexDirection: 'row', alignItems: 'center', gap: 10 * s }}>
-        {/* ícone da corrida cadastrado no admin (sem ícone: logo do Street Running) */}
-        <View style={{ width: 58 * s, height: 58 * s, borderRadius: 16 * s, backgroundColor: '#fff', padding: 4 * s, shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 }}>
-          <Image source={event?.logo_url ? { uri: event.logo_url } : APP_LOGO} style={{ width: '100%', height: '100%', borderRadius: 12 * s }} contentFit="contain" cachePolicy="memory-disk" />
+        {/* ícone da corrida cadastrado no admin (sem ícone: logo do Corre+) */}
+        <View style={{ width: 58 * s, height: 58 * s, borderRadius: 16 * s, backgroundColor: event?.logo_url ? '#fff' : '#0A0A12', padding: event?.logo_url ? 4 * s : 0, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 }}>
+          <Image source={event?.logo_url ? { uri: event.logo_url } : APP_LOGO} style={{ width: '100%', height: '100%', borderRadius: event?.logo_url ? 12 * s : 0 }} contentFit="contain" cachePolicy="memory-disk" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ color: '#fff', fontWeight: '900', fontSize: 16 * s }} numberOfLines={1}>

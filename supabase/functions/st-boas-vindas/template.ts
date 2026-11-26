@@ -71,7 +71,7 @@ export function welcomeHtml(d: WelcomeData) {
           <div style="font:900 24px Arial,sans-serif;color:#15161d;">Bem-vindo(a)${first ? `, ${esc(first)}` : ''}! 👋</div>
           <p style="font:16px/1.55 Arial,sans-serif;color:#3b3f4c;margin:10px 0 0;">
             Você foi inscrito(a) na <strong style="color:${c1};">${esc(d.raceName)}</strong>. A partir de agora, seu plano de treino,
-            as novidades da prova e a retirada do kit ficam no app <strong>Street Running</strong>.
+            as novidades da prova e a retirada do kit ficam no app <strong>Corre+</strong>.
           </p>
         </td></tr>
 
@@ -100,8 +100,8 @@ export function welcomeHtml(d: WelcomeData) {
             <div style="font:800 15px Arial,sans-serif;color:#15161d;">Como acessar</div>
             <p style="font:14px/1.5 Arial,sans-serif;color:#3b3f4c;margin:6px 0 0;">
               ${d.hasAccount
-                ? 'Abra o app <strong>Street Running</strong> e entre com o seu e-mail: a corrida já aparece na tela inicial.'
-                : 'Baixe o app <strong>Street Running</strong> e entre (ou crie sua conta) com este e-mail:'}
+                ? 'Abra o app <strong>Corre+</strong> e entre com o seu e-mail: a corrida já aparece na tela inicial.'
+                : 'Baixe o app <strong>Corre+</strong> e entre (ou crie sua conta) com este e-mail:'}
             </p>
             <div style="font:800 16px Arial,sans-serif;color:${c1};margin-top:8px;">${esc(d.runnerEmail)}</div>
           </div>
@@ -118,7 +118,7 @@ export function welcomeHtml(d: WelcomeData) {
         </td></tr>
       </table>
       <div style="font:12px/1.5 Arial,sans-serif;color:#9a9fb0;max-width:560px;margin-top:16px;text-align:center;">
-        Você recebeu este e-mail porque a organização da ${esc(d.raceName)} associou o seu e-mail à prova no Street Running.
+        Você recebeu este e-mail porque a organização da ${esc(d.raceName)} associou o seu e-mail à prova no Corre+.
       </div>
     </td></tr>
   </table>
@@ -135,7 +135,7 @@ export function welcomeText(d: WelcomeData) {
     d.location || d.city ? `Local: ${[d.location, d.city].filter(Boolean).join(' · ')}` : '',
     d.distance ? `Sua distância: ${d.distance}` : '',
     '',
-    `Acesse o app Street Running com o e-mail ${d.runnerEmail} para ver seu plano de treino, a retirada do kit e as novidades da prova.`,
+    `Acesse o app Corre+ com o e-mail ${d.runnerEmail} para ver seu plano de treino, a retirada do kit e as novidades da prova.`,
     '',
     `Organização · ${d.raceName}`,
   ].filter((l) => l !== null).join('\n');

@@ -150,7 +150,7 @@ export const sessionTypeMeta: Record<string, { label: string; color: string; ico
   recovery: { label: 'Regenerativo', color: '#00E5FF', icon: 'leaf' },
   strength: { label: 'Força', color: '#B388FF', icon: 'barbell' },
   rest: { label: 'Descanso', color: '#6B6B8A', icon: 'bed' },
-  race: { label: 'PROVA', color: '#C6FF00', icon: 'flag' },
+  race: { label: 'PROVA', color: '#C7F753', icon: 'flag' },
 });
 
 // ------------------------------------------------ Data/hora no formato brasileiro (campos separados)

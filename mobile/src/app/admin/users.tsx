@@ -56,7 +56,7 @@ export default function UsersScreen() {
   }
 
   function remove(u: Profile) {
-    Alert.alert(t('Remover acesso?'), t('{email} deixa de acessar o Street Running.', { email: u.email ?? '' }), [
+    Alert.alert(t('Remover acesso?'), t('{email} deixa de acessar o Corre+.', { email: u.email ?? '' }), [
       { text: t('Cancelar'), style: 'cancel' },
       {
         text: t('Remover'),
@@ -97,7 +97,7 @@ export default function UsersScreen() {
     if ((data as { status: string }).status === 'ja_tinha_conta') {
       return Alert.alert(
         t('Acesso liberado ✓'),
-        t('{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Street Running foi liberado.', { email }),
+        t('{email} já tinha login neste servidor, então continua com a senha que já usava. O acesso ao Corre+ foi liberado.', { email }),
       );
     }
     const access = { email, password, name: form.full_name.trim() };
@@ -333,10 +333,10 @@ function EditUser({ user, canEditRole, onClose, onSaved }: {
 function CreatedAccess({ access, onClose }: { access: { email: string; password: string; name: string }; onClose: () => void }) {
   const first = access.name.split(' ')[0];
   const message = t(
-    'Olá{name}! Seu acesso ao Street Running foi criado.\n\nE-mail: {email}\nSenha provisória: {password}\n\nBaixe o app, entre com esses dados e crie a sua própria senha no primeiro acesso.',
+    'Olá{name}! Seu acesso ao Corre+ foi criado.\n\nE-mail: {email}\nSenha provisória: {password}\n\nBaixe o app, entre com esses dados e crie a sua própria senha no primeiro acesso.',
     { name: first ? ` ${first}` : '', email: access.email, password: access.password },
   );
-  const subject = t('Seu acesso ao Street Running');
+  const subject = t('Seu acesso ao Corre+');
 
   async function open(url: string, fallback?: string) {
     try {

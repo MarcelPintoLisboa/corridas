@@ -9,7 +9,7 @@ export const colors = {
   textDim: '#6B6B8A',
   primary: '#FF4D2E',
   secondary: '#7B2FF7',
-  lime: '#C6FF00',
+  lime: '#C7F753',
   cyan: '#00E5FF',
   success: '#00E676',
   warning: '#FFC400',
