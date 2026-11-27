@@ -23,7 +23,7 @@ interface AuthCtx {
 const Ctx = createContext<AuthCtx | null>(null);
 
 interface MinhaConta {
-  situacao: 'ok' | 'desativado';
+  situacao: 'ok' | 'desativado' | 'nao_confirmado';
   usuario: Profile;
   admin: boolean;
   admin_geral: boolean;
@@ -52,6 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     const conta = data as MinhaConta;
+    if (conta.situacao === 'nao_confirmado') {
+      Alert.alert(t('Confirme seu e-mail 📩'), t('Abra o link que enviamos para o seu e-mail para ativar a conta e depois entre de novo.'));
+      await supabase.auth.signOut();
+      return;
+    }
     if (conta.situacao === 'desativado') {
       Alert.alert(t('Acesso desativado'), t('Seu acesso ao Corre+ foi desativado. Fale com a organização.'));
       await supabase.auth.signOut();
@@ -90,9 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
         password,
-        options: { data: { full_name: fullName, phone } },
+        // o link do e-mail confirma a conta e abre o app na tela de confirmação
+        options: { data: { full_name: fullName, phone }, emailRedirectTo: CONFIRM_REDIRECT },
       });
       if (error) throw new Error(translateAuthError(error.message));
+      // com a confirmação ligada, um e-mail que já tem conta volta sem identidades
+      if (data.user && data.user.identities?.length === 0) throw new Error(translateAuthError('already registered'));
       return { needsConfirmation: !data.session };
     },
     async signOut() {
@@ -109,10 +117,20 @@ export function useAuth() {
   return ctx;
 }
 
+/** Endereço para onde o link de confirmação leva (precisa estar em Auth → URL Configuration → Redirect URLs) */
+export const CONFIRM_REDIRECT = 'streetrunning://email-confirmado';
+
+/** Reenvia o e-mail de confirmação do cadastro */
+export async function resendConfirmation(email: string) {
+  const { error } = await supabase.auth.resend({ type: 'signup', email: email.trim().toLowerCase(), options: { emailRedirectTo: CONFIRM_REDIRECT } });
+  if (error) throw new Error(translateAuthError(error.message));
+}
+
 function translateAuthError(msg: string) {
   if (/invalid login/i.test(msg)) return t('E-mail ou senha incorretos');
   if (/already registered/i.test(msg)) return t('Este e-mail já possui cadastro. Use "Entrar" (mesma senha do Assistência ML, se tiver).');
   if (/password should be/i.test(msg)) return t('A senha deve ter pelo menos 6 caracteres');
-  if (/email not confirmed/i.test(msg)) return t('Confirme seu e-mail antes de entrar');
+  if (/email not confirmed/i.test(msg)) return t('Confirme seu e-mail antes de entrar. Abra o link que enviamos (veja também o spam).');
+  if (/rate limit|security purposes/i.test(msg)) return t('Aguarde um minuto antes de pedir outro e-mail.');
   return msg;
 }

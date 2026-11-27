@@ -5,7 +5,7 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'r
 import { AuthHero } from '@/components/AuthHero';
 import { FadeIn, GradientButton, Input } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/providers/AuthProvider';
+import { resendConfirmation, useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/theme';
 import { t } from '@/i18n';
 
@@ -21,7 +21,14 @@ export default function LoginScreen() {
     try {
       await signIn(email, password);
     } catch (e) {
-      Alert.alert(t('Não foi possível entrar'), (e as Error).message);
+      const msg = (e as Error).message;
+      if (/confirme seu e-mail|confirm your email/i.test(msg)) {
+        // conta criada mas e-mail ainda não confirmado: oferece reenviar o link
+        Alert.alert(t('Confirme seu e-mail 📩'), msg, [
+          { text: t('OK'), style: 'cancel' },
+          { text: t('Reenviar e-mail'), onPress: () => resendConfirmation(email).then(() => Alert.alert(t('E-mail reenviado 📩'), t('Confira sua caixa de entrada e o spam.'))).catch((err) => Alert.alert(t('Não foi possível reenviar'), (err as Error).message)) },
+        ]);
+      } else Alert.alert(t('Não foi possível entrar'), msg);
     } finally {
       setLoading(false);
     }
@@ -47,7 +54,7 @@ export default function LoginScreen() {
             <GradientButton title="Entrar" icon="arrow-forward" onPress={onLogin} loading={loading} />
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
               <Text style={{ color: colors.textMuted }}>{t('Ainda não tem conta?')} </Text>
-              <Link href="/signup" style={{ color: colors.lime, fontWeight: '800' }}>
+              <Link href="/signup" style={{ color: colors.primary, fontWeight: '800' }}>
                 {t('Criar conta')}
               </Link>
             </View>
