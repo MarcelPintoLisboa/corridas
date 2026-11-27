@@ -96,7 +96,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: email.trim().toLowerCase(),
         password,
         // o link do e-mail confirma a conta e abre o app na tela de confirmação
-        options: { data: { full_name: fullName, phone }, emailRedirectTo: CONFIRM_REDIRECT },
+        // app: 'Corre+' faz o gatilho do Assistência ML não copiar o login para public.usuarios
+        options: { data: { full_name: fullName, phone, app: 'Corre+' }, emailRedirectTo: CONFIRM_REDIRECT },
       });
       if (error) throw new Error(translateAuthError(error.message));
       // com a confirmação ligada, um e-mail que já tem conta volta sem identidades
