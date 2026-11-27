@@ -9,7 +9,7 @@ import { RaceOnboarding } from '@/components/RaceOnboarding';
 import { SessionCard } from '@/components/SessionCard';
 import { SponsorCarousel } from '@/components/sponsors';
 import { UpdatesList, useUpdates } from '@/components/UpdatesFeed';
-import { Avatar, Card, Countdown, FadeIn, IconButton, Loading, Muted, PulseBadge, Screen, SectionHeader, Stat } from '@/components/ui';
+import { Avatar, Card, Countdown, FadeIn, Loading, Muted, PulseBadge, Screen, SectionHeader, Stat } from '@/components/ui';
 import { useAsync } from '@/hooks/useAsync';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { KitPickup, Post, Registration } from '@/lib/types';
@@ -62,8 +62,7 @@ export default function HomeScreen() {
         <Muted>Olá,</Muted>
         <Text style={[font.h1, { color: colors.text }]}>{firstName} 👋</Text>
       </View>
-      {/* idioma e tema claro/escuro ficam em Perfil → Configurações */}
-      <IconButton icon="settings-outline" onPress={() => router.push('/profile')} />
+      {/* iniciais/foto: abre o Perfil (cadastro + Configurações: idioma e tema claro/escuro) */}
       <Pressable onPress={() => router.push('/profile')} style={{ marginLeft: 2 }}>
         <Avatar uri={profile?.avatar_url} name={profile?.full_name} />
       </Pressable>
