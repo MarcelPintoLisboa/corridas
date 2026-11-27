@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Alert, Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Switch, Text, View } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { Avatar, Badge, Card, GradientButton, Input, ListRow, Muted, Screen, SectionHeader } from '@/components/ui';
+import { biometriaDisponivel, confirmarBiometria, emailComBiometria, removerBiometria, salvarBiometria } from '@/lib/biometria';
 import { formatDate } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { pickAndUpload } from '@/lib/upload';
@@ -32,6 +33,8 @@ export default function ProfileScreen() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPassword(false);
     if (error) return Alert.alert(t('Não foi possível alterar a senha'), error.message);
+    // mantém a entrada por biometria funcionando com a senha nova
+    if (profile?.email && (await emailComBiometria()) === profile.email.toLowerCase()) await salvarBiometria(profile.email, newPassword);
     setNewPassword('');
     setConfirmPassword('');
     Alert.alert(t('Senha alterada ✓'));
@@ -87,6 +90,7 @@ export default function ProfileScreen() {
       </Card>
       <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 11, letterSpacing: 1.4, marginBottom: 8, marginTop: 4 }}>{t('APARÊNCIA')}</Text>
       <ThemePicker />
+      {profile?.email ? <BiometriaCard email={profile.email} /> : null}
 
       <SectionHeader title="Alterar senha" />
       <Input label="Nova senha" value={newPassword} onChangeText={setNewPassword} icon="key-outline" secureTextEntry autoCapitalize="none" placeholder="mínimo 6 caracteres" />
@@ -109,6 +113,73 @@ export default function ProfileScreen() {
 
       <GradientButton title="Sair" icon="log-out-outline" variant="ghost" colorsPair={[colors.border, colors.border]} onPress={signOut} style={{ marginTop: 12, marginBottom: 30 }} />
     </Screen>
+  );
+}
+
+/** Liga/desliga a entrada com Face ID / digital (a senha fica no cofre do celular) */
+function BiometriaCard({ email }: { email: string }) {
+  const [tipo, setTipo] = useState<string | null>(null);
+  const [ativo, setAtivo] = useState(false);
+  const [pedindoSenha, setPedindoSenha] = useState(false);
+  const [senha, setSenha] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setTipo(await biometriaDisponivel());
+      setAtivo((await emailComBiometria()) === email.toLowerCase());
+    })();
+  }, [email]);
+
+  if (!tipo) return null;
+
+  async function onToggle(v: boolean) {
+    if (!v) {
+      await removerBiometria();
+      setAtivo(false);
+      return;
+    }
+    setPedindoSenha(true);
+  }
+
+  async function ativar() {
+    if (!senha) return;
+    setBusy(true);
+    try {
+      // confere a senha antes de guardar
+      const { error } = await supabase.auth.signInWithPassword({ email: email.toLowerCase(), password: senha });
+      if (error) return Alert.alert(t('Senha incorreta'), t('Confira a senha e tente de novo.'));
+      if (!(await confirmarBiometria())) return;
+      await salvarBiometria(email, senha);
+      setAtivo(true);
+      setPedindoSenha(false);
+      setSenha('');
+      Alert.alert(t('Pronto! ✓'), t('Na próxima vez é só usar {x} para entrar.').replace('{x}', tipo!));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card animated={false} style={{ marginTop: 12 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+          <Ionicons name={/face|facial/i.test(tipo) ? 'scan-outline' : 'finger-print'} size={20} color={colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: colors.text, fontWeight: '800' }}>{t('Entrar com {x}').replace('{x}', tipo)}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>{t('Sem digitar a senha no login')}</Text>
+          </View>
+        </View>
+        <Switch value={ativo || pedindoSenha} onValueChange={onToggle} trackColor={{ true: colors.primary, false: colors.border }} thumbColor="#FFFFFF" />
+      </View>
+      {pedindoSenha && !ativo ? (
+        <View style={{ marginTop: 14 }}>
+          <Input label="Sua senha atual" value={senha} onChangeText={setSenha} icon="lock-closed-outline" secureTextEntry autoCapitalize="none" />
+          <GradientButton title="Ativar" icon="checkmark" onPress={ativar} loading={busy} small />
+          <Text onPress={() => { setPedindoSenha(false); setSenha(''); }} style={{ color: colors.textMuted, textAlign: 'center', marginTop: 12 }}>{t('Cancelar')}</Text>
+        </View>
+      ) : null}
+    </Card>
   );
 }
 

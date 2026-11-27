@@ -89,6 +89,13 @@
             "minSdkVersion": 26
           }
         }
+      ],
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "O Corre+ usa o Face ID para você entrar sem digitar a senha."
+        }
       ]
     ],
     "experiments": {

@@ -1,9 +1,10 @@
 import { Link } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
 
 import { AuthHero } from '@/components/AuthHero';
 import { FadeIn, GradientButton, Input } from '@/components/ui';
+import { biometriaDisponivel, confirmarBiometria, emailComBiometria, lerComBiometria, removerBiometria, salvarBiometria } from '@/lib/biometria';
 import { supabase } from '@/lib/supabase';
 import { resendConfirmation, useAuth } from '@/providers/AuthProvider';
 import { colors } from '@/theme';
@@ -14,12 +15,62 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  /** nome do recurso (Face ID, digital...) quando já existe login guardado para entrar com biometria */
+  const [bio, setBio] = useState<string | null>(null);
+  const autoTried = useRef(false);
+
+  useEffect(() => {
+    (async () => {
+      const [tipo, salvo] = await Promise.all([biometriaDisponivel(), emailComBiometria()]);
+      if (tipo && salvo) {
+        setBio(tipo);
+        setEmail(salvo);
+        if (!autoTried.current) {
+          autoTried.current = true;
+          onBiometria();
+        }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** depois de entrar com senha, oferece guardar o login na biometria do celular */
+  async function oferecerBiometria(mail: string, senha: string) {
+    const tipo = await biometriaDisponivel();
+    if (!tipo || (await emailComBiometria()) === mail.trim().toLowerCase()) return;
+    Alert.alert(t('Entrar com {x}?').replace('{x}', tipo), t('Da próxima vez você entra sem digitar a senha. Ela fica guardada com segurança no seu celular.'), [
+      { text: t('Agora não'), style: 'cancel' },
+      { text: t('Ativar'), onPress: async () => { if (await confirmarBiometria()) await salvarBiometria(mail, senha); } },
+    ]);
+  }
+
+  async function onBiometria() {
+    try {
+      const cred = await lerComBiometria();
+      if (!cred) return;
+      setLoading(true);
+      try {
+        await signIn(cred.email, cred.password);
+      } catch (e) {
+        const msg = (e as Error).message;
+        if (/senha|password|credenciais|credentials/i.test(msg)) {
+          // a senha mudou: apaga o login guardado e pede a senha nova
+          await removerBiometria();
+          setBio(null);
+          Alert.alert(t('Digite sua senha'), t('Sua senha mudou. Entre com a senha nova para ativar a biometria de novo.'));
+        } else Alert.alert(t('Não foi possível entrar'), msg);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function onLogin() {
     if (!email || !password) return Alert.alert(t('Preencha e-mail e senha'));
     setLoading(true);
     try {
       await signIn(email, password);
+      oferecerBiometria(email, password);
     } catch (e) {
       const msg = (e as Error).message;
       if (/confirme seu e-mail|confirm your email/i.test(msg)) {
@@ -52,6 +103,9 @@ export default function LoginScreen() {
               {t('Esqueci minha senha')}
             </Text>
             <GradientButton title="Entrar" icon="arrow-forward" onPress={onLogin} loading={loading} />
+            {bio && (
+              <GradientButton title={t('Entrar com {x}').replace('{x}', bio)} icon={/face|facial/i.test(bio) ? 'scan-outline' : 'finger-print'} variant="ghost" onPress={onBiometria} style={{ marginTop: 12 }} />
+            )}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
               <Text style={{ color: colors.textMuted }}>{t('Ainda não tem conta?')} </Text>
               <Link href="/signup" style={{ color: colors.primary, fontWeight: '800' }}>
