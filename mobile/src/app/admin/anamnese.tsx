@@ -10,14 +10,14 @@ import { summaryRows, type Answers, type Route, type SafetyState } from '@/lib/a
 import { formatDateTime } from '@/lib/format';
 import type { HealthSummary } from '@/lib/health.types';
 import { supabase } from '@/lib/supabase';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, colors, font, radius, themed } from '@/theme';
 
-const STATE: Record<SafetyState, { label: string; text: string; color: string; icon: 'checkmark-circle' | 'medkit' | 'alert-circle' | 'help-circle' }> = {
+const STATE: Record<SafetyState, { label: string; text: string; color: string; icon: 'checkmark-circle' | 'medkit' | 'alert-circle' | 'help-circle' }> = themed(() => ({
   eligible: { label: 'Liberado', text: 'Triagem sem restrições. Plano pessoal gerado.', color: colors.success, icon: 'checkmark-circle' },
   review: { label: 'Avaliação médica', text: 'Respondeu "Sim" em algum item de saúde. Plano bloqueado até avaliação profissional.', color: colors.warning, icon: 'medkit' },
   pending: { label: 'Triagem pendente', text: 'Respondeu "Não sei" em algum item de saúde. Plano bloqueado até esclarecer.', color: colors.warning, icon: 'help-circle' },
   urgency: { label: 'Urgência', text: 'Relatou sintomas acontecendo agora. Foi orientado a procurar atendimento imediato (SAMU 192).', color: colors.danger, icon: 'alert-circle' },
-};
+}));
 
 /** Gestor: respostas da anamnese de um corredor da corrida */
 export default function AdminAnamnese() {

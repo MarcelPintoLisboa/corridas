@@ -11,7 +11,7 @@ import { formatDate } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius, onColor } from '@/theme';
+import { alpha, brand, colors, font, radius } from '@/theme';
 
 interface AnamneseRow {
   safety_state: SafetyState;
@@ -22,7 +22,7 @@ interface AnamneseRow {
 /** Chamada para a anamnese na aba Treino (ou status dela, se já respondida) */
 export function AnamneseCard({ onChanged, compact }: { onChanged?: () => void; compact?: boolean }) {
   const { session } = useAuth();
-  const { event, accent, accent2 } = useActiveEvent();
+  const { event, accent } = useActiveEvent();
   const q = useAsync(async () => {
     if (!event || !session) return null;
     const { data, error } = await supabase
@@ -51,18 +51,18 @@ export function AnamneseCard({ onChanged, compact }: { onChanged?: () => void; c
   if (!a) {
     return (
       <Pressable onPress={open} style={({ pressed }) => ({ borderRadius: radius.lg, overflow: 'hidden', marginBottom: 14, opacity: pressed ? 0.85 : 1 })}>
-        <LinearGradient colors={[accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 18 }}>
+        <LinearGradient colors={[brand.pine, brand.deep]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 18 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <View style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.2)', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="clipboard" size={24} color={onColor(accent)} />
+              <Ionicons name="clipboard" size={24} color={brand.lime} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[font.h3, { color: onColor(accent) }]}>{t('Monte seu plano personalizado')}</Text>
-              <Text style={{ color: onColor(accent), opacity: 0.85, fontSize: 13, marginTop: 2 }}>
+              <Text style={[font.h3, { color: '#fff' }]}>{t('Monte seu plano personalizado')}</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 13, marginTop: 2 }}>
                 {t('Responda a anamnese (5 min) e receba treinos feitos para o seu objetivo, sua rotina e seu histórico — inclusive do relógio.')}
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={onColor(accent)} />
+            <Ionicons name="chevron-forward" size={20} color="#fff" />
           </View>
         </LinearGradient>
       </Pressable>

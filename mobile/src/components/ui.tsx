@@ -31,7 +31,7 @@ import { t } from '@/i18n';
 import { daysUntil, initials } from '@/lib/format';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, onColor, radius, spacing } from '@/theme';
+import { alpha, colors, font, onColor, radius, spacing, themed } from '@/theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -297,7 +297,7 @@ export function Avatar({ uri, name, size = 44 }: { uri?: string | null; name?: s
   if (uri) return <Image source={uri} style={{ width: size, height: size, borderRadius: size / 2 }} />;
   return (
     <LinearGradient colors={[colors.primary, colors.secondary]} style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: colors.onPrimary, fontWeight: '800', fontSize: size * 0.38 }}>{initials(name)}</Text>
+      <Text style={{ color: onColor(colors.primary), fontWeight: '800', fontSize: size * 0.38 }}>{initials(name)}</Text>
     </LinearGradient>
   );
 }
@@ -381,7 +381,7 @@ export function ListRow({ icon, title, subtitle, onPress, right, color = colors.
   );
 }
 
-export const styles = StyleSheet.create({
+export const styles = themed(() => StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, minHeight: 200 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.lg, marginBottom: spacing.sm + 4 },
@@ -401,4 +401,4 @@ export const styles = StyleSheet.create({
   pulse: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12 },
   rowIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-});
+}));

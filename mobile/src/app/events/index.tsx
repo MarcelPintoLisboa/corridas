@@ -10,7 +10,7 @@ import { useAsync } from '@/hooks/useAsync';
 import { api } from '@/lib/api';
 import { daysUntil, formatDate } from '@/lib/format';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, brand, colors, font, radius } from '@/theme';
 import { tn } from '@/i18n';
 
 export default function EventsList() {
@@ -33,7 +33,7 @@ export default function EventsList() {
           <FadeIn key={e.id} delay={i * 70}>
             <Pressable onPress={() => router.push(`/events/${e.id}`)} style={({ pressed }) => ({ height: 200, borderRadius: radius.xl, overflow: 'hidden', marginBottom: 14, transform: [{ scale: pressed ? 0.98 : 1 }] })}>
               {e.cover_image_url ? <Image source={e.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" transition={300} /> : null}
-              <LinearGradient colors={[alpha(e.secondary_color, 0.4), alpha(e.primary_color, 0.95)]} style={{ flex: 1, padding: 18, justifyContent: 'space-between' }}>
+              <LinearGradient colors={[alpha(brand.pine, 0.4), alpha(brand.deep, 0.95)]} style={{ flex: 1, padding: 18, justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   {registered ? <Badge label="✓ Inscrito" color={colors.lime} /> : null}
                   {days > 0 ? <Badge label={tn(days, '{n} dia', '{n} dias')} color="#fff" /> : null}

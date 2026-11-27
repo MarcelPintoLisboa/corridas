@@ -14,15 +14,15 @@ import { formatDate } from '@/lib/format';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { RaceEvent } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, brand, colors, font, radius, themed } from '@/theme';
 import { t } from '@/i18n';
 
-const statusMeta = {
+const statusMeta = themed(() => ({
   draft: { label: 'Rascunho', color: colors.warning },
   published: { label: 'Publicado', color: colors.success },
   finished: { label: 'Finalizado', color: colors.textMuted },
   canceled: { label: 'Cancelado', color: colors.danger },
-};
+}));
 
 export default function AdminHome() {
   const { isAdmin } = useAuth();
@@ -61,9 +61,9 @@ export default function AdminHome() {
     <Screen refreshing={q.refreshing} onRefresh={q.refresh} bottomInset={false}>
       <BackHeader title="Corridas de rua" />
       <Muted style={{ marginBottom: 16 }}>Gerencie suas corridas, publicações, patrocinadores e leads.</Muted>
-      <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} style={{ marginBottom: 10 }} />
+      <GradientButton title="Nova corrida" icon="add" onPress={() => router.push('/admin/event-form')} style={{ marginBottom: 10 }} />
       {isAdmin ? (
-        <GradientButton title="Controle de acesso" icon="people" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/users')} style={{ marginBottom: 20 }} />
+        <GradientButton title="Controle de acesso" icon="people" variant="ghost" onPress={() => router.push('/admin/users')} style={{ marginBottom: 20 }} />
       ) : (
         <View style={{ height: 10 }} />
       )}
@@ -74,7 +74,7 @@ export default function AdminHome() {
         <FadeIn key={e.id} delay={i * 60}>
           <Pressable onPress={() => router.push(`/admin/event/${e.id}`)} style={{ height: 130, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, overflow: 'hidden' }}>
             {e.cover_image_url ? <Image source={e.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" /> : null}
-            <LinearGradient colors={[alpha(e.secondary_color, 0.5), alpha(e.primary_color, 0.95)]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
+            <LinearGradient colors={[alpha(brand.pine, 0.5), alpha(brand.deep, 0.95)]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 16, justifyContent: 'space-between' }}>
               <Badge label={statusMeta[e.status].label} color={statusMeta[e.status].color} />
               <View>
                 <Text style={[font.h2, { color: '#fff' }]}>{e.name}</Text>

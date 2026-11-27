@@ -28,7 +28,7 @@ import { generatePlan } from '@/lib/planGenerator';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius, onColor } from '@/theme';
+import { alpha, colors, font, onColor, radius, themed } from '@/theme';
 
 /** Anamnese do corredor (6 etapas) → plano de treino pessoal gerado automaticamente */
 export default function AnamneseScreen() {
@@ -410,7 +410,7 @@ function Options({ k, label, values, multiple }: { k: string; label: string; val
   );
 }
 
-const inputStyle = { color: colors.text, backgroundColor: colors.bgElevated, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 } as const;
+const inputStyle = themed(() => ({ color: colors.text, backgroundColor: colors.bgElevated, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16 } as const));
 
 function Field({ k, label, placeholder, numeric, mask }: { k: string; label: string; placeholder?: string; numeric?: boolean; mask?: (v: string) => string }) {
   const { data, setData } = useAnam();
@@ -481,7 +481,7 @@ function Btn({ label, onPress, primary, loading }: { label: string; onPress: () 
       onPress={onPress}
       disabled={!!busy}
       style={({ pressed }) => ({ paddingHorizontal: 18, paddingVertical: 13, borderRadius: 12, borderWidth: 1.5, borderColor: primary ? accent : colors.border, backgroundColor: primary ? accent : colors.surface, opacity: pressed || (busy && !loading) ? 0.7 : 1, flexDirection: 'row', gap: 8, alignItems: 'center' })}>
-      {loading ? <ActivityIndicator color="#fff" size="small" /> : null}
+      {loading ? <ActivityIndicator color={primary ? onColor(accent) : colors.text} size="small" /> : null}
       <Text style={{ color: primary ? onColor(accent) : colors.text, fontWeight: '800' }}>{t(label)}</Text>
     </Pressable>
   );

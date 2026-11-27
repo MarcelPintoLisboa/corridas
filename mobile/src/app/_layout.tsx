@@ -1,4 +1,4 @@
-import { DarkTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -11,14 +11,10 @@ import { LanguageProvider } from '@/i18n';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { EventProvider } from '@/providers/EventProvider';
-import { colors } from '@/theme';
+import { colors, useThemeMode } from '@/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-const theme = {
-  ...DarkTheme,
-  colors: { ...DarkTheme.colors, background: colors.bg, card: colors.bg, primary: colors.primary, text: colors.text, border: colors.border },
-};
 
 function RootNavigator() {
   const { session, loading, profile } = useAuth();
@@ -83,6 +79,9 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  const mode = useThemeMode();
+  const base = mode === 'light' ? DefaultTheme : DarkTheme;
+  const theme = { ...base, colors: { ...base.colors, background: colors.bg, card: colors.bg, primary: colors.primary, text: colors.text, border: colors.border } };
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>
       <ThemeProvider value={theme}>
@@ -90,9 +89,9 @@ export default function RootLayout() {
           {(lang) => (
             <AuthProvider>
               <EventProvider>
-                <StatusBar style="light" />
-                {/* trocar o idioma remonta as telas com os textos traduzidos */}
-                <RootNavigator key={lang} />
+                <StatusBar style={mode === 'light' ? 'dark' : 'light'} />
+                {/* trocar o idioma ou o tema remonta as telas com os textos/cores novos */}
+                <RootNavigator key={lang + '-' + mode} />
               </EventProvider>
             </AuthProvider>
           )}

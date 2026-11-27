@@ -99,7 +99,7 @@ export default function GestaoScreen() {
         <Stat icon="key" label="Acessos" value={q.data.users} color={colors.warning} />
       </View>
 
-      <GradientButton title="Nova corrida" icon="add" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin/event-form')} />
+      <GradientButton title="Nova corrida" icon="add" onPress={() => router.push('/admin/event-form')} />
 
       <View style={{ marginTop: 12, padding: 12, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface }}>
         <Text style={{ color: colors.text, fontWeight: '800' }}>{t('Modelo de demonstração')}</Text>

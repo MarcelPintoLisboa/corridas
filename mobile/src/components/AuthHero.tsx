@@ -11,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { colors } from '@/theme';
+import { brand } from '@/theme';
 import { t } from '@/i18n';
 
 /** Fundo animado com "blobs" de gradiente flutuando */
@@ -25,10 +25,10 @@ export function AuthHero({ title, subtitle }: { title: string; subtitle: string 
   const icon = useAnimatedStyle(() => ({ transform: [{ translateX: -4 + k.value * 8 }] }));
 
   return (
-    <View style={s.wrap}>
-      <Animated.View style={[s.blob, { backgroundColor: colors.primary, top: -60, left: -40 }, blob1]} />
-      <Animated.View style={[s.blob, { backgroundColor: colors.pine, top: 40, right: -80 }, blob2]} />
-      <LinearGradient colors={['transparent', colors.bg]} style={StyleSheet.absoluteFill} />
+    <View style={[s.wrap, { backgroundColor: brand.deep }]}>
+      <Animated.View style={[s.blob, { backgroundColor: brand.lime, top: -60, left: -40 }, blob1]} />
+      <Animated.View style={[s.blob, { backgroundColor: brand.pine, top: 40, right: -80 }, blob2]} />
+      <LinearGradient colors={['transparent', brand.deep]} style={StyleSheet.absoluteFill} />
       <View style={s.content}>
         {/* marca Corre+ */}
         <Animated.View style={[s.logo, icon]}>
@@ -47,5 +47,5 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: 24, paddingBottom: 12 },
   logo: { marginBottom: 16, alignSelf: 'flex-start' },
   title: { color: '#fff', fontSize: 34, fontWeight: '900', letterSpacing: -1, marginTop: 4 },
-  subtitle: { color: colors.textMuted, fontSize: 15, marginTop: 6 },
+  subtitle: { color: 'rgba(244,245,239,0.75)', fontSize: 15, marginTop: 6 },
 });

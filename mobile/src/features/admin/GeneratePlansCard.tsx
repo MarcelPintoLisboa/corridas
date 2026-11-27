@@ -60,16 +60,16 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
       <LinearGradient colors={[alpha(color, 0.35), alpha(colors.secondary, 0.25)]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.lg, padding: 16, marginTop: 12, borderWidth: 1, borderColor: alpha(color, 0.5) }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <View style={{ width: 42, height: 42, borderRadius: 12, backgroundColor: alpha(color, 0.3), alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="barbell" size={22} color="#fff" />
+            <Ionicons name="barbell" size={22} color={colors.text} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[font.h3, { color: '#fff' }]}>{t('Treinos preparatórios')}</Text>
-            <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12 }}>
+            <Text style={[font.h3, { color: colors.text }]}>{t('Treinos preparatórios')}</Text>
+            <Text style={{ color: colors.textMuted, fontSize: 12 }}>
               {s ? t('{p} planos · {d} distâncias · {r} inscritos', { p: s.plans, d: s.distances, r: s.regs }) : t('carregando…')}
             </Text>
           </View>
         </View>
-        <Text style={{ color: 'rgba(255,255,255,0.9)', marginTop: 10, fontSize: 13 }}>
+        <Text style={{ color: colors.textMuted, marginTop: 10, fontSize: 13 }}>
           {t(s && s.plans === 0
             ? 'Nenhum plano ainda. Gere agora os treinos de todos os participantes até o dia da prova — por distância e nível.'
             : 'Cada participante recebe o plano da sua distância e nível. Você pode ajustar qualquer sessão.')}
@@ -77,7 +77,7 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
           <GradientButton small title={s?.plans ? 'Gerar novamente' : 'Gerar treinos'} icon="flash" colorsPair={[color, colors.secondary]} onPress={() => setOpen(true)} style={{ flex: 1 }} />
           {s?.plans ? (
-            <GradientButton small title="Editar" icon="create" variant="ghost" colorsPair={['#fff', '#fff']} onPress={() => router.push(`/admin/crud/plans?parentId=${eventId}`)} style={{ flex: 1 }} />
+            <GradientButton small title="Editar" icon="create" variant="ghost" colorsPair={[colors.text, colors.text]} onPress={() => router.push(`/admin/crud/plans?parentId=${eventId}`)} style={{ flex: 1 }} />
           ) : null}
         </View>
       </LinearGradient>

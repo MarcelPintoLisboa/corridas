@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
 import { Alert, Pressable, Text, View } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
@@ -9,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 import { pickAndUpload } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { colors } from '@/theme';
+import { colors, radius, setThemeMode, useThemeMode, type ThemeMode } from '@/theme';
 import { t } from '@/i18n';
 
 export default function ProfileScreen() {
@@ -76,6 +77,9 @@ export default function ProfileScreen() {
       <Input label="Instagram" value={instagram} onChangeText={setInstagram} icon="logo-instagram" autoCapitalize="none" placeholder="@seuperfil" />
       <GradientButton title="Salvar" icon="checkmark" onPress={() => save()} loading={saving} />
 
+      <SectionHeader title="Aparência" />
+      <ThemePicker />
+
       <SectionHeader title="Alterar senha" />
       <Input label="Nova senha" value={newPassword} onChangeText={setNewPassword} icon="key-outline" secureTextEntry autoCapitalize="none" placeholder="mínimo 6 caracteres" />
       <Input label="Confirmar nova senha" value={confirmPassword} onChangeText={setConfirmPassword} icon="key-outline" secureTextEntry autoCapitalize="none" />
@@ -96,8 +100,39 @@ export default function ProfileScreen() {
         ))}
       </Card>
 
-      {isAdmin ? <GradientButton title="Painel do administrador" icon="construct" variant="ghost" colorsPair={[colors.lime, colors.cyan]} onPress={() => router.push('/admin')} style={{ marginTop: 12 }} /> : null}
+      {isAdmin ? <GradientButton title="Painel do administrador" icon="construct" variant="ghost" onPress={() => router.push('/admin')} style={{ marginTop: 12 }} /> : null}
       <GradientButton title="Sair" icon="log-out-outline" variant="ghost" colorsPair={[colors.danger, colors.danger]} onPress={signOut} style={{ marginTop: 12, marginBottom: 30 }} />
     </Screen>
+  );
+}
+
+const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: 'moon' | 'sunny'; bg: string; fg: string }[] = [
+  { mode: 'dark', label: 'Escuro', icon: 'moon', bg: '#0C1511', fg: '#C7F753' },
+  { mode: 'light', label: 'Claro', icon: 'sunny', bg: '#F4F5EF', fg: '#24463A' },
+];
+
+/** Escolha do tema (escuro / claro); a escolha fica salva no aparelho */
+function ThemePicker() {
+  const mode = useThemeMode();
+  return (
+    <View style={{ flexDirection: 'row', gap: 10 }}>
+      {THEME_OPTIONS.map((o) => {
+        const on = o.mode === mode;
+        return (
+          <Pressable
+            key={o.mode}
+            onPress={() => setThemeMode(o.mode)}
+            style={{ flex: 1, borderRadius: radius.lg, borderWidth: 2, borderColor: on ? colors.primary : colors.border, backgroundColor: colors.surface, padding: 12, alignItems: 'center', gap: 8 }}>
+            <View style={{ width: '100%', height: 56, borderRadius: radius.md, backgroundColor: o.bg, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name={o.icon} size={24} color={o.fg} />
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name={on ? 'checkmark-circle' : 'ellipse-outline'} size={18} color={on ? colors.primary : colors.textDim} />
+              <Text style={{ color: colors.text, fontWeight: '800' }}>{t(o.label)}</Text>
+            </View>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }

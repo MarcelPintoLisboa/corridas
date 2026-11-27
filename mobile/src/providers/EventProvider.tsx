@@ -86,8 +86,9 @@ export function EventProvider({ children }: { children: ReactNode }) {
       registrations,
       active,
       event: active?.event ?? null,
-      accent: active?.event?.primary_color ?? colors.primary,
-      accent2: active?.event?.secondary_color ?? colors.secondary,
+      // destaque do app sempre no verde Corre+ (as cores da corrida não mudam mais a interface)
+      accent: colors.primary,
+      accent2: colors.secondary,
       loading,
       setActiveEventId: (id) => {
         setActiveId(id);

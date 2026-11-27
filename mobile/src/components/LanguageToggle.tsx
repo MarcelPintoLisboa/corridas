@@ -2,7 +2,7 @@ import * as Haptics from 'expo-haptics';
 import { Pressable, Text, View } from 'react-native';
 
 import { useLanguage, type Lang } from '@/i18n';
-import { colors } from '@/theme';
+import { colors, onColor } from '@/theme';
 
 const OPTIONS: { lang: Lang; flag: string; label: string }[] = [
   { lang: 'pt', flag: '🇧🇷', label: 'PT' },
@@ -32,7 +32,7 @@ export function LanguageToggle() {
             }}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 6, borderRadius: 99, backgroundColor: on ? colors.primary : 'transparent' }}>
             <Text style={{ fontSize: 13 }}>{o.flag}</Text>
-            <Text style={{ color: on ? colors.onPrimary : colors.textMuted, fontWeight: '800', fontSize: 12 }}>{o.label}</Text>
+            <Text style={{ color: on ? onColor(colors.primary) : colors.textMuted, fontWeight: '800', fontSize: 12 }}>{o.label}</Text>
           </Pressable>
         );
       })}

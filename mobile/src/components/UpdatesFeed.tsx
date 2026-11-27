@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase';
 import type { Registration } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, radius } from '@/theme';
+import { alpha, colors, radius, themed } from '@/theme';
 
 import { Badge, FadeIn, Muted, type IconName } from './ui';
 import { t, tn } from '@/i18n';
@@ -25,7 +25,7 @@ export interface Atualizacao {
   quando: string;
 }
 
-const META: Record<Atualizacao['tipo'], { label: string; icon: IconName; color: string; href: Href }> = {
+const META: Record<Atualizacao['tipo'], { label: string; icon: IconName; color: string; href: Href }> = themed(() => ({
   publicacao: { label: 'Publicação', icon: 'megaphone', color: colors.cyan, href: '/event' },
   patrocinador: { label: 'Patrocinador', icon: 'diamond', color: colors.lime, href: '/sponsors' },
   kit: { label: 'Retirada de kit', icon: 'cube', color: colors.warning, href: '/event' },
@@ -33,7 +33,7 @@ const META: Record<Atualizacao['tipo'], { label: string; icon: IconName; color: 
   dica: { label: 'Dica', icon: 'bulb', color: colors.success, href: '/tips' },
   plano: { label: 'Plano de treino', icon: 'barbell', color: colors.secondary, href: '/training' },
   corrida: { label: 'Corrida', icon: 'flag', color: colors.primary, href: '/event' },
-};
+}));
 
 const seenKey = (uid?: string) => `updates-seen-${uid ?? 'anon'}`;
 

@@ -20,7 +20,7 @@ import { isSameDay, planProgress } from '@/lib/plan';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { LanguageToggle } from '@/components/LanguageToggle';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, brand, colors, font, onColor, radius } from '@/theme';
 import { t, tn } from '@/i18n';
 
 export default function HomeScreen() {
@@ -105,7 +105,7 @@ export default function HomeScreen() {
           {event.cover_image_url ? (
             <Image source={event.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" transition={400} />
           ) : null}
-          <LinearGradient colors={[alpha(accent2, 0.55), alpha('#000000', 0.25), alpha(accent, 0.95)]} style={{ flex: 1, padding: 20, justifyContent: 'space-between' }}>
+          <LinearGradient colors={[alpha(brand.pine, 0.5), alpha('#000000', 0.2), alpha(brand.deep, 0.95)]} style={{ flex: 1, padding: 20, justifyContent: 'space-between' }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <PulseBadge date={event.event_date} />
               {event.logo_url ? <Image source={event.logo_url} style={{ width: 48, height: 48, borderRadius: 12 }} /> : null}
@@ -131,7 +131,7 @@ export default function HomeScreen() {
               <Text style={[font.h2, { color: colors.text }]}>{t(registrations.length > 1 ? 'Atualizações das corridas' : 'Atualizações da corrida')}</Text>
               {updates.unread ? (
                 <View style={{ backgroundColor: colors.primary, borderRadius: 99, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: colors.onPrimary, fontWeight: '900', fontSize: 12 }}>{updates.unread}</Text>
+                  <Text style={{ color: onColor(colors.primary), fontWeight: '900', fontSize: 12 }}>{updates.unread}</Text>
                 </View>
               ) : null}
             </View>
@@ -241,7 +241,7 @@ function MyRaces({ registrations, activeId }: { registrations: Registration[]; a
               }}
               style={{ width: 260, height: 190, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 2, borderColor: on ? e.primary_color : 'transparent' }}>
               {e.cover_image_url ? <Image source={e.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" /> : null}
-              <LinearGradient colors={[alpha(e.secondary_color, 0.45), alpha(e.primary_color, 0.95)]} style={{ flex: 1, padding: 14, justifyContent: 'space-between' }}>
+              <LinearGradient colors={[alpha(brand.pine, 0.45), alpha(brand.deep, 0.95)]} style={{ flex: 1, padding: 14, justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <View style={{ backgroundColor: 'rgba(0,0,0,0.35)', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 4 }}>
                     <Text style={{ color: '#fff', fontWeight: '800', fontSize: 12 }}>{days > 0 ? tn(days, 'Falta {n} dia', 'Faltam {n} dias') : days === 0 ? t('É hoje!') : t('Realizada')}</Text>

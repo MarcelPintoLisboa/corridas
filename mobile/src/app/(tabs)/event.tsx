@@ -10,15 +10,15 @@ import { api } from '@/lib/api';
 import { formatDate, formatDateTime, formatTime, levelLabel } from '@/lib/format';
 import type { KitPickup } from '@/lib/types';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, brand, colors, font, radius, themed } from '@/theme';
 import { t } from '@/i18n';
 
-const postMeta = {
+const postMeta = themed(() => ({
   news: { label: 'Notícia', icon: 'newspaper', color: colors.cyan },
   alert: { label: 'Aviso', icon: 'warning', color: colors.warning },
   promo: { label: 'Promoção', icon: 'pricetag', color: colors.lime },
   schedule: { label: 'Programação', icon: 'time', color: colors.secondary },
-} as const;
+} as const));
 
 function pickupStatus(p: KitPickup) {
   const now = Date.now();
@@ -30,7 +30,7 @@ function pickupStatus(p: KitPickup) {
 }
 
 export default function EventScreen() {
-  const { event, active, accent, accent2 } = useActiveEvent();
+  const { event, active, accent } = useActiveEvent();
   const q = useAsync(async () => {
     if (!event) return null;
     const [pickups, posts, distances] = await Promise.all([api.pickups(event.id), api.posts(event.id), api.distances(event.id)]);
@@ -51,8 +51,8 @@ export default function EventScreen() {
     <Screen padded={false} refreshing={q.refreshing} onRefresh={q.refresh}>
       <View style={{ height: 240, marginTop: -60 }}>
         {event.cover_image_url ? <Image source={event.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" /> : null}
-        <LinearGradient colors={[alpha(accent2, 0.3), colors.bg]} style={{ flex: 1, justifyContent: 'flex-end', padding: 16 }}>
-          <Text style={[font.tiny, { color: accent }]}>{formatDateTime(event.event_date)}</Text>
+        <LinearGradient colors={[alpha(brand.pine, 0.35), alpha(brand.deep, 0.97)]} style={{ flex: 1, justifyContent: 'flex-end', padding: 16 }}>
+          <Text style={[font.tiny, { color: brand.lime }]}>{formatDateTime(event.event_date)}</Text>
           <Text style={[font.hero, { color: '#fff' }]}>{event.name}</Text>
         </LinearGradient>
       </View>
@@ -60,7 +60,7 @@ export default function EventScreen() {
       <View style={{ paddingHorizontal: 16 }}>
         {/* Inscrição */}
         <FadeIn>
-          <LinearGradient colors={[accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.lg, padding: 18, marginTop: 8 }}>
+          <LinearGradient colors={[brand.pine, brand.deep]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.lg, padding: 18, marginTop: 8 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
                 <Text style={[font.tiny, { color: 'rgba(255,255,255,0.8)' }]}>{t('Minha inscrição')}</Text>
@@ -76,7 +76,7 @@ export default function EventScreen() {
               </View>
             </View>
             <View style={{ marginTop: 14, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: radius.md, padding: 10 }}>
-              <Ionicons name={active.kit_picked_up ? 'checkmark-circle' : 'cube'} size={20} color={active.kit_picked_up ? colors.lime : '#fff'} />
+              <Ionicons name={active.kit_picked_up ? 'checkmark-circle' : 'cube'} size={20} color={active.kit_picked_up ? brand.lime : '#fff'} />
               <Text style={{ color: '#fff', fontWeight: '700', flex: 1 }}>
                 {t(active.kit_picked_up ? 'Kit retirado! Bora pra prova 🔥' : 'Kit ainda não retirado')}
               </Text>

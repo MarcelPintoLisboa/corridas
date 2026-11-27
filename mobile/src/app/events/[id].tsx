@@ -12,7 +12,7 @@ import { formatDateTime, levelLabel, parseDuration } from '@/lib/format';
 import type { RunnerLevel } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, brand, colors, font, radius } from '@/theme';
 import { t } from '@/i18n';
 
 const SIZES = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
@@ -85,7 +85,7 @@ export default function EventJoin() {
         <FadeIn>
           <View style={{ height: 190, borderRadius: radius.xl, overflow: 'hidden' }}>
             {event.cover_image_url ? <Image source={event.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" /> : null}
-            <LinearGradient colors={[alpha(c2, 0.4), alpha(c1, 0.95)]} style={{ flex: 1, padding: 18, justifyContent: 'flex-end' }}>
+            <LinearGradient colors={[alpha(brand.pine, 0.4), alpha(brand.deep, 0.95)]} style={{ flex: 1, padding: 18, justifyContent: 'flex-end' }}>
               <Text style={[font.tiny, { color: 'rgba(255,255,255,0.85)' }]}>{formatDateTime(event.event_date)}</Text>
               <Text style={[font.h1, { color: '#fff' }]}>{event.name}</Text>
               <Text style={{ color: 'rgba(255,255,255,0.9)' }}>{event.location_name}</Text>

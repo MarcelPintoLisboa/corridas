@@ -11,7 +11,7 @@ import type { IconName } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
 import { t as tr } from '@/i18n';
-import { alpha, colors } from '@/theme';
+import { alpha, colors, getThemeMode, themed } from '@/theme';
 
 const TABS: { name: string; label: string; icon: IconName; iconActive: IconName; adminOnly?: boolean }[] = [
   { name: 'index', label: 'Início', icon: 'home-outline', iconActive: 'home' },
@@ -88,19 +88,19 @@ export default function TabsLayout() {
   );
 }
 
-const s = StyleSheet.create({
+const s = themed(() => StyleSheet.create({
   bar: {
     position: 'absolute',
     left: 14,
     right: 14,
     flexDirection: 'row',
-    backgroundColor: 'rgba(17,27,23,0.97)',
+    backgroundColor: alpha(colors.bgElevated, 0.97),
     borderRadius: 28,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: colors.border,
     shadowColor: '#000',
-    shadowOpacity: 0.5,
+    shadowOpacity: getThemeMode() === 'light' ? 0.12 : 0.5,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
     elevation: 20,
@@ -108,4 +108,4 @@ const s = StyleSheet.create({
   item: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 6 },
   pill: { position: 'absolute', top: 0, bottom: 0, left: 6, right: 6, borderRadius: 20 },
   label: { fontSize: 10, fontWeight: '700', marginTop: 3 },
-});
+}));

@@ -3,20 +3,20 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text, View } from 'react-native';
 
 import { useAuth } from '@/providers/AuthProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, brand, colors, font, radius, themed } from '@/theme';
 
 import { ClosedRaces } from './ClosedRaces';
 import { FadeIn, Muted, SectionHeader, type IconName } from './ui';
 import { t } from '@/i18n';
 
-const BENEFITS: { icon: IconName; color: string; title: string; text: string }[] = [
+const BENEFITS: { icon: IconName; color: string; title: string; text: string }[] = themed(() => [
   { icon: 'barbell', color: colors.primary, title: 'Treino até o dia da prova', text: 'Plano dos treinadores para a sua distância e nível' },
   { icon: 'nutrition', color: colors.success, title: 'Dicas e alimentação', text: 'O que comer e como se preparar semana a semana' },
   { icon: 'logo-instagram', color: '#E1306C', title: 'Post pronto para o Instagram', text: 'Foto, distância, tempo, pace e gráfico da sua evolução' },
   { icon: 'cube', color: colors.cyan, title: 'Retirada do kit', text: 'Locais, datas, horários e documentos' },
   { icon: 'chatbubbles', color: colors.secondary, title: 'Stories da corrida', text: 'Fotos e comentários com quem vai correr com você' },
   { icon: 'gift', color: colors.lime, title: 'Ofertas dos patrocinadores', text: 'Cupons e materiais exclusivos' },
-];
+]);
 
 /** Quem ainda não foi associado a nenhuma corrida pelo organizador */
 export function RaceOnboarding() {
@@ -26,16 +26,16 @@ export function RaceOnboarding() {
     <View>
       <ClosedRaces />
       <FadeIn>
-        <LinearGradient colors={[colors.primary, colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.xl, padding: 20 }}>
-          <Ionicons name="hourglass-outline" size={28} color={colors.onPrimary} />
-          <Text style={[font.h1, { color: colors.onPrimary, marginTop: 8 }]}>{t('Aguardando sua corrida')}</Text>
-          <Text style={{ color: colors.onPrimary, opacity: 0.85, marginTop: 6 }}>
+        <LinearGradient colors={[brand.pine, brand.deep]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ borderRadius: radius.xl, padding: 20 }}>
+          <Ionicons name="hourglass-outline" size={28} color={brand.lime} />
+          <Text style={[font.h1, { color: '#fff', marginTop: 8 }]}>{t('Aguardando sua corrida')}</Text>
+          <Text style={{ color: 'rgba(255,255,255,0.85)', marginTop: 6 }}>
             {t('O organizador da corrida associa você pelo seu e-mail. Assim que isso acontecer, tudo aparece aqui automaticamente.')}
           </Text>
           {email ? (
-            <View style={{ marginTop: 14, backgroundColor: colors.onPrimary, borderRadius: radius.md, padding: 10 }}>
-              <Text style={{ color: colors.textMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>{t('INFORME ESTE E-MAIL AO ORGANIZADOR')}</Text>
-              <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 16, marginTop: 2 }} selectable>
+            <View style={{ marginTop: 14, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: radius.md, padding: 10 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '800', letterSpacing: 1 }}>{t('INFORME ESTE E-MAIL AO ORGANIZADOR')}</Text>
+              <Text style={{ color: brand.lime, fontWeight: '800', fontSize: 16, marginTop: 2 }} selectable>
                 {email}
               </Text>
             </View>

@@ -60,17 +60,17 @@ export default function TrainingScreen() {
         <LinearGradient colors={[alpha(accent, 0.35), alpha(accent2, 0.25)]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ padding: 16 }}>
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <Badge label={active.distance?.label ?? 'Distância'} color={colors.lime} />
-            <Badge label={plan.user_id ? t('Plano pessoal') : levelLabel[active.level]} color="#fff" />
+            <Badge label={plan.user_id ? t('Plano pessoal') : levelLabel[active.level]} color={colors.text} />
             <Badge label={tn(plan.weeks, '{n} semana', '{n} semanas')} color={colors.cyan} />
           </View>
-          <Text style={[font.h2, { color: '#fff' }]}>{plan.name}</Text>
-          {plan.description ? <Text style={{ color: 'rgba(255,255,255,0.85)', marginTop: 4 }}>{plan.description}</Text> : null}
+          <Text style={[font.h2, { color: colors.text }]}>{plan.name}</Text>
+          {plan.description ? <Text style={{ color: colors.textMuted, marginTop: 4 }}>{plan.description}</Text> : null}
           {plan.coach_name ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 12 }}>
               <Avatar uri={plan.coach_avatar_url} name={plan.coach_name} size={34} />
               <View>
-                <Text style={{ color: '#fff', fontWeight: '800' }}>{plan.coach_name}</Text>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>{t('Treinador(a) responsável')}</Text>
+                <Text style={{ color: colors.text, fontWeight: '800' }}>{plan.coach_name}</Text>
+                <Text style={{ color: colors.textMuted, fontSize: 12 }}>{t('Treinador(a) responsável')}</Text>
               </View>
             </View>
           ) : null}

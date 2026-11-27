@@ -10,14 +10,14 @@ import { generatePassword } from '@/lib/password';
 import { supabase, unwrap } from '@/lib/supabase';
 import type { Profile, UserRole } from '@/lib/types';
 import { useAuth } from '@/providers/AuthProvider';
-import { colors, font } from '@/theme';
+import { colors, font, themed } from '@/theme';
 import { t } from '@/i18n';
 
 const ADMIN_GERAL = 'mapl11@hotmail.com';
-const ROLES: { value: UserRole; label: string; help: string; color: string }[] = [
+const ROLES: { value: UserRole; label: string; help: string; color: string }[] = themed(() => [
   { value: 'athlete', label: 'Corredor', help: 'Vê as corridas em que foi associado, registra treinos e participa do mural', color: colors.surfaceAlt },
   { value: 'admin', label: 'Gestor', help: 'Cria as próprias corridas, publica o conteúdo e associa os corredores', color: colors.lime },
-];
+]);
 
 /** Controle de acesso (st_usuarios): o admin geral vê todos e cria gestores; o gestor vê só os próprios corredores */
 export default function UsersScreen() {

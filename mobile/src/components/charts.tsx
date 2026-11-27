@@ -3,7 +3,7 @@ import { Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop, Line, Text as SvgText } from 'react-native-svg';
 
-import { colors } from '@/theme';
+import { alpha, colors } from '@/theme';
 import { t } from '@/i18n';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
@@ -188,7 +188,7 @@ export function ProgressRing({
             <Stop offset="1" stopColor={color2} />
           </LinearGradient>
         </Defs>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="none" />
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={alpha(colors.text, 0.08)} strokeWidth={stroke} fill="none" />
         <AnimatedCircle
           cx={size / 2}
           cy={size / 2}
