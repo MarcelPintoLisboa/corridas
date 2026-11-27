@@ -107,7 +107,7 @@ export default function ProfileScreen() {
 
 const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: 'moon' | 'sunny'; bg: string; fg: string }[] = [
   { mode: 'dark', label: 'Escuro', icon: 'moon', bg: '#0C1511', fg: '#C7F753' },
-  { mode: 'light', label: 'Claro', icon: 'sunny', bg: '#F4F5EF', fg: '#24463A' },
+  { mode: 'light', label: 'Claro', icon: 'sunny', bg: '#D3E2C7', fg: '#24463A' },
 ];
 
 /** Escolha do tema (escuro / claro); a escolha fica salva no aparelho */

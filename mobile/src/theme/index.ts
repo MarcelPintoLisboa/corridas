@@ -28,15 +28,16 @@ const DARK = {
   danger: '#FF3D71',
 };
 
+// Claro: verde-sálvia (não branco) para manter o contraste com a marca
 const LIGHT: typeof DARK = {
-  bg: '#F4F5EF',
-  bgElevated: '#FFFFFF',
-  surface: '#FFFFFF',
-  surfaceAlt: '#E9EDE3',
-  border: '#DCE1D6',
-  text: '#16231C',
-  textMuted: '#4B5B50',
-  textDim: '#7D8C80',
+  bg: '#D3E2C7',
+  bgElevated: '#E4EEDA',
+  surface: '#EDF4E6',
+  surfaceAlt: '#C3D7B4',
+  border: '#A9C29A',
+  text: '#10201A',
+  textMuted: '#3A5043',
+  textDim: '#5E7566',
   primary: '#24463A',
   secondary: '#3B6B4F',
   onPrimary: '#0C1511',
