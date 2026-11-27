@@ -12,7 +12,7 @@ import { daysUntil, formatDate, formatDuration, formatKm, formatPace, sessionTyp
 import { isSameDay } from '@/lib/plan';
 import { STEP_META, defaultWarmup, durationRange, sessionSteps, stepSummary } from '@/lib/steps';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, colors, font, radius, onColor } from '@/theme';
 
 /** Detalhe de uma sessão do plano: o que fazer, como aquecer, etapas (rua/esteira) e treinador */
 export default function SessionScreen() {
@@ -153,7 +153,7 @@ export default function SessionScreen() {
 
               <View style={{ backgroundColor: colors.surface, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.border }}>
                 <LinearGradient colors={[accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ paddingHorizontal: 14, paddingVertical: 8 }}>
-                  <Text style={{ color: '#fff', fontWeight: '900' }}>{t(treadmill ? 'Treino na esteira' : 'Treino')}</Text>
+                  <Text style={{ color: onColor(accent), fontWeight: '900' }}>{t(treadmill ? 'Treino na esteira' : 'Treino')}</Text>
                 </LinearGradient>
                 {steps.map((st, i) => {
                   const sm = STEP_META[st.kind] ?? STEP_META.run;
@@ -207,8 +207,8 @@ export default function SessionScreen() {
         <View style={{ position: 'absolute', left: 16, right: 16, bottom: Math.max(insets.bottom, 14) }}>
           <Pressable onPress={logWorkout} style={({ pressed }) => ({ borderRadius: 99, overflow: 'hidden', opacity: pressed ? 0.85 : 1 })}>
             <LinearGradient colors={s.workout ? [colors.success, colors.cyan] : [accent, accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 17 }}>
-              <Ionicons name={s.workout ? 'logo-instagram' : 'play'} size={20} color="#fff" />
-              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 17 }}>{t(s.workout ? 'Ver post do treino' : 'Registrar este treino')}</Text>
+              <Ionicons name={s.workout ? 'logo-instagram' : 'play'} size={20} color={s.workout ? '#fff' : onColor(accent)} />
+              <Text style={{ color: s.workout ? '#fff' : onColor(accent), fontWeight: '900', fontSize: 17 }}>{t(s.workout ? 'Ver post do treino' : 'Registrar este treino')}</Text>
             </LinearGradient>
           </Pressable>
         </View>

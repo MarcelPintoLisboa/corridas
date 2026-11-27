@@ -15,7 +15,7 @@ import { strava } from '@/lib/strava';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, colors, font, radius, onColor } from '@/theme';
 
 const CONNECTED_KEY = 'health-connected';
 const SOURCE_KEY = 'import-source';
@@ -383,8 +383,8 @@ export default function HealthImportScreen() {
                       onPress={() => importOne(r)}
                       disabled={!!busy}
                       style={({ pressed }) => ({ alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: accent, borderRadius: radius.pill, paddingHorizontal: 16, paddingVertical: 9, opacity: pressed || (busy && busy !== key(r)) ? 0.6 : 1 })}>
-                      {busy === key(r) ? <ActivityIndicator color="#fff" size="small" /> : <Ionicons name="cloud-download" size={16} color="#fff" />}
-                      <Text style={{ color: '#fff', fontWeight: '800' }}>{t('Importar')}</Text>
+                      {busy === key(r) ? <ActivityIndicator color={onColor(accent)} size="small" /> : <Ionicons name="cloud-download" size={16} color={onColor(accent)} />}
+                      <Text style={{ color: onColor(accent), fontWeight: '800' }}>{t('Importar')}</Text>
                     </Pressable>
                   )}
                 </View>

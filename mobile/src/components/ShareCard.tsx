@@ -34,8 +34,8 @@ interface Props {
  */
 export function ShareCard({ ref, workout, event, history, photoUri, width, athleteName, daysToRace, show, chartMode }: Props) {
   const height = width * (16 / 9);
-  const c1 = event?.primary_color ?? '#FF4D2E';
-  const c2 = event?.secondary_color ?? '#7B2FF7';
+  const c1 = event?.primary_color ?? '#C7F753';
+  const c2 = event?.secondary_color ?? '#24463A';
   const s = width / 360; // escala tipográfica
 
   return (
@@ -43,14 +43,14 @@ export function ShareCard({ ref, workout, event, history, photoUri, width, athle
       {photoUri ? (
         <Image source={photoUri} style={{ position: 'absolute', width, height }} contentFit="cover" />
       ) : (
-        <LinearGradient colors={[c2, '#0A0A12', c1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', width, height }} />
+        <LinearGradient colors={[c2, '#0C1511', c1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ position: 'absolute', width, height }} />
       )}
       <LinearGradient colors={['rgba(0,0,0,0.55)', 'transparent', 'rgba(0,0,0,0.92)']} locations={[0, 0.35, 0.7]} style={{ position: 'absolute', width, height }} />
 
       {/* Topo: evento */}
       <View style={{ padding: 20 * s, flexDirection: 'row', alignItems: 'center', gap: 10 * s }}>
         {/* ícone da corrida cadastrado no admin (sem ícone: logo do Corre+) */}
-        <View style={{ width: 58 * s, height: 58 * s, borderRadius: 16 * s, backgroundColor: event?.logo_url ? '#fff' : '#0A0A12', padding: event?.logo_url ? 4 * s : 0, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 }}>
+        <View style={{ width: 58 * s, height: 58 * s, borderRadius: 16 * s, backgroundColor: event?.logo_url ? '#fff' : '#0C1511', padding: event?.logo_url ? 4 * s : 0, overflow: 'hidden', shadowColor: '#000', shadowOpacity: 0.4, shadowRadius: 8, elevation: 6 }}>
           <Image source={event?.logo_url ? { uri: event.logo_url } : APP_LOGO} style={{ width: '100%', height: '100%', borderRadius: event?.logo_url ? 12 * s : 0 }} contentFit="contain" cachePolicy="memory-disk" />
         </View>
         <View style={{ flex: 1 }}>

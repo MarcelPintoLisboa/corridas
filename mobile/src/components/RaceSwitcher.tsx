@@ -1,7 +1,7 @@
 import { FlatList, Pressable, Text } from 'react-native';
 
 import { useActiveEvent } from '@/providers/EventProvider';
-import { colors } from '@/theme';
+import { colors, onColor } from '@/theme';
 
 /** Troca a corrida ativa entre as corridas em que a pessoa está associada */
 export function RaceSwitcher() {
@@ -22,7 +22,7 @@ export function RaceSwitcher() {
           <Pressable
             onPress={() => setActiveEventId(item.event_id)}
             style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 99, backgroundColor: on ? c : colors.surface, borderWidth: 1.5, borderColor: on ? c : colors.border }}>
-            <Text style={{ color: on ? '#fff' : colors.textMuted, fontWeight: '700' }}>{item.event?.name}</Text>
+            <Text style={{ color: on ? onColor(c) : colors.textMuted, fontWeight: '700' }}>{item.event?.name}</Text>
           </Pressable>
         );
       }}

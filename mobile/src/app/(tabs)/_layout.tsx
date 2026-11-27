@@ -94,7 +94,7 @@ const s = StyleSheet.create({
     left: 14,
     right: 14,
     flexDirection: 'row',
-    backgroundColor: 'rgba(22,22,36,0.97)',
+    backgroundColor: 'rgba(17,27,23,0.97)',
     borderRadius: 28,
     paddingVertical: 8,
     borderWidth: 1,

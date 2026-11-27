@@ -131,7 +131,7 @@ export default function HomeScreen() {
               <Text style={[font.h2, { color: colors.text }]}>{t(registrations.length > 1 ? 'Atualizações das corridas' : 'Atualizações da corrida')}</Text>
               {updates.unread ? (
                 <View style={{ backgroundColor: colors.primary, borderRadius: 99, minWidth: 22, height: 22, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 12 }}>{updates.unread}</Text>
+                  <Text style={{ color: colors.onPrimary, fontWeight: '900', fontSize: 12 }}>{updates.unread}</Text>
                 </View>
               ) : null}
             </View>

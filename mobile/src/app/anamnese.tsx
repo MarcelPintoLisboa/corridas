@@ -28,7 +28,7 @@ import { generatePlan } from '@/lib/planGenerator';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, colors, font, radius, onColor } from '@/theme';
 
 /** Anamnese do corredor (6 etapas) → plano de treino pessoal gerado automaticamente */
 export default function AnamneseScreen() {
@@ -358,7 +358,7 @@ export default function AnamneseScreen() {
           </Pressable>
           <Pressable onPress={next} style={{ flex: 2, borderRadius: 14, overflow: 'hidden' }}>
             <View style={{ alignItems: 'center', paddingVertical: 15, backgroundColor: accent }}>
-              <Text style={{ color: '#fff', fontWeight: '900' }}>{t('Continuar')}</Text>
+              <Text style={{ color: onColor(accent), fontWeight: '900' }}>{t('Continuar')}</Text>
             </View>
           </Pressable>
         </View>
@@ -482,7 +482,7 @@ function Btn({ label, onPress, primary, loading }: { label: string; onPress: () 
       disabled={!!busy}
       style={({ pressed }) => ({ paddingHorizontal: 18, paddingVertical: 13, borderRadius: 12, borderWidth: 1.5, borderColor: primary ? accent : colors.border, backgroundColor: primary ? accent : colors.surface, opacity: pressed || (busy && !loading) ? 0.7 : 1, flexDirection: 'row', gap: 8, alignItems: 'center' })}>
       {loading ? <ActivityIndicator color="#fff" size="small" /> : null}
-      <Text style={{ color: primary ? '#fff' : colors.text, fontWeight: '800' }}>{t(label)}</Text>
+      <Text style={{ color: primary ? onColor(accent) : colors.text, fontWeight: '800' }}>{t(label)}</Text>
     </Pressable>
   );
 }

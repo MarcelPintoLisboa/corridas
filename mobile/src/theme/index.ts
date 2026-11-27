@@ -1,14 +1,17 @@
+// Paleta Corre+ (mesma do site correplus.com.br): verde-noite + limão
 export const colors = {
-  bg: '#0A0A12',
-  bgElevated: '#12121E',
-  surface: '#1A1A2A',
-  surfaceAlt: '#232338',
-  border: '#2C2C44',
-  text: '#FFFFFF',
-  textMuted: '#A3A3C2',
-  textDim: '#6B6B8A',
-  primary: '#FF4D2E',
-  secondary: '#7B2FF7',
+  bg: '#0C1511',
+  bgElevated: '#111B17',
+  surface: '#16231C',
+  surfaceAlt: '#1E3027',
+  border: '#263B30',
+  text: '#F4F5EF',
+  textMuted: '#BFC9BB',
+  textDim: '#7D8C80',
+  primary: '#C7F753',
+  secondary: '#A3E635',
+  onPrimary: '#0C1511',
+  pine: '#24463A',
   lime: '#C7F753',
   cyan: '#00E5FF',
   success: '#00E676',
@@ -16,17 +19,17 @@ export const colors = {
   danger: '#FF3D71',
 };
 
-export const radius = { sm: 10, md: 16, lg: 24, xl: 32, pill: 999 };
+export const radius = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 };
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32 };
 
 export const font = {
-  hero: { fontSize: 34, fontWeight: '900' as const, letterSpacing: -1 },
-  h1: { fontSize: 26, fontWeight: '800' as const, letterSpacing: -0.5 },
-  h2: { fontSize: 20, fontWeight: '800' as const },
+  hero: { fontSize: 36, fontWeight: '900' as const, letterSpacing: -1.6 },
+  h1: { fontSize: 28, fontWeight: '900' as const, letterSpacing: -1 },
+  h2: { fontSize: 21, fontWeight: '800' as const, letterSpacing: -0.5 },
   h3: { fontSize: 16, fontWeight: '700' as const },
   body: { fontSize: 15, fontWeight: '400' as const },
   small: { fontSize: 13, fontWeight: '500' as const },
-  tiny: { fontSize: 11, fontWeight: '700' as const, letterSpacing: 1, textTransform: 'uppercase' as const },
+  tiny: { fontSize: 11, fontWeight: '800' as const, letterSpacing: 1.4, textTransform: 'uppercase' as const },
 };
 
 /** Mistura uma cor hex com alpha (0..1) → rgba */
@@ -34,6 +37,16 @@ export function alpha(hex: string, a: number) {
   const h = hex.replace('#', '');
   const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
+/** Cor de texto legível sobre um fundo: escura em cores claras (ex.: limão), branca nas escuras */
+export function onColor(hex?: string | null) {
+  const h = (hex ?? '').replace('#', '');
+  if (!/^([0-9a-f]{3}|[0-9a-f]{6})$/i.test(h)) return '#fff';
+  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+  const lin = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return L > 0.4 ? colors.onPrimary : '#fff';
 }
 
 export const tierColors: Record<string, string> = {

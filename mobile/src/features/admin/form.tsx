@@ -41,7 +41,7 @@ export const tl = (s: string) => {
   return m ? m[1] + t(m[2]) : t(s);
 };
 
-const PALETTE = ['#FF4D2E', '#FF3D71', '#FF9100', '#FFC400', '#C6FF00', '#00E676', '#00E5FF', '#2979FF', '#7B2FF7', '#D500F9', '#FFFFFF', '#111111'];
+const PALETTE = ['#C7F753', '#24463A', '#FF4D2E', '#FF3D71', '#FF9100', '#FFC400', '#C6FF00', '#00E676', '#00E5FF', '#2979FF', '#7B2FF7', '#D500F9', '#FFFFFF', '#111111'];
 
 /** Converte a linha do banco em valores editáveis (strings para inputs) */
 export function toFormValues(fields: Field[], row: Record<string, unknown> | null): FormValues {

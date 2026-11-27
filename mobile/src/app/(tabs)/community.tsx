@@ -13,7 +13,7 @@ import type { CommunityComment, CommunityPost, Workout } from '@/lib/types';
 import { pickImage, uploadImage } from '@/lib/upload';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius } from '@/theme';
+import { alpha, colors, font, radius, onColor } from '@/theme';
 import { t } from '@/i18n';
 
 /** Mural interno da corrida: só os corredores associados à MESMA corrida veem, publicam fotos/treinos e comentam */
@@ -206,7 +206,7 @@ function Composer({ eventId, accent, lastWorkout, onPosted }: { eventId: string;
         ) : null}
         <View style={{ flex: 1 }} />
         <Pressable onPress={publish} disabled={busy} style={{ backgroundColor: accent, borderRadius: radius.pill, paddingHorizontal: 18, paddingVertical: 9, opacity: busy ? 0.6 : 1 }}>
-          {busy ? <ActivityIndicator color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '800' }}>{t('Publicar')}</Text>}
+          {busy ? <ActivityIndicator color={onColor(accent)} /> : <Text style={{ color: onColor(accent), fontWeight: '800' }}>{t('Publicar')}</Text>}
         </Pressable>
       </View>
     </Card>

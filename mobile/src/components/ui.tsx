@@ -31,7 +31,7 @@ import { t } from '@/i18n';
 import { daysUntil, initials } from '@/lib/format';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { alpha, colors, font, radius, spacing } from '@/theme';
+import { alpha, colors, font, onColor, radius, spacing } from '@/theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -144,14 +144,15 @@ export function GradientButton({
   const scale = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const pair = colorsPair ?? [colors.primary, colors.secondary];
+  const fg = variant === 'solid' ? onColor(pair[0]) : colors.text;
   const inner = (
     <View style={[styles.btnInner, small && { paddingVertical: 10, paddingHorizontal: 14 }]}>
       {loading ? (
-        <ActivityIndicator color="#fff" />
+        <ActivityIndicator color={fg} />
       ) : (
         <>
-          {icon ? <Ionicons name={icon} size={small ? 16 : 20} color="#fff" /> : null}
-          <Text style={[styles.btnText, small && { fontSize: 14 }]}>{t(title)}</Text>
+          {icon ? <Ionicons name={icon} size={small ? 16 : 20} color={fg} /> : null}
+          <Text style={[styles.btnText, { color: fg }, small && { fontSize: 14 }]}>{t(title)}</Text>
         </>
       )}
     </View>
@@ -180,12 +181,12 @@ export function GradientButton({
   );
 }
 
-export function IconButton({ icon, onPress, color = colors.text, bg = colors.surface, size = 22 }: {
+export function IconButton({ icon, onPress, color, bg = colors.surface, size = 22 }: {
   icon: IconName; onPress?: () => void; color?: string; bg?: string; size?: number;
 }) {
   return (
     <Pressable onPress={onPress} hitSlop={8} style={({ pressed }) => [styles.iconBtn, { backgroundColor: bg, opacity: pressed ? 0.7 : 1 }]}>
-      <Ionicons name={icon} size={size} color={color} />
+      <Ionicons name={icon} size={size} color={color ?? onColor(bg)} />
     </Pressable>
   );
 }
@@ -253,7 +254,7 @@ export function Chip({ label, active, onPress, color = colors.primary }: {
     <Pressable
       onPress={onPress}
       style={[styles.chip, active ? { backgroundColor: color, borderColor: color } : { borderColor: colors.border }]}>
-      <Text style={[font.small, { color: active ? '#fff' : colors.textMuted, fontWeight: '700' }]}>{t(label)}</Text>
+      <Text style={[font.small, { color: active ? onColor(color) : colors.textMuted, fontWeight: '700' }]}>{t(label)}</Text>
     </Pressable>
   );
 }
@@ -296,7 +297,7 @@ export function Avatar({ uri, name, size = 44 }: { uri?: string | null; name?: s
   if (uri) return <Image source={uri} style={{ width: size, height: size, borderRadius: size / 2 }} />;
   return (
     <LinearGradient colors={[colors.primary, colors.secondary]} style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: '#fff', fontWeight: '800', fontSize: size * 0.38 }}>{initials(name)}</Text>
+      <Text style={{ color: colors.onPrimary, fontWeight: '800', fontSize: size * 0.38 }}>{initials(name)}</Text>
     </LinearGradient>
   );
 }
@@ -384,9 +385,9 @@ export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg, minHeight: 200 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.lg, marginBottom: spacing.sm + 4 },
-  btn: { borderRadius: radius.pill },
+  btn: { borderRadius: radius.md },
   btnInner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 16, paddingHorizontal: 22 },
-  btnText: { color: '#fff', fontWeight: '800', fontSize: 16, letterSpacing: 0.3 },
+  btnText: { fontWeight: '800', fontSize: 16, letterSpacing: 0.2 },
   iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' },
   card: { backgroundColor: colors.surface, borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.sm + 4, borderWidth: 1, borderColor: colors.border },
   label: { ...font.tiny, color: colors.textMuted, marginBottom: 6 },

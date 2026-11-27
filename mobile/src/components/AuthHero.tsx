@@ -27,7 +27,7 @@ export function AuthHero({ title, subtitle }: { title: string; subtitle: string 
   return (
     <View style={s.wrap}>
       <Animated.View style={[s.blob, { backgroundColor: colors.primary, top: -60, left: -40 }, blob1]} />
-      <Animated.View style={[s.blob, { backgroundColor: colors.secondary, top: 40, right: -80 }, blob2]} />
+      <Animated.View style={[s.blob, { backgroundColor: colors.pine, top: 40, right: -80 }, blob2]} />
       <LinearGradient colors={['transparent', colors.bg]} style={StyleSheet.absoluteFill} />
       <View style={s.content}>
         {/* marca Corre+ */}
@@ -43,7 +43,7 @@ export function AuthHero({ title, subtitle }: { title: string; subtitle: string 
 
 const s = StyleSheet.create({
   wrap: { height: 330, overflow: 'hidden', justifyContent: 'flex-end' },
-  blob: { position: 'absolute', width: 300, height: 300, borderRadius: 150, opacity: 0.55 },
+  blob: { position: 'absolute', width: 300, height: 300, borderRadius: 150, opacity: 0.35 },
   content: { paddingHorizontal: 24, paddingBottom: 12 },
   logo: { marginBottom: 16, alignSelf: 'flex-start' },
   title: { color: '#fff', fontSize: 34, fontWeight: '900', letterSpacing: -1, marginTop: 4 },
