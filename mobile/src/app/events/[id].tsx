@@ -38,8 +38,8 @@ export default function EventJoin() {
 
   if (q.loading || !q.data) return <Loading />;
   const { event, distances } = q.data;
-  const c1 = event.primary_color;
-  const c2 = event.secondary_color;
+  const c1 = colors.primary;
+  const c2 = colors.secondary;
 
   async function onSubmit() {
     if (!event.require_order_code && !distanceId) return Alert.alert(t('Escolha sua distância'));

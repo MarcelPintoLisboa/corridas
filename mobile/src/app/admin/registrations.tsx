@@ -182,7 +182,7 @@ export default function RegistrationsScreen() {
                 <Text style={{ color: r.kit_picked_up ? '#000' : colors.text, fontWeight: '800' }}>{t(r.kit_picked_up ? 'Kit entregue' : 'Marcar kit entregue')}</Text>
               </Pressable>
               <Pressable onPress={() => removeRegistration(r)} style={{ width: 44, alignItems: 'center', justifyContent: 'center', borderRadius: radius.pill, backgroundColor: colors.surfaceAlt }}>
-                <Ionicons name="person-remove-outline" size={18} color={colors.danger} />
+                <Ionicons name="person-remove-outline" size={18} color={colors.textMuted} />
               </Pressable>
             </View>
           </Card>

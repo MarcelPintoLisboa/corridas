@@ -29,11 +29,11 @@ export function ClosedRaces() {
       {list.slice(0, 3).map((c) => (
         <View
           key={c.event_id}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: alpha(c.primary_color || colors.primary, 0.1), borderRadius: radius.lg, borderWidth: 1, borderColor: alpha(c.primary_color || colors.primary, 0.35), padding: 12, marginBottom: 8 }}>
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: alpha(colors.primary, 0.1), borderRadius: radius.lg, borderWidth: 1, borderColor: alpha(colors.primary, 0.35), padding: 12, marginBottom: 8 }}>
           {c.logo_url ? (
             <Image source={c.logo_url} style={{ width: 42, height: 42, borderRadius: 10, backgroundColor: '#fff' }} contentFit="contain" />
           ) : (
-            <Ionicons name="flag" size={26} color={c.primary_color || colors.primary} />
+            <Ionicons name="flag" size={26} color={colors.primary} />
           )}
           <View style={{ flex: 1 }}>
             <Text style={{ color: colors.text, fontWeight: '800' }}>{t('{name} foi encerrada 🏁', { name: c.name })}</Text>

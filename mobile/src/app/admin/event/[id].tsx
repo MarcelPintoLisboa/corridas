@@ -33,7 +33,7 @@ export default function AdminEvent() {
 
   if (q.loading || !q.data) return <Loading />;
   const { event, metrics: m } = q.data;
-  const c = event.primary_color;
+  const c = colors.primary;
 
   const kpis = [
     { label: 'Inscritos', value: m.registrations, icon: 'people', color: c },

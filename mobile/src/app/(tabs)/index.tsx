@@ -242,7 +242,7 @@ function MyRaces({ registrations, activeId }: { registrations: Registration[]; a
                 setActiveEventId(item.event_id);
                 router.push('/event');
               }}
-              style={{ width: 260, height: 190, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 2, borderColor: on ? e.primary_color : 'transparent' }}>
+              style={{ width: 260, height: 190, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 2, borderColor: on ? colors.primary : 'transparent' }}>
               {e.cover_image_url ? <Image source={e.cover_image_url} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" /> : null}
               <LinearGradient colors={[alpha(brand.pine, 0.45), alpha(brand.deep, 0.95)]} style={{ flex: 1, padding: 14, justifyContent: 'space-between' }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -290,11 +290,11 @@ function RaceNews({ posts, pickups, registrations }: { posts: Post[]; pickups: K
             return (
               <Card key={p.id} delay={i * 50} onPress={() => open(p.event_id)}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                  <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: alpha(e?.primary_color ?? colors.primary, 0.18), alignItems: 'center', justifyContent: 'center' }}>
-                    <Ionicons name="cube" size={20} color={e?.primary_color ?? colors.primary} />
+                  <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: alpha(colors.primary, 0.18), alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="cube" size={20} color={colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    {multi && e ? <Text style={[font.tiny, { color: e.primary_color, fontSize: 10 }]}>{e.name}</Text> : null}
+                    {multi && e ? <Text style={[font.tiny, { color: colors.primary, fontSize: 10 }]}>{e.name}</Text> : null}
                     <Text style={{ color: colors.text, fontWeight: '800' }}>{p.location_name}</Text>
                     <Muted style={{ fontSize: 12 }}>
                       {formatDate(p.starts_at, true)} · {formatTime(p.starts_at)} {t('às')} {formatTime(p.ends_at)}
@@ -312,7 +312,7 @@ function RaceNews({ posts, pickups, registrations }: { posts: Post[]; pickups: K
           <SectionHeader title={multi ? 'Novidades das suas corridas' : 'Novidades da prova'} />
           {posts.map((p, i) => {
             const e = byId.get(p.event_id);
-            const c = p.type === 'alert' ? colors.warning : (e?.primary_color ?? colors.primary);
+            const c = p.type === 'alert' ? colors.warning : colors.primary;
             return (
               <Card key={p.id} delay={i * 60} style={p.type === 'alert' ? { borderColor: colors.warning } : undefined} onPress={() => open(p.event_id)}>
                 <View style={{ flexDirection: 'row', gap: 12 }}>

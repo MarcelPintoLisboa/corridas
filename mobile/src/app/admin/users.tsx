@@ -124,7 +124,7 @@ export default function UsersScreen() {
         <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
           {isAdminGeral ? <Counter label="Gestores" value={count('admin')} color={colors.lime} /> : null}
           <Counter label="Corredores" value={count('athlete')} color={colors.text} />
-          <Counter label="Desativados" value={all.filter((u) => !u.ativo).length} color={colors.danger} />
+          <Counter label="Desativados" value={all.filter((u) => !u.ativo).length} color={colors.textMuted} />
         </View>
 
         <Input icon="search" placeholder="Buscar por nome ou e-mail" value={search} onChangeText={setSearch} autoCapitalize="none" />
@@ -132,7 +132,7 @@ export default function UsersScreen() {
           <Chip label="Todos" active={filter === 'all'} onPress={() => setFilter('all')} />
           {isAdminGeral ? <Chip label="Gestores" active={filter === 'admin'} color={colors.lime} onPress={() => setFilter('admin')} /> : null}
           <Chip label="Corredores" active={filter === 'athlete'} onPress={() => setFilter('athlete')} />
-          <Chip label="Desativados" active={filter === 'inativos'} color={colors.danger} onPress={() => setFilter('inativos')} />
+          <Chip label="Desativados" active={filter === 'inativos'} color={colors.textMuted} onPress={() => setFilter('inativos')} />
         </ScrollView>
 
         {!users.length ? <EmptyState icon="people" title="Ninguém por aqui" /> : null}
@@ -152,7 +152,7 @@ export default function UsersScreen() {
                   <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
                     {geral ? <Badge label="Admin geral" color={colors.lime} /> : null}
                     {!u.user_id ? <Badge label="Aguardando 1º acesso" color={colors.warning} /> : null}
-                    {!u.ativo ? <Badge label="Desativado" color={colors.danger} /> : null}
+                    {!u.ativo ? <Badge label="Desativado" color={colors.textMuted} /> : null}
                   </View>
                 </View>
                 <Pressable onPress={() => setEditing(u)} hitSlop={10} accessibilityLabel={t('Editar')} style={{ marginRight: geral ? 0 : 14 }}>

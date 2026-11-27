@@ -92,7 +92,6 @@ export default function ProfileScreen() {
           <ListRow
             key={r.id}
             icon={r.event_id === active?.event_id ? 'radio-button-on' : 'radio-button-off'}
-            color={r.event?.primary_color}
             title={r.event?.name ?? ''}
             subtitle={`${r.distance?.label ?? ''} · ${r.event ? formatDate(r.event.event_date) : ''}`}
             onPress={() => setActiveEventId(r.event_id)}
@@ -101,7 +100,7 @@ export default function ProfileScreen() {
       </Card>
 
       {isAdmin ? <GradientButton title="Painel do administrador" icon="construct" variant="ghost" onPress={() => router.push('/admin')} style={{ marginTop: 12 }} /> : null}
-      <GradientButton title="Sair" icon="log-out-outline" variant="ghost" colorsPair={[colors.danger, colors.danger]} onPress={signOut} style={{ marginTop: 12, marginBottom: 30 }} />
+      <GradientButton title="Sair" icon="log-out-outline" variant="ghost" colorsPair={[colors.border, colors.border]} onPress={signOut} style={{ marginTop: 12, marginBottom: 30 }} />
     </Screen>
   );
 }

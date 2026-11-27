@@ -129,23 +129,23 @@ export const leadStatusColor: Record<string, string> = {
   contacted: '#FFC400',
   qualified: '#7B2FF7',
   converted: '#00E676',
-  lost: '#FF3D71',
+  lost: '#7D8C80',
 };
 
 export const tipCategoryLabel: Record<string, { label: string; emoji: string; color: string }> = translated({
-  training: { label: 'Treino', emoji: '🏃', color: '#FF4D2E' },
+  training: { label: 'Treino', emoji: '🏃', color: '#84CC16' },
   nutrition: { label: 'Alimentação', emoji: '🥗', color: '#00E676' },
   hydration: { label: 'Hidratação', emoji: '💧', color: '#00E5FF' },
   recovery: { label: 'Recuperação', emoji: '😴', color: '#7B2FF7' },
   mindset: { label: 'Mente', emoji: '🧠', color: '#FFC400' },
-  race_day: { label: 'Dia da prova', emoji: '🏁', color: '#FF3D71' },
+  race_day: { label: 'Dia da prova', emoji: '🏁', color: '#C7F753' },
 });
 
 export const sessionTypeMeta: Record<string, { label: string; color: string; icon: string }> = translated({
   easy: { label: 'Leve', color: '#00E676', icon: 'walk' },
   long: { label: 'Longão', color: '#7B2FF7', icon: 'trail-sign' },
   tempo: { label: 'Ritmo', color: '#FFC400', icon: 'speedometer' },
-  interval: { label: 'Tiros', color: '#FF4D2E', icon: 'flash' },
+  interval: { label: 'Tiros', color: '#F59E0B', icon: 'flash' },
   fartlek: { label: 'Fartlek', color: '#FF9100', icon: 'shuffle' },
   recovery: { label: 'Regenerativo', color: '#00E5FF', icon: 'leaf' },
   strength: { label: 'Força', color: '#B388FF', icon: 'barbell' },

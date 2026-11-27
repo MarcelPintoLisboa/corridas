@@ -185,8 +185,8 @@ export default function AnamneseScreen() {
       <>
         <Title h="Seu histórico é nosso ponto de partida." p="Conecte o app de saúde do seu relógio para aproveitar suas corridas anteriores e reduzir perguntas no cadastro." />
         <View style={{ backgroundColor: colors.surface, borderRadius: 18, padding: 18, borderWidth: 1, borderColor: colors.border }}>
-          <View style={{ width: 54, height: 54, borderRadius: 14, backgroundColor: alpha('#FF2D55', 0.15), alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
-            <Ionicons name={Platform.OS === 'ios' ? 'heart' : 'fitness'} size={28} color="#FF2D55" />
+          <View style={{ width: 54, height: 54, borderRadius: 14, backgroundColor: alpha(colors.primary, 0.15), alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+            <Ionicons name={Platform.OS === 'ios' ? 'heart' : 'fitness'} size={28} color={colors.primary} />
           </View>
           <Text style={[font.h3, { color: colors.text }]}>{t(health.name)}</Text>
           <Text style={{ color: colors.textMuted, marginTop: 4 }}>

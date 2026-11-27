@@ -21,7 +21,7 @@ const statusMeta = themed(() => ({
   draft: { label: 'Rascunho', color: colors.warning },
   published: { label: 'Publicado', color: colors.success },
   finished: { label: 'Finalizado', color: colors.textMuted },
-  canceled: { label: 'Cancelado', color: colors.danger },
+  canceled: { label: 'Cancelado', color: colors.textDim },
 }));
 
 export default function AdminHome() {
@@ -85,7 +85,7 @@ export default function AdminHome() {
           <View style={{ flexDirection: 'row', backgroundColor: colors.surface, borderBottomLeftRadius: radius.lg, borderBottomRightRadius: radius.lg, borderWidth: 1, borderTopWidth: 0, borderColor: colors.border, marginBottom: 14 }}>
             <RowAction icon="speedometer-outline" label="Painel" onPress={() => router.push(`/admin/event/${e.id}`)} />
             <RowAction icon="create-outline" label="Editar" onPress={() => router.push(`/admin/event-form?id=${e.id}`)} />
-            <RowAction icon="trash-outline" label="Excluir" color={colors.danger} onPress={() => confirmDelete(e)} />
+            <RowAction icon="trash-outline" label="Excluir" color={colors.textMuted} onPress={() => confirmDelete(e)} />
           </View>
         </FadeIn>
       ))}

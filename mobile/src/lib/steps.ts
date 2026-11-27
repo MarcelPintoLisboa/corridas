@@ -6,7 +6,7 @@ import type { SessionStep, StepKind, TrainingSession } from './types';
 export const STEP_META: Record<StepKind, { label: string; icon: string; color: string }> = {
   warmup: { label: 'Aquecimento', icon: 'flame', color: '#FFC400' },
   run: { label: 'Corrida', icon: 'walk', color: '#00E676' },
-  interval: { label: 'Tiro', icon: 'flash', color: '#FF4D2E' },
+  interval: { label: 'Tiro', icon: 'flash', color: '#F59E0B' },
   recovery: { label: 'Recuperação', icon: 'leaf', color: '#00E5FF' },
   walk: { label: 'Caminhada', icon: 'footsteps', color: '#B388FF' },
   cooldown: { label: 'Desaquecimento', icon: 'snow', color: '#2979FF' },

@@ -87,7 +87,7 @@ export function StepsEditor({ label, value, onChange }: { label: string; value: 
               <IconBtn icon="arrow-up" onPress={() => move(i, -1)} disabled={i === 0} />
               <IconBtn icon="arrow-down" onPress={() => move(i, 1)} disabled={i === value.length - 1} />
               <IconBtn icon="copy-outline" onPress={() => onChange([...value.slice(0, i + 1), { ...s }, ...value.slice(i + 1)])} />
-              <IconBtn icon="trash-outline" color={colors.danger} onPress={() => onChange(value.filter((_, j) => j !== i))} />
+              <IconBtn icon="trash-outline" color={colors.textMuted} onPress={() => onChange(value.filter((_, j) => j !== i))} />
             </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>

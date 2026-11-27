@@ -41,7 +41,7 @@ export const tl = (s: string) => {
   return m ? m[1] + t(m[2]) : t(s);
 };
 
-const PALETTE = ['#C7F753', '#24463A', '#FF4D2E', '#FF3D71', '#FF9100', '#FFC400', '#C6FF00', '#00E676', '#00E5FF', '#2979FF', '#7B2FF7', '#D500F9', '#FFFFFF', '#111111'];
+const PALETTE = ['#C7F753', '#24463A', '#A3E635', '#0C1511', '#FF9100', '#FFC400', '#C6FF00', '#00E676', '#00E5FF', '#2979FF', '#7B2FF7', '#D500F9', '#FFFFFF', '#111111'];
 
 /** Converte a linha do banco em valores editáveis (strings para inputs) */
 export function toFormValues(fields: Field[], row: Record<string, unknown> | null): FormValues {
@@ -172,7 +172,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
               <Pressable key={c} onPress={() => onChange(c)} style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: c, borderWidth: 3, borderColor: str.toUpperCase() === c ? colors.text : 'transparent' }} />
             ))}
           </View>
-          <Input value={str} onChangeText={onChange} placeholder="#FF4D2E" autoCapitalize="characters" icon="color-palette" />
+          <Input value={str} onChangeText={onChange} placeholder="#C7F753" autoCapitalize="characters" icon="color-palette" />
         </View>
       );
 
@@ -205,7 +205,7 @@ function FieldInput({ field, value, onChange }: { field: Field; value: unknown; 
             )}
           </Pressable>
           {str ? (
-            <Text onPress={() => onChange('')} style={{ color: colors.danger, marginTop: 6, fontSize: 12 }}>
+            <Text onPress={() => onChange('')} style={{ color: colors.textMuted, marginTop: 6, fontSize: 12, textDecorationLine: 'underline' }}>
               {t('Remover imagem')}
             </Text>
           ) : null}

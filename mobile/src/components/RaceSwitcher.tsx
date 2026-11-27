@@ -17,7 +17,7 @@ export function RaceSwitcher() {
       contentContainerStyle={{ gap: 8 }}
       renderItem={({ item }) => {
         const on = item.event_id === active?.event_id;
-        const c = item.event?.primary_color ?? colors.primary;
+        const c = colors.primary;
         return (
           <Pressable
             onPress={() => setActiveEventId(item.event_id)}

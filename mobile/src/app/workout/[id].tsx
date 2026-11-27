@@ -127,7 +127,7 @@ export default function WorkoutShare() {
 
   return (
     <Screen bottomInset={false}>
-      <BackHeader title="Post do treino" right={<IconButton icon="trash-outline" color={colors.danger} onPress={onDelete} />} />
+      <BackHeader title="Post do treino" right={<IconButton icon="trash-outline" color={colors.textMuted} onPress={onDelete} />} />
 
       <FadeIn>
         <View style={{ alignItems: 'center' }}>

@@ -119,7 +119,7 @@ export default function CrudScreen() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingTop: Platform.OS === 'ios' ? 20 : insets.top + 12, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <Text style={[font.h2, { color: colors.text, flex: 1 }]}>{t(editing ? 'Editar' : 'Novo')} · {t(cfg.title)}</Text>
-              {editing ? <IconButton icon="trash-outline" color={colors.danger} onPress={() => onDelete(editing)} /> : null}
+              {editing ? <IconButton icon="trash-outline" color={colors.textMuted} onPress={() => onDelete(editing)} /> : null}
               <View style={{ width: 8 }} />
               <IconButton icon="close" onPress={() => setOpen(false)} />
             </View>

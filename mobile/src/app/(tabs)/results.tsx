@@ -126,7 +126,7 @@ export default function ResultsScreen() {
             </Muted>
             <Text style={{ color: colors.text, fontWeight: '800', marginTop: 2 }}>
               {formatKm(w.distance_km, 2)} km · {formatDuration(w.duration_seconds)} · {formatPace(w.avg_pace_seconds)}/km
-              {w.avg_hr ? <Text style={{ color: colors.danger }}>{`  ♥ ${w.avg_hr}`}</Text> : null}
+              {w.avg_hr ? <Text style={{ color: colors.primary }}>{`  ♥ ${w.avg_hr}`}</Text> : null}
             </Text>
           </View>
           <Pressable onPress={() => router.push(`/workout/${w.id}`)} hitSlop={10}>

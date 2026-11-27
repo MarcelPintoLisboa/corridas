@@ -87,7 +87,7 @@ export default function LeadDetail() {
         <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
           <Badge label={`Score ${lead.score}`} color={colors.lime} />
           {lead.interest ? <Badge label={lead.interest} color={colors.cyan} /> : null}
-          <Badge label={lead.consent_marketing ? 'LGPD ✓' : 'Sem consentimento'} color={lead.consent_marketing ? colors.success : colors.danger} />
+          <Badge label={lead.consent_marketing ? 'LGPD ✓' : 'Sem consentimento'} color={lead.consent_marketing ? colors.success : colors.warning} />
         </View>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
           {lead.phone ? <ActionBtn icon="logo-whatsapp" color="#25D366" label="WhatsApp" onPress={() => contact('whatsapp')} /> : null}

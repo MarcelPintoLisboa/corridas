@@ -81,7 +81,7 @@ export default function GestaoScreen() {
   const { events } = q.data;
   const upcoming = events.find((e) => new Date(e.event_date) >= new Date()) ?? events[events.length - 1];
   const ev = events.find((e) => e.id === selected) ?? upcoming ?? null;
-  const c = ev?.primary_color ?? colors.lime;
+  const c = colors.primary;
   const menu = Object.values(resources).filter((r) => r.showInMenu !== false);
 
   return (
@@ -106,7 +106,7 @@ export default function GestaoScreen() {
         <Muted style={{ fontSize: 12, marginBottom: 10 }}>Preenche um fluxo completo com dados de exemplo para testar, e limpa quando quiser.</Muted>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <GradientButton small title="Preencher" icon="sparkles" loading={busy === 'fill'} disabled={!!busy} colorsPair={[colors.primary, colors.secondary]} onPress={() => confirmDemo('fill')} style={{ flex: 1 }} />
-          <GradientButton small title="Limpar" icon="trash" variant="ghost" loading={busy === 'clear'} disabled={!!busy} colorsPair={[colors.danger, colors.danger]} onPress={() => confirmDemo('clear')} style={{ flex: 1 }} />
+          <GradientButton small title="Limpar" icon="trash" variant="ghost" loading={busy === 'clear'} disabled={!!busy} colorsPair={[colors.border, colors.border]} onPress={() => confirmDemo('clear')} style={{ flex: 1 }} />
         </View>
       </View>
 
@@ -118,7 +118,7 @@ export default function GestaoScreen() {
           {events.length > 1 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 10 }}>
               {events.map((e) => (
-                <Chip key={e.id} label={e.name} active={e.id === ev.id} color={e.primary_color} onPress={() => setSelected(e.id)} />
+                <Chip key={e.id} label={e.name} active={e.id === ev.id} onPress={() => setSelected(e.id)} />
               ))}
             </ScrollView>
           ) : null}

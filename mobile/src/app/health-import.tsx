@@ -360,7 +360,7 @@ export default function HealthImportScreen() {
                   <Big value={`${formatKm(r.distanceKm, 2)}`} unit="km" color={accent} />
                   <Big value={formatDuration(r.durationSec)} />
                   <Big value={r.distanceKm > 0 ? formatPace(r.durationSec / r.distanceKm) : '--'} unit="/km" />
-                  {r.avgHr ? <Big value={`♥ ${r.avgHr}`} unit="bpm" color={colors.danger} /> : null}
+                  {r.avgHr ? <Big value={`♥ ${r.avgHr}`} unit="bpm" color={colors.primary} /> : null}
                   {r.calories ? <Big value={`${r.calories}`} unit="kcal" /> : null}
                 </View>
                 {s ? (

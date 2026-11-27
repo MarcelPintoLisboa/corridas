@@ -113,7 +113,7 @@ export function GeneratePlansCard({ eventId, color, eventDate }: { eventId: stri
               <Text style={{ color: colors.text, fontWeight: '700' }}>{t('Substituir planos existentes')}</Text>
               <Muted style={{ fontSize: 12 }}>Apaga os planos atuais desta corrida (inclusive edições) e gera de novo.</Muted>
             </View>
-            <Switch value={replace} onValueChange={setReplace} trackColor={{ true: colors.danger }} />
+            <Switch value={replace} onValueChange={setReplace} trackColor={{ true: colors.primary }} />
           </View>
 
           <GradientButton title="Gerar agora" icon="flash" colorsPair={[color, colors.secondary]} loading={busy} disabled={s?.distances === 0} onPress={generate} />

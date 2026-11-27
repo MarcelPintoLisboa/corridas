@@ -116,7 +116,7 @@ export default function CommunityScreen() {
               onChanged={q.reload}
               likeButton={
                 <Pressable onPress={() => toggleLike(p)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }} hitSlop={8}>
-                  <Ionicons name={liked ? 'heart' : 'heart-outline'} size={22} color={liked ? colors.danger : colors.textMuted} />
+                  <Ionicons name={liked ? 'heart' : 'heart-outline'} size={22} color={liked ? colors.primary : colors.textMuted} />
                   <Text style={{ color: colors.textMuted, fontWeight: '700' }}>{count || ''}</Text>
                 </Pressable>
               }
