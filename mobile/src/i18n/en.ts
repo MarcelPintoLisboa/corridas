@@ -599,6 +599,8 @@ export const en: Record<string, string> = {
   'Somente administradores cadastram usuários': 'Only administrators can add users',
   'Alterar senha': 'Change password',
   'Aparência': 'Appearance',
+  'APARÊNCIA': 'APPEARANCE',
+  'Configurações': 'Settings',
   'Escuro': 'Dark',
   'Claro': 'Light',
   'Nova senha': 'New password',

@@ -19,14 +19,12 @@ import { daysUntil, formatDate, formatKm, formatTime, tipCategoryLabel } from '@
 import { isSameDay, planProgress } from '@/lib/plan';
 import { useAuth } from '@/providers/AuthProvider';
 import { useActiveEvent } from '@/providers/EventProvider';
-import { LanguageToggle } from '@/components/LanguageToggle';
-import { alpha, brand, colors, font, onColor, radius, setThemeMode, useThemeMode } from '@/theme';
+import { alpha, brand, colors, font, onColor, radius } from '@/theme';
 import { t, tn } from '@/i18n';
 
 export default function HomeScreen() {
-  const { profile, isAdmin } = useAuth();
+  const { profile } = useAuth();
   const { event, active, registrations, accent, accent2, loading } = useActiveEvent();
-  const mode = useThemeMode();
   const training = useTraining();
 
   const content = useAsync(async () => {
@@ -64,10 +62,8 @@ export default function HomeScreen() {
         <Muted>Olá,</Muted>
         <Text style={[font.h1, { color: colors.text }]}>{firstName} 👋</Text>
       </View>
-      <LanguageToggle />
-      {/* tema claro/escuro: cada corredor escolhe (também em Perfil → Aparência) */}
-      <IconButton icon={mode === 'light' ? 'moon' : 'sunny'} color={colors.text} onPress={() => setThemeMode(mode === 'light' ? 'dark' : 'light')} />
-      {isAdmin ? <IconButton icon="construct" color={colors.lime} onPress={() => router.push('/admin')} /> : null}
+      {/* idioma e tema claro/escuro ficam em Perfil → Configurações */}
+      <IconButton icon="settings-outline" onPress={() => router.push('/profile')} />
       <Pressable onPress={() => router.push('/profile')} style={{ marginLeft: 2 }}>
         <Avatar uri={profile?.avatar_url} name={profile?.full_name} />
       </Pressable>

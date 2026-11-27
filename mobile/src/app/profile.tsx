@@ -1,9 +1,9 @@
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert, Pressable, Text, View } from 'react-native';
 
 import { BackHeader } from '@/components/Header';
+import { LanguageToggle } from '@/components/LanguageToggle';
 import { Avatar, Badge, Card, GradientButton, Input, ListRow, Muted, Screen, SectionHeader } from '@/components/ui';
 import { formatDate } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
@@ -77,7 +77,15 @@ export default function ProfileScreen() {
       <Input label="Instagram" value={instagram} onChangeText={setInstagram} icon="logo-instagram" autoCapitalize="none" placeholder="@seuperfil" />
       <GradientButton title="Salvar" icon="checkmark" onPress={() => save()} loading={saving} />
 
-      <SectionHeader title="Aparência" />
+      <SectionHeader title="Configurações" />
+      <Card animated={false} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Ionicons name="language" size={20} color={colors.primary} />
+          <Text style={{ color: colors.text, fontWeight: '800' }}>{t('Idioma')}</Text>
+        </View>
+        <LanguageToggle />
+      </Card>
+      <Text style={{ color: colors.textMuted, fontWeight: '800', fontSize: 11, letterSpacing: 1.4, marginBottom: 8, marginTop: 4 }}>{t('APARÊNCIA')}</Text>
       <ThemePicker />
 
       <SectionHeader title="Alterar senha" />
@@ -99,7 +107,6 @@ export default function ProfileScreen() {
         ))}
       </Card>
 
-      {isAdmin ? <GradientButton title="Painel do administrador" icon="construct" variant="ghost" onPress={() => router.push('/admin')} style={{ marginTop: 12 }} /> : null}
       <GradientButton title="Sair" icon="log-out-outline" variant="ghost" colorsPair={[colors.border, colors.border]} onPress={signOut} style={{ marginTop: 12, marginBottom: 30 }} />
     </Screen>
   );
