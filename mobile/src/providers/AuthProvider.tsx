@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: email.trim().toLowerCase(),
         password,
         // o link do e-mail confirma a conta e abre o app na tela de confirmação
-        // app: 'Corre+' faz o gatilho do Assistência ML não copiar o login para public.usuarios
+        // app: 'Corre+' marca o login como do Corre+ (o cadastro fica só em st_usuarios)
         options: { data: { full_name: fullName, phone, app: 'Corre+' }, emailRedirectTo: CONFIRM_REDIRECT },
       });
       if (error) throw new Error(translateAuthError(error.message));
@@ -129,7 +129,7 @@ export async function resendConfirmation(email: string) {
 
 function translateAuthError(msg: string) {
   if (/invalid login/i.test(msg)) return t('E-mail ou senha incorretos');
-  if (/already registered/i.test(msg)) return t('Este e-mail já possui cadastro. Use "Entrar" (mesma senha do Assistência ML, se tiver).');
+  if (/already registered/i.test(msg)) return t('Este e-mail já possui cadastro no Corre+. Use "Entrar" ou "Esqueci minha senha".');
   if (/password should be/i.test(msg)) return t('A senha deve ter pelo menos 6 caracteres');
   if (/email not confirmed/i.test(msg)) return t('Confirme seu e-mail antes de entrar. Abra o link que enviamos (veja também o spam).');
   if (/rate limit|security purposes/i.test(msg)) return t('Aguarde um minuto antes de pedir outro e-mail.');

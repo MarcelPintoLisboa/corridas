@@ -305,8 +305,8 @@ export const en: Record<string, string> = {
   'Não foi possível cadastrar': "Couldn't sign up",
   'voce@email.com': 'you@email.com',
   'E-mail ou senha incorretos': 'Wrong email or password',
-  'Este e-mail já possui cadastro. Use "Entrar" (mesma senha do Assistência ML, se tiver).':
-    'This email is already registered. Use "Sign in" (same password as Assistência ML, if you have one).',
+  'Este e-mail já possui cadastro no Corre+. Use "Entrar" ou "Esqueci minha senha".':
+    'This email already has a Corre+ account. Use "Sign in" or "Forgot my password".',
   'A senha deve ter pelo menos 6 caracteres': 'Password must be at least 6 characters',
   'Confirme seu e-mail antes de entrar': 'Confirm your email before signing in',
   'Acesso desativado': 'Access disabled',
